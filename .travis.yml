@@ -1,0 +1,25 @@
+env:
+  global:
+    - secure: "B9MRRhX6ulkxXc/YDDsUTbmq7HCNV0jcxu5pcyPl1gsv1dbh56MBpEiFFO9TNuzJUNfQrKHUPL4UWOmb523iswK1BNqx/BXY/Bflx3RFSJdzPxNLNj6M0xqwFn8LoLdOazbPePFfsOEy1lghGWo+aCWx2XwYojEur3AwKEEympGZluso8xuSowMq6RDs/5F8iw5h6mH59s+X4mQqzEbYrsdw3ThW3SXUfht4vM/NUCH5I7XmnyPOVsWo0TWNdmX4vQuT0DL+ja7680cHt4HyiwPeiTtx+ffdu82BgQYeaLp1zjHdUxwmKQ+gObAGKppaelqcOTx/Y5HGIAHD7acu+d75S0uAqgqdfDJ+rOkyAkxklXCt3LX+Kzg/hZbpcIQls07PnYwnDEJ6bmzwY4rKQhmacr/GG+O7tgMobIg2vqZZbDnsY4KuAzy0VaTbGrMrvKl85pSjIKfD0FG8cUti9OKra/bDqGGo3TZi7Lhis12rqneuypicnyJ4PZhz+APs4q0HPWfq3EepcxOdll7O6ZaCmtyEZ2EWoT90rmJENA6OAJV8U5/4cScXO/vmrM07SBv2VEbOHEK+2iUS99LV5Q/Je7/KeEyl4pTW6jRDer9+ia5w+bR2XvYoKNdAfFpsW1YjOgcAUD5ON9bbD7OdcoMTk+CbroDLM8nBrII0lpU="
+    - GIT_DEPLOY_DIR=public
+    - GIT_DEPLOY_BRANCH=master
+    - GIT_DEPLOY_USERNAME="Travis CI"
+    - GIT_DEPLOY_EMAIL=njuzhangqichao@gmail.com
+branches:
+  only:
+    - sources
+
+before_install:
+  - wget https://github.com/spf13/hugo/releases/download/v0.16/hugo_0.16-1_i386.deb
+  - sudo dpkg -i hugo_0.16-1_i386.deb
+
+install:
+  - rm -rf public || exit 0
+
+before_script:
+  - git submodule init
+script:
+  - hugo
+after_success:
+  - cp .travis.yml public
+  - bash deploy.sh
