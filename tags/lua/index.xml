@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>sys🔱fork</title>
-    <link>http://sysfork.com/</link>
-    <description>Recent content on sys🔱fork</description>
+    <title>Lua on sys🔱fork</title>
+    <link>http://sysfork.com/tags/lua/</link>
+    <description>Recent content in Lua on sys🔱fork</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2016. All rights reserved.</copyright>
     <lastBuildDate>Thu, 01 Sep 2016 17:40:08 +0800</lastBuildDate>
-    <atom:link href="http://sysfork.com/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://sysfork.com/tags/lua/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Lua Table中HashMap介绍</title>
