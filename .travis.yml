@@ -20,5 +20,4 @@ script:
   - hugo
 after_success:
   - cp .travis.yml public
-  - cp CNAME public
   - bash deploy.sh
