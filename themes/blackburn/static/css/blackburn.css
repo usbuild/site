@@ -71,8 +71,16 @@ i {
     color: #265778;
 }
 
-#main .content {
+.content {
     font-family: Arial,'Hiragino Sans GB',冬青黑,'Microsoft YaHei',微软雅黑,SimSun,宋体,Helvetica,Tahoma,'Arial sans-serif';
+}
+
+.content p{
+    color: #2f2f2f;
+    font-size: 16px;
+    font-weight: normal;
+    line-height: 1.7;
+
 }
 
 
