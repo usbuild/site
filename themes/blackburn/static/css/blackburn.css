@@ -1,80 +1,88 @@
 a {
-  color: #3b8bba;
-  text-decoration: none;
+    color: #3b8bba;
+    text-decoration: none;
 }
 a:hover,
 a:focus {
-  text-decoration: underline;
+    text-decoration: underline;
 }
 a:visited {
-  color: #265778;
+    color: #265778;
 }
 
 .small-print {
-  font-size: 0.8em;
-  margin: 0.6em;
+    font-size: 0.8em;
+    margin: 0.6em;
 }
 
 .post-meta {
-  font-size: 90%;
+    font-size: 90%;
 }
 
 article > footer {
-  text-align: right;
+    text-align: right;
 }
 
 .prev-next-post {
-  margin-top: 2em;
-  padding-top: 2em;
-  padding-bottom: 2em;
-  border-top: 1px solid #eee;
-  border-bottom: 1px solid #eee;
+    margin-top: 2em;
+    padding-top: 2em;
+    padding-bottom: 2em;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
 }
 
 .prev-next-post .prev {
-  float: left;
-  text-align: left;
-  overflow: hidden;
+    float: left;
+    text-align: left;
+    overflow: hidden;
 }
 
 .prev-next-post .next {
-  float: right;
-  text-align: right;
-  overflow: hidden;
+    float: right;
+    text-align: right;
+    overflow: hidden;
 }
 
 #menu .brand {
-  font-weight: bold;
-  font-size: 1em;
-  letter-spacing: 0.1em;
-  text-transform: none;
-  background: transparent;
-  text-decoration: none;
-  margin: 0.5em 0;
+    font-weight: bold;
+    font-size: 1em;
+    letter-spacing: 0.1em;
+    text-transform: none;
+    background: transparent;
+    text-decoration: none;
+    margin: 0.5em 0;
 }
 
 #menu .pure-menu {
-  font-size: 0.9em;
+    font-size: 0.9em;
 }
 
 i {
-  display: inline-block;
-  margin-right: 0.2em;
+    display: inline-block;
+    margin-right: 0.2em;
 }
 
 .pagination {
-  text-align: center;
-  margin-top: 3em;
+    text-align: center;
+    margin-top: 3em;
 }
 
 .pagination a {
-  color: #265778;
+    color: #265778;
 }
 
-html {
-    font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif
+#main .content {
+    font-family: Arial,'Hiragino Sans GB',冬青黑,'Microsoft YaHei',微软雅黑,SimSun,宋体,Helvetica,Tahoma,'Arial sans-serif';
 }
+
 
 code {
     font-family: "Consolas", "Monaco", "Courier New", monospace;
+    border: dashed;
+    border-color: #000;
+    border-width: 1px;
+}
+
+body {
+    font-family: "-apple-system","Open Sans","HelveticaNeue-Light","Helvetica Neue Light","Helvetica Neue",Helvetica,Arial,sans-serif
 }
