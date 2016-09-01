@@ -1,13 +1,8 @@
 +++
 date = "2016-09-01T17:40:08+08:00"
 draft = true
-title = "hello"
+title = "Lua Table中HashMap的实现"
 
 +++
 
 
-1111你好
-
-```
-local a = 1
-```
