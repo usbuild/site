@@ -1,0 +1,6 @@
+{{ if isset .Params "plugins" }}
+    {{ range .Params.plugins }}
+        {{ $path := . | printf "post_plugins/%s.html"}}
+        {{ partial $path }}
+    {{ end }}
+{{ end }}

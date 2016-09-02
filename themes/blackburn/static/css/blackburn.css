@@ -86,9 +86,6 @@ i {
 
 code {
     font-family: "Consolas", "Monaco", "Courier New", monospace;
-    border: dashed;
-    border-color: #000;
-    border-width: 1px;
 }
 
 body {
