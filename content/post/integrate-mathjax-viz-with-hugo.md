@@ -64,7 +64,7 @@ $$ \[ \left [ &#8211; \frac{\hbar^2}{2 m} \frac{\partial^2}{\partial x^2} + V \r
 <script type="text/javascript" src="//cdn.bootcss.com/viz.js/1.3.0/viz.js"> </script>
 <script type="text/javascript">
 (function(){
-    document.querySelectorAll("[class^=language-viz-]").forEach(function(x){
+    Array.prototype.forEach.call(document.querySelectorAll("[class^=language-viz-]"), function(x){
         var engine;
         x.getAttribute("class").split(" ").forEach(function(cls){
             if (cls.startsWith("language-viz-")) {
