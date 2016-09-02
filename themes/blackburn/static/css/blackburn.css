@@ -79,13 +79,15 @@ i {
     color: #2f2f2f;
     font-size: 16px;
     font-weight: normal;
-    line-height: 1.7;
+    line-height: 1.5;
 
 }
 
 
 code {
     font-family: "Consolas", "Monaco", "Courier New", monospace;
+    line-height: 1.2;
+    font-size:13px;
 }
 
 body {
