@@ -7,7 +7,7 @@
   <meta name="description" content="">
   <meta name="generator" content="Hugo 0.16" />
 
-  <title>Tags &middot; sys🔱fork</title>
+  <title>Linux下动态链接库延迟绑定介绍 &middot; sys🔱fork</title>
 
   
   
@@ -36,8 +36,6 @@
   
 
   
-  
-  <link rel="alternate" type="application/rss+xml" title="sys🔱fork" href="http://sysfork.com/tags/index.xml" />
   
 
   
@@ -96,10 +94,6 @@
   <div class="pure-menu social">
   <ul class="pure-menu-list">
 
-    
-    <li class="pure-menu-item">
-      <a class="pure-menu-link" href="http://sysfork.com/tags/index.xml"><i class="fa fa-rss fa-fw"></i>RSS</a>
-    </li>
     
 
     
@@ -177,48 +171,112 @@
 
 
 <div class="header">
-  <h1>Tags</h1>
+  <h1>Linux下动态链接库延迟绑定介绍</h1>
+  <h2></h2>
 </div>
 <div class="content">
-  <ul>
+
+  <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>06 Sep 2016, 22:08</time>
+  </div>
+
+  
+
+  
+
   
   
-    <li>
-      <a href="elf">elf</a>
-      <span>&#40;1&#41;</span>
-    </li>
   
-    <li>
-      <a href="hugo">hugo</a>
-      <span>&#40;1&#41;</span>
-    </li>
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="http://sysfork.com/tags/linux">Linux</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://sysfork.com/tags/elf">ELF</a>
+    
+  </div>
   
-    <li>
-      <a href="implementation">implementation</a>
-      <span>&#40;1&#41;</span>
-    </li>
   
-    <li>
-      <a href="linux">linux</a>
-      <span>&#40;1&#41;</span>
-    </li>
+
+</div>
+
+  <p>在编译动态链接库时，为了保证能被正常使用，一般我们会加上-fPIC参数。在使用的动态链接库中的函数时，Linux使用了一种
+叫延迟绑定的技术实现运行时的symbol relocation。其中的关键就是GOT(Global Offset Table)和PLT(Procedure linkage Table)。下面就
+这一技术的实现简单解释一下。</p>
+
+
   
-    <li>
-      <a href="lua">lua</a>
-      <span>&#40;1&#41;</span>
-    </li>
+<div class="prev-next-post pure-g">
+  <div class="pure-u-1-24" style="text-align: left;">
+    
+    <a href="http://sysfork.com/post/integrate-mathjax-viz-with-hugo/"><i class="fa fa-chevron-left"></i></a>
+    
+  </div>
+  <div class="pure-u-10-24">
+    
+    <nav class="prev">
+      <a href="http://sysfork.com/post/integrate-mathjax-viz-with-hugo/">Hugo 集成 Mathjax和graphviz</a>
+    </nav>
+    
+  </div>
+  <div class="pure-u-2-24">
+    &nbsp;
+  </div>
+  <div class="pure-u-10-24">
+    
+  </div>
+  <div class="pure-u-1-24" style="text-align: right;">
+    
+  </div>
+</div>
+
+
+
   
-    <li>
-      <a href="mathjax">mathjax</a>
-      <span>&#40;1&#41;</span>
-    </li>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'sysfork-com';
+    dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
   
-    <li>
-      <a href="viz">viz</a>
-      <span>&#40;1&#41;</span>
-    </li>
   
-  </ul>
+    
+        
+        <script type="text/javascript" src="//cdn.bootcss.com/viz.js/1.3.0/viz.js"> </script>
+<script type="text/javascript">
+(function(){
+    var vizPrefix = "language-viz-";
+    Array.prototype.forEach.call(document.querySelectorAll("[class^=" + vizPrefix + "]"), function(x){
+        var engine;
+        x.getAttribute("class").split(" ").forEach(function(cls){
+            if (cls.startsWith(vizPrefix)) {
+                engine = cls.substr(vizPrefix.length);
+            }
+        });
+        var image = new DOMParser().parseFromString(Viz(x.innerText, {format:"svg", engine:engine}), "image/svg+xml");
+        x.parentNode.insertBefore(image.documentElement, x);
+        x.style.display = 'none'
+    });
+})();
+</script>
+    
+
 </div>
 
 </div>
@@ -230,3 +288,4 @@
 </script>
 </body>
 </html>
+

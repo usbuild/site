@@ -7,8 +7,20 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2016. All rights reserved.</copyright>
-    <lastBuildDate>Fri, 02 Sep 2016 09:41:17 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 06 Sep 2016 22:08:20 +0800</lastBuildDate>
     <atom:link href="http://sysfork.com/post/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Linux下动态链接库延迟绑定介绍</title>
+      <link>http://sysfork.com/post/linux-dynamic-lib-lazy-load/</link>
+      <pubDate>Tue, 06 Sep 2016 22:08:20 +0800</pubDate>
+      
+      <guid>http://sysfork.com/post/linux-dynamic-lib-lazy-load/</guid>
+      <description>&lt;p&gt;在编译动态链接库时，为了保证能被正常使用，一般我们会加上-fPIC参数。在使用的动态链接库中的函数时，Linux使用了一种
+叫延迟绑定的技术实现运行时的symbol relocation。其中的关键就是GOT(Global Offset Table)和PLT(Procedure linkage Table)。下面就
+这一技术的实现简单解释一下。&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Hugo 集成 Mathjax和graphviz</title>
@@ -74,11 +86,12 @@ $$ [ \left [ &amp;#8211; \frac{\hbar^2}{2 m} \frac{\partial^2}{\partial x^2} + V
 &lt;pre&gt;&lt;code&gt;&amp;lt;script type=&amp;quot;text/javascript&amp;quot; src=&amp;quot;//cdn.bootcss.com/viz.js/1.3.0/viz.js&amp;quot;&amp;gt; &amp;lt;/script&amp;gt;
 &amp;lt;script type=&amp;quot;text/javascript&amp;quot;&amp;gt;
 (function(){
-    Array.prototype.forEach.call(document.querySelectorAll(&amp;quot;[class^=language-viz-]&amp;quot;), function(x){
+    var vizPrefix = &amp;quot;language-viz-&amp;quot;;
+    Array.prototype.forEach.call(document.querySelectorAll(&amp;quot;[class^=&amp;quot; + vizPrefix + &amp;quot;]&amp;quot;), function(x){
         var engine;
         x.getAttribute(&amp;quot;class&amp;quot;).split(&amp;quot; &amp;quot;).forEach(function(cls){
-            if (cls.startsWith(&amp;quot;language-viz-&amp;quot;)) {
-                engine = cls.substr(13);
+            if (cls.startsWith(vizPrefix)) {
+                engine = cls.substr(vizPrefix.length);
             }
         });
         var image = new DOMParser().parseFromString(Viz(x.innerText, {format:&amp;quot;svg&amp;quot;, engine:engine}), &amp;quot;image/svg+xml&amp;quot;);
