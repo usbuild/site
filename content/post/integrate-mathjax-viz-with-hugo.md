@@ -64,11 +64,12 @@ $$ \[ \left [ &#8211; \frac{\hbar^2}{2 m} \frac{\partial^2}{\partial x^2} + V \r
 <script type="text/javascript" src="//cdn.bootcss.com/viz.js/1.3.0/viz.js"> </script>
 <script type="text/javascript">
 (function(){
-    Array.prototype.forEach.call(document.querySelectorAll("[class^=language-viz-]"), function(x){
+    var vizPrefix = "language-viz-";
+    Array.prototype.forEach.call(document.querySelectorAll("[class^=" + vizPrefix + "]"), function(x){
         var engine;
         x.getAttribute("class").split(" ").forEach(function(cls){
-            if (cls.startsWith("language-viz-")) {
-                engine = cls.substr(13);
+            if (cls.startsWith(vizPrefix)) {
+                engine = cls.substr(vizPrefix.length);
             }
         });
         var image = new DOMParser().parseFromString(Viz(x.innerText, {format:"svg", engine:engine}), "image/svg+xml");
