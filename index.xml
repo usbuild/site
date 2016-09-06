@@ -7,20 +7,8 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2016. All rights reserved.</copyright>
-    <lastBuildDate>Tue, 06 Sep 2016 22:08:20 +0800</lastBuildDate>
+    <lastBuildDate>Fri, 02 Sep 2016 09:41:17 +0800</lastBuildDate>
     <atom:link href="http://sysfork.com/index.xml" rel="self" type="application/rss+xml" />
-    
-    <item>
-      <title>Linux下动态链接库延迟绑定介绍</title>
-      <link>http://sysfork.com/post/linux-dynamic-lib-lazy-load/</link>
-      <pubDate>Tue, 06 Sep 2016 22:08:20 +0800</pubDate>
-      
-      <guid>http://sysfork.com/post/linux-dynamic-lib-lazy-load/</guid>
-      <description>&lt;p&gt;在编译动态链接库时，为了保证能被正常使用，一般我们会加上-fPIC参数。在使用的动态链接库中的函数时，Linux使用了一种
-叫延迟绑定的技术实现运行时的symbol relocation。其中的关键就是GOT(Global Offset Table)和PLT(Procedure linkage Table)。下面就
-这一技术的实现简单解释一下。&lt;/p&gt;
-</description>
-    </item>
     
     <item>
       <title>Hugo 集成 Mathjax和graphviz</title>
