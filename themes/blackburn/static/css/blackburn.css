@@ -80,7 +80,7 @@ i {
 }
 
 code {
-    font-family: "Consolas", "Monaco", "Courier New", monospace;
+    font-family: "Consolas", "Menlo", "Monaco", "Courier New", monospace;
 }
 
 
@@ -100,5 +100,6 @@ p > code {
 }
 
 body {
-    font-family: Helvetica, Arial,'Hiragino Sans GB',冬青黑,'Microsoft YaHei',微软雅黑,SimSun,宋体,Helvetica,Tahoma,'Arial sans-serif';
+  font-family: Arial, sans-serif;
+  font-size: 13px;
 }
