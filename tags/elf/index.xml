@@ -11,7 +11,7 @@
     <atom:link href="http://sysfork.com/tags/elf/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
-      <title>Linux下动态链接库延迟绑定介绍</title>
+      <title>理解Linux下动态链接库延迟绑定</title>
       <link>http://sysfork.com/post/linux-dynamic-lib-lazy-load/</link>
       <pubDate>Wed, 07 Sep 2016 22:08:20 +0800</pubDate>
       
