@@ -3,7 +3,7 @@ date = "2016-09-07T22:08:20+08:00"
 description = ""
 draft = false
 tags = ["Linux", "ELF"]
-title = "Linux下动态链接库延迟绑定介绍"
+title = "理解Linux下动态链接库延迟绑定"
 plugins = ["viz"]
 
 +++
