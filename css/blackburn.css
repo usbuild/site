@@ -2,10 +2,11 @@ a {
     color: #3b8bba;
     text-decoration: none;
 }
-a:hover,
-a:focus {
+
+a:hover, a:focus {
     text-decoration: underline;
 }
+
 a:visited {
     color: #265778;
 }
@@ -71,35 +72,38 @@ i {
     color: #265778;
 }
 
-.content p{
+.content p {
     color: #2f2f2f;
     font-size: 16px;
     font-weight: normal;
     line-height: 1.5;
-
 }
 
 code {
     font-family: "Consolas", "Menlo", "Monaco", "Courier New", monospace;
 }
 
-
 pre > code {
     line-height: 1.2;
-    font-size:13px;
+    font-size: 13px;
 }
 
 p > code {
-  padding: 0;
-  padding-top: 0.2em;
-  padding-bottom: 0.2em;
-  margin: 0;
-  font-size: 85%;
-  background-color: rgba(0,0,0,0.04);
-  border-radius: 3px;
+    padding: 0;
+    padding-top: 0.2em;
+    padding-bottom: 0.2em;
+    margin: 0;
+    font-size: 85%;
+    background-color: rgba(0, 0, 0, 0.04);
+    border-radius: 3px;
 }
 
 body {
-  font-family: Arial, sans-serif;
-  font-size: 13px;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+}
+
+span.reverse {
+  unicode-bidi: bidi-override;
+  direction: rtl;
 }
