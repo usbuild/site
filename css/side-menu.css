@@ -106,6 +106,7 @@ appears on the left side of the page.
      #menu .pure-menu ul {
         border: none;
         background: transparent;
+        font-size: 14px;
     }
 
     /*
