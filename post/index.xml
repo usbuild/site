@@ -7,8 +7,290 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2016. All rights reserved.</copyright>
-    <lastBuildDate>Fri, 02 Sep 2016 09:41:17 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 07 Sep 2016 22:08:20 +0800</lastBuildDate>
     <atom:link href="http://sysfork.com/post/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Linux下动态链接库延迟绑定介绍</title>
+      <link>http://sysfork.com/post/linux-dynamic-lib-lazy-load/</link>
+      <pubDate>Wed, 07 Sep 2016 22:08:20 +0800</pubDate>
+      
+      <guid>http://sysfork.com/post/linux-dynamic-lib-lazy-load/</guid>
+      <description>&lt;script src=&#34;//cdn.bootcss.com/highlight.js/9.6.0/languages/x86asm.min.js&#34;&gt;&lt;/script&gt;
+
+&lt;p&gt;在编译动态链接库时，为了保证能被正常使用，一般我们会加上-fPIC参数。在使用的动态链接库中的函数时，Linux使用了一种
+叫延迟绑定的技术实现运行时的symbol relocation。其中的关键就是GOT(Global Offset Table)和PLT(Procedure linkage Table)。下面就
+这一技术的实现简单解释一下。&lt;/p&gt;
+
+&lt;p&gt;首先写一个很简单的需要动态链接的程序，如下&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-c&#34;&gt;//dl_test.c
+#include &amp;lt;stdio.h&amp;gt;
+int main(int argc, const char *argv[])
+{
+    puts(&amp;quot;1234&amp;quot;);
+    puts(&amp;quot;1234&amp;quot;);
+    return 0;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后使用&lt;code&gt;gcc&lt;/code&gt;编译并链接: &lt;code&gt;gcc -g dl_test.c -o dl_test.c&lt;/code&gt;。先别急着运行这个程序，我们使用&lt;code&gt;objdump&lt;/code&gt;反编译一下看看：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ objdump -S dl_test
+......
+0000000000400506 &amp;lt;main&amp;gt;:
+#include &amp;lt;stdio.h&amp;gt;
+int main(int argc, const char *argv[])
+{
+  400506:       55                      push   %rbp
+  400507:       48 89 e5                mov    %rsp,%rbp
+  40050a:       48 83 ec 10             sub    $0x10,%rsp
+  40050e:       89 7d fc                mov    %edi,-0x4(%rbp)
+  400511:       48 89 75 f0             mov    %rsi,-0x10(%rbp)
+    puts(&amp;quot;1234&amp;quot;);
+  400515:       bf b4 05 40 00          mov    $0x4005b4,%edi
+  40051a:       e8 c1 fe ff ff          callq  4003e0 &amp;lt;puts@plt&amp;gt;
+    puts(&amp;quot;1234&amp;quot;);
+  40051f:       bf b4 05 40 00          mov    $0x4005b4,%edi
+  400524:       e8 b7 fe ff ff          callq  4003e0 &amp;lt;puts@plt&amp;gt;
+    return 0;
+  400529:       b8 00 00 00 00          mov    $0x0,%eax
+}
+  40052e:       c9                      leaveq
+  40052f:       c3                      retq
+......
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;可以看到，在&lt;code&gt;40051a&lt;/code&gt;和&lt;code&gt;400524&lt;/code&gt;两处都调用了我们的&lt;code&gt;puts&lt;/code&gt;函数。但是看后面的注解，&lt;code&gt;&amp;lt;puts@plt&amp;gt;&lt;/code&gt;表示这并不是&lt;code&gt;puts&lt;/code&gt;的地址，而是另有目的。
+我们使用&lt;code&gt;gdb&lt;/code&gt;来跟踪一下执行过程：&lt;code&gt;gdb dl_test&lt;/code&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(gdb) l
+1	#include &amp;lt;stdio.h&amp;gt;
+2	int main(int argc, const char *argv[])
+3	{
+4	    puts(&amp;quot;1234&amp;quot;);
+5	    puts(&amp;quot;1234&amp;quot;);
+6	    return 0;
+7	}
+(gdb) b 4
+Breakpoint 1 at 0x400515: file dl_test.c, line 4.
+(gdb) r
+Starting program: /home/zqc/workspace/cpptest/dl_test
+
+Breakpoint 1, main (argc=1, argv=0x7fffffffeb98) at dl_test.c:4
+4	    puts(&amp;quot;1234&amp;quot;);
+(gdb)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这里设置了一下断点到第一个&lt;code&gt;puts&lt;/code&gt;的调用出，使用&lt;code&gt;layout asm&lt;/code&gt;切换成汇编模式:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-x86asm&#34;&gt;(gdb) layout asm
+   ┌────────────────────────────────────────────────────────────────────────────────────────────┐
+B+&amp;gt;│0x400515 &amp;lt;main+15&amp;gt;              mov    $0x4005b4,%edi                                       │
+   │0x40051a &amp;lt;main+20&amp;gt;              callq  0x4003e0 &amp;lt;puts@plt&amp;gt;                                  │
+   │0x40051f &amp;lt;main+25&amp;gt;              mov    $0x4005b4,%edi                                       │
+   │0x400524 &amp;lt;main+30&amp;gt;              callq  0x4003e0 &amp;lt;puts@plt&amp;gt;                                  │
+   │0x400529 &amp;lt;main+35&amp;gt;              mov    $0x0,%eax                                            │
+   │0x40052e &amp;lt;main+40&amp;gt;              leaveq                                                      │
+   │0x40052f &amp;lt;main+41&amp;gt;              retq                                                        │
+   │0x400530 &amp;lt;__libc_csu_init&amp;gt;      push   %r15                                                 │
+   │0x400532 &amp;lt;__libc_csu_init+2&amp;gt;    mov    %edi,%r15d                                           │
+   │0x400535 &amp;lt;__libc_csu_init+5&amp;gt;    push   %r14                                                 │
+   │0x400537 &amp;lt;__libc_csu_init+7&amp;gt;    mov    %rsi,%r14                                            │
+   │0x40053a &amp;lt;__libc_csu_init+10&amp;gt;   push   %r13                                                 │
+   │0x40053c &amp;lt;__libc_csu_init+12&amp;gt;   mov    %rdx,%r13                                            │
+   │0x40053f &amp;lt;__libc_csu_init+15&amp;gt;   push   %r12                                                 │
+   │0x400541 &amp;lt;__libc_csu_init+17&amp;gt;   lea    0x2001a0(%rip),%r12        # 0x6006e8                │
+   │0x400548 &amp;lt;__libc_csu_init+24&amp;gt;   push   %rbp                                                 │
+   │0x400549 &amp;lt;__libc_csu_init+25&amp;gt;   lea    0x2001a0(%rip),%rbp        # 0x6006f0                │
+   │0x400550 &amp;lt;__libc_csu_init+32&amp;gt;   push   %rbx                                                 │
+   │0x400551 &amp;lt;__libc_csu_init+33&amp;gt;   sub    %r12,%rbp                                            │
+   └────────────────────────────────────────────────────────────────────────────────────────────┘
+child process 8855 In: main                                              Line: 4    PC: 0x400515
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;使用&lt;code&gt;stepi&lt;/code&gt;或者简写为&lt;code&gt;si&lt;/code&gt;执行下一条汇编指令。我们一直跟踪到&lt;code&gt;call&lt;/code&gt;指令中去：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-x86asm&#34;&gt;   ┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+  &amp;gt;│0x4003e0 &amp;lt;puts@plt&amp;gt;                     jmpq   *0x20050a(%rip)   # 0x6008f0 &amp;lt;puts@got.plt&amp;gt;              │
+   │0x4003e6 &amp;lt;puts@plt+6&amp;gt;                   pushq  $0x0                                                     │
+   │0x4003eb &amp;lt;puts@plt+11&amp;gt;                  jmpq   0x4003d0                                                 │
+   │0x4003f0 &amp;lt;__libc_start_main@plt&amp;gt;        jmpq   *0x200502(%rip)   # 0x6008f8 &amp;lt;__libc_start_main@got.plt&amp;gt; │
+   │0x4003f6 &amp;lt;__libc_start_main@plt+6&amp;gt;      pushq  $0x1                                                     │
+   │0x4003fb &amp;lt;__libc_start_main@plt+11&amp;gt;     jmpq   0x4003d0                                                 │
+   │0x400400 &amp;lt;__gmon_start__@plt&amp;gt;           jmpq   *0x2004fa(%rip)   # 0x600900 &amp;lt;__gmon_start__@got.plt&amp;gt;    │
+   │0x400406 &amp;lt;__gmon_start__@plt+6&amp;gt;         pushq  $0x2                                                     │
+   │0x40040b &amp;lt;__gmon_start__@plt+11&amp;gt;        jmpq   0x4003d0                                                 │
+   │0x400410 &amp;lt;_start&amp;gt;                       xor    %ebp,%ebp                                                │
+   │0x400412 &amp;lt;_start+2&amp;gt;                     mov    %rdx,%r9                                                 │
+   │0x400415 &amp;lt;_start+5&amp;gt;                     pop    %rsi                                                     │
+   │0x400416 &amp;lt;_start+6&amp;gt;                     mov    %rsp,%rdx                                                │
+   │0x400419 &amp;lt;_start+9&amp;gt;                     and    $0xfffffffffffffff0,%rsp                                 │
+   │0x40041d &amp;lt;_start+13&amp;gt;                    push   %rax                                                     │
+   │0x40041e &amp;lt;_start+14&amp;gt;                    push   %rsp                                                     │
+   │0x40041f &amp;lt;_start+15&amp;gt;                    mov    $0x4005a0,%r8                                            │
+   │0x400426 &amp;lt;_start+22&amp;gt;                    mov    $0x400530,%rcx                                           │
+   │0x40042d &amp;lt;_start+29&amp;gt;                    mov    $0x400506,%rdi                                           │
+   └────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+child process 9211 In: puts@plt                                                      Line: ??   PC: 0x4003e0
+0x00000000004003e0 in puts@plt ()
+(gdb)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;code&gt;0x4003e0&lt;/code&gt;是刚刚跳转的地址，也就是&lt;code&gt;&amp;lt;puts@plt&amp;gt;&lt;/code&gt;，从这个名字中我们可以看出，这个地址是属于&lt;code&gt;plt&lt;/code&gt;的。先说一下&lt;code&gt;plt&lt;/code&gt;的作用，&lt;code&gt;plt&lt;/code&gt;的全称是
+过程链接表，意思就是当调用一个动态链接库中的函数时，其访问的是其实是&lt;code&gt;plt&lt;/code&gt;中的一个过程，这个过程会完成真正的调用。我们分别看下属于&lt;code&gt;puts&lt;/code&gt;中
+&lt;code&gt;plt&lt;/code&gt;的项目&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-x86asm&#34;&gt;  &amp;gt;│0x4003e0 &amp;lt;puts@plt&amp;gt;                     jmpq   *0x20050a(%rip)        # 0x6008f0 &amp;lt;puts@got.plt&amp;gt;     │
+   │0x4003e6 &amp;lt;puts@plt+6&amp;gt;                   pushq  $0x0                                                 │
+   │0x4003eb &amp;lt;puts@plt+11&amp;gt;                  jmpq   0x4003d0                                             │
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;其中 &lt;code&gt;0x20050a(%rip)&lt;/code&gt; 即 &lt;code&gt;got&lt;/code&gt;中的地址，在初始情况下，该选项为&lt;code&gt;plt&lt;/code&gt;项中的下一条指令，所以执行&lt;code&gt;jmpq   *0x20050a(%rip)&lt;/code&gt; 直接会进入到
+下一条指令&lt;code&gt;pushq&lt;/code&gt;， &lt;code&gt;pushq $0x0&lt;/code&gt;的目的是把当前在符号(&lt;code&gt;puts&lt;/code&gt;)在&lt;code&gt;.rela.plt&lt;/code&gt;中的index。我们可以使用&lt;code&gt;readelf&lt;/code&gt;指令看下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ readelf -r dl_test
+
+Relocation section &#39;.rela.dyn&#39; at offset 0x348 contains 1 entries:
+  Offset          Info           Type           Sym. Value    Sym. Name + Addend
+0000006008d0  000300000006 R_X86_64_GLOB_DAT 0000000000000000 __gmon_start__ + 0
+
+Relocation section &#39;.rela.plt&#39; at offset 0x360 contains 3 entries:
+  Offset          Info           Type           Sym. Value    Sym. Name + Addend
+0000006008f0  000100000007 R_X86_64_JUMP_SLO 0000000000000000 puts + 0
+0000006008f8  000200000007 R_X86_64_JUMP_SLO 0000000000000000 __libc_start_main + 0
+000000600900  000300000007 R_X86_64_JUMP_SLO 0000000000000000 __gmon_start__ + 0
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;可以看到，&lt;code&gt;puts&lt;/code&gt;的index为0，第一项，所以这里push的是&lt;code&gt;$0x0&lt;/code&gt;。同理，下面的&lt;code&gt;__libc_start_main&lt;/code&gt;就是&lt;code&gt;$0x1&lt;/code&gt;。 下一行语句是&lt;code&gt;jmpq   0x4003d0&lt;/code&gt;，这个地址是
+固定的，所有的&lt;code&gt;plt&lt;/code&gt;入口最后一句语句都是这个，这是个通用的过程。
+继续&lt;code&gt;stepi&lt;/code&gt;到jump的位置&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-x86asm&#34;&gt;  &amp;gt;│0x4003d0                                pushq  0x20050a(%rip)        # 0x6008e0                     │
+   │0x4003d6                                jmpq   *0x20050c(%rip)        # 0x6008e8                    │
+   │0x4003dc                                nopl   0x0(%rax)                                            │
+   │0x4003e0 &amp;lt;puts@plt&amp;gt;                     jmpq   *0x20050a(%rip)        # 0x6008f0 &amp;lt;puts@got.plt&amp;gt;     │
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;发现这个地址就是在&lt;code&gt;puts@plt&lt;/code&gt;的上面，并且也是为了保证和普通&lt;code&gt;plt&lt;/code&gt;入口项目大小(&lt;code&gt;0x10&lt;/code&gt;)，其末尾还用0补齐了(&lt;code&gt;nopl   0x0(%rax)&lt;/code&gt;)。我们重点看一下前面两句。&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;pushq  0x20050a(%rip)        # 0x6008e0&lt;/code&gt;，这里push了一个地址，这个地址是干嘛的？我们使用&lt;code&gt;gdb&lt;/code&gt;看一下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(gdb) x /16x 0x6008e0
+0x6008e0:       0xf7ffe1a8      0x00007fff      0xf7df02b0      0x00007fff
+0x6008f0 &amp;lt;puts@got.plt&amp;gt;:        0x004003e6      0x00000000      0xf7a52a50      0x00007fff
+0x600900 &amp;lt;__gmon_start__@got.plt&amp;gt;:      0x00400406      0x00000000      0x00000000      0x00000000
+0x600910:       0x00000000      0x00000000      0x00000000      0x00000000
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个地址其实就是&lt;code&gt;got&lt;/code&gt;中的一项，并且在所有普通符号&lt;code&gt;got&lt;/code&gt;的前面。那么目前栈上的元素是：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;| 0x00007ffff7ffe1a8 |
+| 0x0                |
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;接下来到是&lt;code&gt;jmpq   *0x20050c(%rip)&lt;/code&gt; 这个地址也是在plt上，紧挨着上面push的地址，值为&lt;code&gt;0x00007ffff7df02b0&lt;/code&gt;，我们可以继续&lt;code&gt;stepi&lt;/code&gt;进去，也可以
+通过&lt;code&gt;disassemble 0x00007ffff7df02b0&lt;/code&gt;查看。或者，使用&lt;code&gt;info symbol 0x00007ffff7df02b0&lt;/code&gt;直接查看。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(gdb) info symbol 0x00007ffff7df02b0
+_dl_runtime_resolve in section .text of /lib64/ld-linux-x86-64.so.2
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;从这里可以看出，这是属于&lt;code&gt;ld-linux-x86-64.so.2&lt;/code&gt;里面的一个方法。这个so属于&lt;code&gt;glibc&lt;/code&gt;的一部分，我们可以下载&lt;a href=&#34;ftp://ftp.gnu.org/gnu/glibc&#34;&gt;glibc&lt;/a&gt;来查看。最终我们找到了这个符号定义文件，
+其位置在&lt;code&gt;sysdeps/x86_64/dl-trampoline.S&lt;/code&gt;，内容如下&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-x86asm&#34;&gt; 28     .globl _dl_runtime_resolve
+ 29     .type _dl_runtime_resolve, @function
+ 30     .align 16
+ 31     cfi_startproc
+ 32 _dl_runtime_resolve:
+ 33     cfi_adjust_cfa_offset(16) # Incorporate PLT
+ 34     subq $56,%rsp
+ 35     cfi_adjust_cfa_offset(56)
+ 36     movq %rax,(%rsp)    # Preserve registers otherwise clobbered.
+ 37     movq %rcx, 8(%rsp)
+ 38     movq %rdx, 16(%rsp)
+ 39     movq %rsi, 24(%rsp)
+ 40     movq %rdi, 32(%rsp)
+ 41     movq %r8, 40(%rsp)
+ 42     movq %r9, 48(%rsp)
+ 43     movq 64(%rsp), %rsi # Copy args pushed by PLT in register.
+ 44     movq 56(%rsp), %rdi # %rdi: link_map, %rsi: reloc_index
+ 45     call _dl_fixup      # Call resolver.
+ 46     movq %rax, %r11     # Save return value
+ 47     movq 48(%rsp), %r9  # Get register content back.
+ 48     movq 40(%rsp), %r8
+ 49     movq 32(%rsp), %rdi
+ 50     movq 24(%rsp), %rsi
+ 51     movq 16(%rsp), %rdx
+ 52     movq 8(%rsp), %rcx
+ 53     movq (%rsp), %rax
+ 54     addq $72, %rsp      # Adjust stack(PLT did 2 pushes)
+ 55     cfi_adjust_cfa_offset(-72)
+ 56     jmp *%r11       # Jump to function address.
+ 57     cfi_endproc
+ 58     .size _dl_runtime_resolve, .-_dl_runtime_resolve
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;从43行开始是我们的逻辑。43行取出了我们刚刚push的第一个参数，就是&lt;code&gt;$0x0&lt;/code&gt;，放到&lt;code&gt;%rsi&lt;/code&gt;中，然后是我们push的第二个参数，&lt;code&gt;0x00007ffff7ffe1a8&lt;/code&gt;到&lt;code&gt;%rsi&lt;/code&gt;中。
+为什么是这两个寄存器呢？我们&lt;code&gt;man syscall&lt;/code&gt;一下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;       arch/ABI   arg1   arg2   arg3   arg4   arg5   arg6   arg7
+       ──────────────────────────────────────────────────────────
+       x86_64     rdi    rsi    rdx    r10    r8     r9     -
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;可以看出linux下的函数传参方式， 那么&lt;code&gt;%rdi&lt;/code&gt;就是参数1，而&lt;code&gt;%rsi&lt;/code&gt;就是参数2了。接下来是&lt;code&gt;call _dl_fixup&lt;/code&gt;，这个函数返回值就是指向&lt;code&gt;puts&lt;/code&gt;存储地址位置的指针了，后面可以看到
+代码中将这个指针保存到了&lt;code&gt;%r11&lt;/code&gt;，然后&lt;code&gt;jmp *%r11&lt;/code&gt;。完成了一次函数调用，下面我们来看看&lt;code&gt;_dl_fixup&lt;/code&gt;做了些什么。同样，这个函数也是&lt;code&gt;gblic&lt;/code&gt;中定义的，位置在&lt;code&gt;elf/dl-runtime.c&lt;/code&gt;中：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-c&#34;&gt;59 DL_FIXUP_VALUE_TYPE
+60 __attribute ((noinline)) ARCH_FIXUP_ATTRIBUTE
+61 _dl_fixup (
+62 # ifdef ELF_MACHINE_RUNTIME_FIXUP_ARGS
+63        ELF_MACHINE_RUNTIME_FIXUP_ARGS,
+64 # endif
+65        struct link_map *l, ElfW(Word) reloc_arg)
+66 {
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;从函数原型我们可以看出，之前&lt;code&gt;push&lt;/code&gt;的两个参数分别是&lt;code&gt;link_map&lt;/code&gt;和&lt;code&gt;reloc_arg&lt;/code&gt;，&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-c&#34;&gt; 67   const ElfW(Sym) *const symtab
+ 68     = (const void *) D_PTR (l, l_info[DT_SYMTAB]);
+ 69   const char *strtab = (const void *) D_PTR (l, l_info[DT_STRTAB]);
+ 70 
+ 71   const PLTREL *const reloc
+ 72     = (const void *) (D_PTR (l, l_info[DT_JMPREL]) + reloc_offset);
+ 73   const ElfW(Sym) *sym = &amp;amp;symtab[ELFW(R_SYM) (reloc-&amp;gt;r_info)];
+ 74   void *const rel_addr = (void *)(l-&amp;gt;l_addr + reloc-&amp;gt;r_offset);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这里做了一下转型，那么&lt;code&gt;symtab&lt;/code&gt;和&lt;code&gt;strtab&lt;/code&gt;分别是对于&lt;code&gt;section&lt;/code&gt;的地址，而&lt;code&gt;reloc_addr&lt;/code&gt;就是我们&lt;code&gt;got&lt;/code&gt;中的&lt;code&gt;puts@got.plt&lt;/code&gt;的地址。接下来就是符号解析过程了，
+后面可能会有文章来解释这个过程。当找到目标地址后&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-c&#34;&gt;//elf/dl-runtime.c
+148   return elf_machine_fixup_plt (l, result, reloc, rel_addr, value);
+//sysdeps/x86_64/dl-machine.h
+205 static inline ElfW(Addr)
+206 elf_machine_fixup_plt (struct link_map *map, lookup_t t,
+207                const ElfW(Rela) *reloc,
+208                ElfW(Addr) *reloc_addr, ElfW(Addr) value)
+209 {
+210   return *reloc_addr = value;
+211 }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这里的&lt;code&gt;value&lt;/code&gt;就是目标函数地址，也就是&lt;code&gt;puts&lt;/code&gt;的真正地址，代码中设置其到了&lt;code&gt;puts@got.plt&lt;/code&gt;的位置并返回。&lt;/p&gt;
+
+&lt;p&gt;以上就是第一次调用&lt;code&gt;puts&lt;/code&gt;的过程了，当第二次调用&lt;code&gt;puts&lt;/code&gt;时，由于&lt;code&gt;puts@got.plt&lt;/code&gt;已经有了正确的地址，所以&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-x86asm&#34;&gt;  &amp;gt;│0x4003e0 &amp;lt;puts@plt&amp;gt;                     jmpq   *0x20050a(%rip)        # 0x6008f0 &amp;lt;puts@got.plt&amp;gt;    │
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;就直接跳转到正确的&lt;code&gt;puts&lt;/code&gt;位置，完成了函数调用。所以，&lt;code&gt;linux&lt;/code&gt;下的这种懒绑定方式实现了在不使用符号的时候不解析，而需要使用的时候
+只在第一步开销比较大，后面的调用开销无非多了一次跳转和一次寻址操作而已。&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Hugo 集成 Mathjax和graphviz</title>

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>sys🔱fork</title>
-    <link>http://sysfork.com/</link>
-    <description>Recent content on sys🔱fork</description>
+    <title>Elf on sys🔱fork</title>
+    <link>http://sysfork.com/tags/elf/</link>
+    <description>Recent content in Elf on sys🔱fork</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2016. All rights reserved.</copyright>
     <lastBuildDate>Wed, 07 Sep 2016 22:08:20 +0800</lastBuildDate>
-    <atom:link href="http://sysfork.com/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://sysfork.com/tags/elf/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Linux下动态链接库延迟绑定介绍</title>
@@ -289,143 +289,6 @@ _dl_runtime_resolve in section .text of /lib64/ld-linux-x86-64.so.2
 
 &lt;p&gt;就直接跳转到正确的&lt;code&gt;puts&lt;/code&gt;位置，完成了函数调用。所以，&lt;code&gt;linux&lt;/code&gt;下的这种懒绑定方式实现了在不使用符号的时候不解析，而需要使用的时候
 只在第一步开销比较大，后面的调用开销无非多了一次跳转和一次寻址操作而已。&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>Hugo 集成 Mathjax和graphviz</title>
-      <link>http://sysfork.com/post/integrate-mathjax-viz-with-hugo/</link>
-      <pubDate>Fri, 02 Sep 2016 09:41:17 +0800</pubDate>
-      
-      <guid>http://sysfork.com/post/integrate-mathjax-viz-with-hugo/</guid>
-      <description>&lt;p&gt;&lt;a href=&#34;https://gohugo.io/&#34;&gt;hugo&lt;/a&gt;是一个比&lt;a href=&#34;https://hexo.io&#34;&gt;hexo&lt;/a&gt;更简单易用的静态页面生成工具，其只有一个可执行文件，部署环境简单，本博客就是基于hugo构建的。&lt;/p&gt;
-
-&lt;p&gt;我们在写博客的时候经常应用到公式和图表，这分别可以使用&lt;a href=&#34;https://www.mathjax.org/&#34;&gt;mathjax&lt;/a&gt;和&lt;a href=&#34;https://github.com/mdaines/viz.js&#34;&gt;viz.js&lt;/a&gt;实现。hugo并没有提供
-内置的支持，所以需要我们自己写相关的支持。&lt;/p&gt;
-
-&lt;p&gt;由于并不是所有的文章都需要mathjax和viz.js，所以需要按需使用，这个可以在每个post的前言上定义&lt;code&gt;plugins&lt;/code&gt;变量，如下&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;title = &amp;quot;Hugo 集成 Mathjax和graphviz&amp;quot;
-plugins = [&amp;quot;mathjax&amp;quot;, &amp;quot;viz&amp;quot;]
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;然后再&lt;code&gt;partials&lt;/code&gt;目录下添加一个&lt;code&gt;post_plugins.html&lt;/code&gt;，并在&lt;code&gt;post/single.html&lt;/code&gt;引入这个文件：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;  {{ partial &amp;quot;post_plugins.html&amp;quot; . }}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&lt;code&gt;post_plugins.html&lt;/code&gt;文件内容如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;{{ if isset .Params &amp;quot;plugins&amp;quot; }}
-    {{ range .Params.plugins }}
-        {{ $path := . | printf &amp;quot;post_plugins/%s.html&amp;quot;}}
-        {{ partial $path }}
-    {{ end }}
-{{ end }}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;逻辑即通过便利&lt;code&gt;plugins&lt;/code&gt;参数内容，然后引入对应的html文件。在目前的这个例子中，我们使用了mathjax和viz。其中&lt;code&gt;post_plugins/mathjax.html&lt;/code&gt;的内容如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;&amp;lt;script type=&amp;quot;text/javascript&amp;quot; src=&amp;quot;//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML&amp;quot;&amp;gt; &amp;lt;/script&amp;gt;
-&amp;lt;script type=&amp;quot;text/x-mathjax-config&amp;quot;&amp;gt;
-MathJax.Hub.Config({
-  tex2jax: {
-    inlineMath: [[&#39;$&#39;,&#39;$&#39;], [&#39;\\(&#39;,&#39;\\)&#39;]],
-    displayMath: [[&#39;$$&#39;,&#39;$$&#39;], [&#39;\[&#39;,&#39;\]&#39;]],
-    processEscapes: true,
-    processEnvironments: true,
-    skipTags: [&#39;script&#39;, &#39;noscript&#39;, &#39;style&#39;, &#39;textarea&#39;, &#39;pre&#39;],
-    TeX: { equationNumbers: { autoNumber: &amp;quot;AMS&amp;quot; },
-         extensions: [&amp;quot;AMSmath.js&amp;quot;, &amp;quot;AMSsymbols.js&amp;quot;] }
-  }
-});
-MathJax.Hub.Queue(function() {
-  var all = MathJax.Hub.getAllJax(), i;
-  for(i = 0; i &amp;lt; all.length; i += 1) {
-      all[i].SourceElement().parentNode.className += &#39; has-jax&#39;;
-  }
-});
-&amp;lt;/script&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;这样我们就能使用&lt;code&gt;\$&lt;/code&gt;或&lt;code&gt;\$\$&lt;/code&gt;来编写公式了，最终示例表现如下：
-$$ [ \left [ &amp;#8211; \frac{\hbar^2}{2 m} \frac{\partial^2}{\partial x^2} + V \right ] \Psi = i \hbar \frac{\partial}{\partial t} \Psi ]$$&lt;/p&gt;
-
-&lt;p&gt;对于&lt;code&gt;post_plugins/viz.html&lt;/code&gt;内容如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;&amp;lt;script type=&amp;quot;text/javascript&amp;quot; src=&amp;quot;//cdn.bootcss.com/viz.js/1.3.0/viz.js&amp;quot;&amp;gt; &amp;lt;/script&amp;gt;
-&amp;lt;script type=&amp;quot;text/javascript&amp;quot;&amp;gt;
-(function(){
-    var vizPrefix = &amp;quot;language-viz-&amp;quot;;
-    Array.prototype.forEach.call(document.querySelectorAll(&amp;quot;[class^=&amp;quot; + vizPrefix + &amp;quot;]&amp;quot;), function(x){
-        var engine;
-        x.getAttribute(&amp;quot;class&amp;quot;).split(&amp;quot; &amp;quot;).forEach(function(cls){
-            if (cls.startsWith(vizPrefix)) {
-                engine = cls.substr(vizPrefix.length);
-            }
-        });
-        var image = new DOMParser().parseFromString(Viz(x.innerText, {format:&amp;quot;svg&amp;quot;, engine:engine}), &amp;quot;image/svg+xml&amp;quot;);
-        x.parentNode.insertBefore(image.documentElement, x);
-        x.style.display = &#39;none&#39;
-    });
-})();
-&amp;lt;/script&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;代码的作用，就是将codeblock类型为language-viz-xxx的自动渲染为svg图像显示，以下是示例：&lt;/p&gt;
-
-&lt;p&gt;原始内容：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;    ```viz-dot
-    digraph g { a -&amp;gt; b; }
-    ```
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;输出结果：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-viz-dot&#34;&gt;    digraph g { a -&amp;gt; b; }
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;同理，对于其他需要特殊支持的格式或表现，都可以通过添加post_plugins来实现。以上代码都在本网站的&lt;a href=&#34;https://github.com/usbuild/site.git&#34;&gt;github&lt;/a&gt;上。&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>Lua Table中HashMap介绍</title>
-      <link>http://sysfork.com/post/lua-hashtable-introduction/</link>
-      <pubDate>Thu, 01 Sep 2016 17:40:08 +0800</pubDate>
-      
-      <guid>http://sysfork.com/post/lua-hashtable-introduction/</guid>
-      <description>&lt;p&gt;&lt;a href=&#34;https://www.lua.org/pil/2.5.html&#34;&gt;Table&lt;/a&gt; 在Lua中有着极其重要的应用，从核心语言实现，如&lt;a href=&#34;https://en.wikipedia.org/wiki/String_interning&#34;&gt;short string intern&lt;/a&gt;，
-到利用&lt;a href=&#34;https://www.lua.org/pil/13.html&#34;&gt;metatable&lt;/a&gt;实现的&lt;a href=&#34;lua-users.org/wiki/LuaClassesWithMetatable&#34;&gt;class&lt;/a&gt;，table几乎无所不能。如此高频度地利用也就意味着lua必须要有一个高效的
-table实现。&lt;/p&gt;
-
-&lt;p&gt;很多语言提供了array和associative array两种数据结构。array是指以某个指定的最小整数下标(一般是0)开始的连续存储的数据结构，它有vector、list、array、ArrayList等多种名称；associative array，中文
-也叫关联数组，即将一对key/pair之间关联起来，它一般也被称为map、dict等。Lua并不提供array，因为数组本身也是一种特殊的关联数组。但是从内部表示上，array和map有着极大的不同，array只需要一块连续的
-内存即可实现，而map则有多种实现。Lua为了效率，将一部分整数下标的元素存储在array part中，而将其他元素存储在hashmap中，实现在外部接口不变的情况下实现了效率的最大化。array部分没有什么特别需要
-优化的，其就是一整块连续的内存，存储和读取的时间复杂度都是O(1)，而hashmap的实现称为了lua table设计的重点。&lt;/p&gt;
-
-&lt;p&gt;map有多种实现手段，在stl中，默认的map使用的是红黑树，存储和读取的时间复杂度都是O(logn)；虽然红黑树的表现十分稳定，但是实现比较复杂而且无法满足极端性能要求，
-C++11中添加新的&lt;a href=&#34;http://en.cppreference.com/w/cpp/container/unordered_map&#34;&gt;unordered_map&lt;/a&gt;，其实现就是使用了一个hashmap。hashmap的基本流程是使用一个hash函数来将
-一个key映射到一块连续内存中，实现在理想情况下访问和删除接近O(1)的时间复杂度。&lt;/p&gt;
-
-&lt;p&gt;由于一般key的取值范围大于hashmap slot数目，所以不可避免地出现冲突的状况。在教科书中，解决这种冲突一般有两种方法：&lt;a href=&#34;https://en.wikipedia.org/wiki/Hash_table#Separate_chaining&#34;&gt;链表法&lt;/a&gt;
-和&lt;a href=&#34;https://en.wikipedia.org/wiki/Open_addressing&#34;&gt;开放寻址法&lt;/a&gt;。链表法的实现比较简单，将冲突的元素使用链表链接起来即可；而开放寻址法则需要多次计算，直至找到一个没有冲突的slot为止。
-这两者都有自己的优缺点，链表法由于使用了链表，无法充分利用CPU缓存，并且实现深拷贝难度较大；而开放寻址法无法实现删除元素的功能，并且当元素密度比较大时，效率非常低。&lt;/p&gt;
-
-&lt;p&gt;Lua table使用了一个折中的方案，叫做&lt;a href=&#34;https://en.wikipedia.org/wiki/Coalesced_hashing&#34;&gt;Coalesced_hashing&lt;/a&gt;，结合使用了链表法和开放寻址法。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&#34;https://upload.wikimedia.org/wikipedia/en/4/4c/CoalescedHash.jpg&#34; alt=&#34;Coalesced_hashing&#34; /&gt;&lt;/p&gt;
-
-&lt;p&gt;当插入一个元素时，定义其原本应该在的位置为mainposition，如果mainpoisition对应的slot是空的，则直接插入；如果非空，看看在那个位置上的元素的mainposition是不是当前的slot，如果不是的
-话，则将其移动到任意一个空的slot(位置A)，然后将当前的元素插入到mainposition位置，并将当前的next字段设置成位置A，形成链表。如果占用元素mainposition就是当前位置，则将待插入的
-元素插入到任意一个空的位置上，并链接到占用元素的后面。&lt;/p&gt;
-
-&lt;p&gt;通过上面的过程，实现了所有的元素都尽量保存在mainposition上，当查找的时候也能使用更少的次数来找到元素位置。这对元素本来就在hashmap中，效率是比较高的。但是，当元素不在hashmap中，查找的代价
-比较高。&lt;/p&gt;
-
-&lt;p&gt;lua table的代码实现在&lt;a href=&#34;https://www.lua.org/source/5.3/ltable.c.html&#34;&gt;这里&lt;/a&gt;，实现非常简洁明了，也不是很难懂，但是对于平时经常使用lua的同学来说读一读还是很有必要的。&lt;/p&gt;
 </description>
     </item>
     
