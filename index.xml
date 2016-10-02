@@ -7,8 +7,146 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2016. All rights reserved.</copyright>
-    <lastBuildDate>Thu, 08 Sep 2016 23:23:26 +0800</lastBuildDate>
+    <lastBuildDate>Sun, 25 Sep 2016 09:13:27 +0800</lastBuildDate>
     <atom:link href="http://sysfork.com/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>浅谈C&#43;&#43;中的地址对齐</title>
+      <link>http://sysfork.com/post/about-cpp-alignment/</link>
+      <pubDate>Sun, 25 Sep 2016 09:13:27 +0800</pubDate>
+      
+      <guid>http://sysfork.com/post/about-cpp-alignment/</guid>
+      <description>
+
+&lt;h1 id=&#34;1-动机&#34;&gt;1. 动机&lt;/h1&gt;
+
+&lt;p&gt;最近在整理C++11中的新增特性，其中有一个&lt;a href=&#34;http://en.cppreference.com/w/cpp/language/alignas&#34;&gt;alignas&lt;/a&gt;关键字。在学习这个的时候顺便研究了
+下C/C++中的字节对齐问题，发现有很多可以探索的地方。&lt;/p&gt;
+
+&lt;h1 id=&#34;2-什么是地址对齐&#34;&gt;2. 什么是地址对齐&lt;/h1&gt;
+
+&lt;p&gt;参考维基百科的解释：&lt;a href=&#34;https://en.wikipedia.org/wiki/Data_structure_alignment&#34;&gt;Data_structure_alignment&lt;/a&gt;。所谓地址对齐，即某个地址A满足是n的倍数，其中n是2的幂次方(如1、2、4、8等等)。如果用二进制表示的话，那么
+A的末尾至少有&lt;code&gt;log&lt;sub&gt;2&lt;/sub&gt;n&lt;/code&gt;个0(废话)。当我们说到某个变量是n字节对齐的时候，其意思是指这个变量的地址是对齐的。&lt;/p&gt;
+
+&lt;h1 id=&#34;3-地址对齐的意义&#34;&gt;3. 地址对齐的意义&lt;/h1&gt;
+
+&lt;p&gt;从我们编写的程序来看，CPU好像可以访问内存中的任意位置；但是实际上CPU往往是按照块为基本单位访问内存的。如果某个变量的起始地址位于某个块的的起始处，则只需较少的次数便能完成读取。
+比如在某个CPU中，其每次取内存的大小为8字节，对于一个8字节的long类型变量，如果该变量的地址是8的倍数，那么每次load这个long变量只需要一次操作。如果不是8的倍数则需要两次，影响了效率。
+更多的数据测评参考&lt;a href=&#34;http://www.ibm.com/developerworks/library/pa-dalign/&#34;&gt;这里&lt;/a&gt;&lt;/p&gt;
+
+&lt;h1 id=&#34;4-自然对齐&#34;&gt;4. 自然对齐&lt;/h1&gt;
+
+&lt;p&gt;为了保证运行效率，编译器在生成可执行程序的时候会对我们使用的变量自动对齐。这个值往往就是变量类型的size或是能被size整除。如char的自然对齐地址为1，而int则是4或8。但是，这也是有上限的。在&lt;code&gt;C++11&lt;/code&gt;中，
+上限为&lt;code&gt;std::max_align_t&lt;/code&gt;的对齐值，在大多数平台上，这个类型都被定义为&lt;code&gt;long double&lt;/code&gt;，因为这往往也是最大的标量。当我们定义数组时，如 &lt;code&gt;TYPE f[10]&lt;/code&gt;，其中第N个元素的地址为&lt;code&gt;f + sizeof(TYPE) * N&lt;/code&gt;。
+如果&lt;code&gt;TYPE&lt;/code&gt;的对齐值能被&lt;code&gt;sizeof(TYPE)&lt;/code&gt;整除的话，则能保证只要数组开始地址时对齐的，那么所有元素都是对齐的。&lt;/p&gt;
+
+&lt;h1 id=&#34;4-变量的内存对齐控制&#34;&gt;4. 变量的内存对齐控制&lt;/h1&gt;
+
+&lt;p&gt;GCC有一个自己的扩展来控制变量的对齐内存，&lt;code&gt;__attribute__((aligned()))&lt;/code&gt;。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;int __attribute__((aligned(16))) i;                          //(1)
+int j __attribute__((aligned(16)));                          //(2)
+struct S { short f[3]; } __attribute__ ((aligned (8)));      //(3)
+typedef int more_aligned_int __attribute__ ((aligned (8)));  //(4)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;(1)和(2)声明了两个变量，指定这两个变量的对齐大小为16；(3)和(4)则作用与类型，使得S和&lt;code&gt;more_aligned_int&lt;/code&gt;类型的变量对齐都是8。
+这个对齐的大小可以为任意2的幂次数，但是有最大上限，在我的x86_64的ubuntu上这个值是2&lt;sup&gt;28&lt;/sup&gt;。按照GCC&lt;a href=&#34;https://gcc.gnu.org/onlinedocs/gcc-3.3/gcc/Type-Attributes.html&#34;&gt;官方文档&lt;/a&gt;中的解释，
+这个attribute并不能保证变量的对齐一定是指定的大小，而是提供了一个最小值。但是实测的时候，对于标量，其提供的值就是最后对齐的值。如int的自然对齐为4，当我们使用&lt;code&gt;__attribute__&lt;/code&gt;指定时，无论时&lt;code&gt;1&lt;/code&gt;或&lt;code&gt;8&lt;/code&gt;
+都能正常工作。但是对于S，指定其对齐大小为1并没有生效，其依然是2，其挑选了一个指定值与自然对齐中较大的那个。&lt;/p&gt;
+
+&lt;p&gt;C++引入了新的&lt;a href=&#34;http://en.cppreference.com/w/cpp/language/alignas&#34;&gt;alignas&lt;/a&gt;关键字，其并不是直接指定变量或类型的对齐值，而是定义了一个最严格的需求。由于对齐值是越大越严格的（8字节对其的一定是4字节对齐），
+因此其定义的是一个上限。在GCC中，我在测试的时候没有发现与&lt;code&gt;__attribute__((aligned()))&lt;/code&gt;的区别，同样可以设置int的对齐值为1，和说好的不一样啊（摔）！但是在clang中就符合要求了，会提示&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;alignment.cpp:15:3: error: requested alignment is less than minimum alignment of 4 for type &#39;int&#39;
+  alignas(1) int b;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;所以大家在使用的时候，就不要随便将一个变量设置成小于自然对齐的值，否则容易导致跨平台问题。&lt;/p&gt;
+
+&lt;h1 id=&#34;5-struct&#34;&gt;5. struct&lt;/h1&gt;
+
+&lt;p&gt;struct不是一个标量，并且是一个自定义数据类型。这里有ESR的&lt;a href=&#34;http://www.catb.org/esr/structure-packing/&#34;&gt;一篇文章&lt;/a&gt;，本文简单的总结一起他的意思。
+struct中的元素并不是紧致排列的，为了保证每个成员都是对齐的，编译器会在struct中的元素之间插入pad，例&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;struct foo1 {
+    char *p;
+    char c;
+    long x;
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;假设在64bit的机器上，那么foo1的对齐值为8，这个值其实就是所有成员变量中对齐值最大的那个（一旦满足最大的那个需求，其他就都能满足了），就是&lt;code&gt;char *p&lt;/code&gt;。为了保证所有成员都是对齐的，编译器会
+调整内存布局，如下&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;struct foo1 {
+    char *p;     /* 8 bytes */
+    char c;      /* 1 byte  */
+    char pad[7]; /* 7 bytes */
+    long x;      /* 8 bytes */
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;由于&lt;code&gt;long&lt;/code&gt;是8字节对齐的，而&lt;code&gt;char&lt;/code&gt;是1字节对齐，所以插入了7个char以保证都是对齐的。
+在上面我们说到，数组中所有元素都是对齐的，对于struct也是如此。比如下面的例子&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;struct foo4 {
+    short s;     /* 2 bytes */
+    char c;      /* 1 byte */
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;foo4的对齐值为2，但是其size为3，这样放到数组中不是对齐的。所以，为了达到需求，编译器会在struct的末尾插入空白：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;struct foo4 {
+    short s;     /* 2 bytes */
+    char c;      /* 1 byte */
+    char pad[1];
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这样其size为4，就能满足需求了。以上的要求对于嵌套的struct也是需要满足的。&lt;/p&gt;
+
+&lt;p&gt;然而我们在编码时往往需要编译器保证struct成员时紧密相连的，这样可以精确控制内存的layout。现代编译器一般都提供&lt;code&gt;#pragma pack&lt;/code&gt;语句来完成这一目的。
+一旦定义了pack，那么后面所有的struct都要满足这个其需求。其保证成员变量的对齐值取自然对齐大小和pack中的较小值。所以对于以下示例：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;#pragma pack(1)
+struct S1 {
+    char a;
+    long b;
+};
+#pragma pack()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;如果没有pack，编译器会在其中插入7个字节的pad，最后的size为16字节。有了pack之后，long b的对齐值成了1，那么就是紧凑排列了， size为9字节。如果们将1改成2呢？
+此时long b的对齐值为2，那么插入一个pad，size为10字节。如果pack的值为16呢？由于其超过了long的align值8，那么保持long的自然对齐就好了，最终的值size为16。&lt;/p&gt;
+
+&lt;p&gt;顺便说一句，pack仅仅对struct和class有效，一旦设置后，对于后面所有的struct/class都生效，除非使用空的&lt;code&gt;pack()&lt;/code&gt;取消，所以我们在使用的时候往往在struct的定义
+前后都写上预处理语句。除此还有&lt;code&gt;push&lt;/code&gt;和&lt;code&gt;pop&lt;/code&gt;，其作用与&lt;code&gt;pack&lt;/code&gt;相同，只是保存了历史纪录：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;#pragma pack(push, 1)
+struct A {
+  char c;
+  double lf;
+#pragma pack(push, 2)
+  struct C {
+    char e;
+    double f;
+    char s;
+  } e;
+#pragma pack(pop)
+};
+#pragma pack(pop)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;其size为&lt;code&gt;21 = 1(char) + 8(double) + 1(pad) + 1(char) + 1(pad) + 8(double) + 1(char) + 1(pad)&lt;/code&gt;。&lt;/p&gt;
+
+&lt;h1 id=&#34;6-总结&#34;&gt;6. 总结&lt;/h1&gt;
+
+&lt;p&gt;align在实际开发中应用得并不多，但是当我们了解其原理，就能更好地优化struct或类的结构，减少无谓的pad，从达到减少内存占用的目的。除此只玩，当编写某些需要严格控制内存
+layout的时候，pack能让我们更好地控制产出的代码。&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>联系我</title>
