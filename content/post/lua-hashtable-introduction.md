@@ -25,7 +25,7 @@ C++11中添加新的[unordered_map](http://en.cppreference.com/w/cpp/container/u
 
 Lua table使用了一个折中的方案，叫做[Coalesced_hashing](https://en.wikipedia.org/wiki/Coalesced_hashing)，结合使用了链表法和开放寻址法。
 
-![Coalesced_hashing](https://upload.wikimedia.org/wikipedia/en/4/4c/CoalescedHash.jpg)
+![Coalesced_hashing](https://upload.wikimedia.org/wikipedia/commons/4/4c/CoalescedHash.jpg)
 
 当插入一个元素时，定义其原本应该在的位置为mainposition，如果mainpoisition对应的slot是空的，则直接插入；如果非空，看看在那个位置上的元素的mainposition是不是当前的slot，如果不是的
 话，则将其移动到任意一个空的slot(位置A)，然后将当前的元素插入到mainposition位置，并将当前的next字段设置成位置A，形成链表。如果占用元素mainposition就是当前位置，则将待插入的
