@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="generator" content="Hugo 0.16" />
+
+  <title>lua与C交互中的死循环检测 &middot; sys🔱fork</title>
+
+  
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/pure-min.css">
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/grids-responsive-old-ie-min.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/grids-responsive-min.css">
+  <!--<![endif]-->
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="http://sysfork.com/css/side-menu-old-ie.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="http://sysfork.com/css/side-menu.css">
+  <!--<![endif]-->
+
+  <link rel="stylesheet" href="http://sysfork.com/css/blackburn.css">
+
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css">
+
+  
+  
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.4.0/styles/github.min.css">
+  <script src="//cdn.bootcss.com/highlight.js/9.4.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  
+
+  <link rel="shortcut icon" href="http://sysfork.com/img/favicon.ico" type="image/x-icon" />
+
+</head>
+
+
+<body>
+<div id="layout">
+
+  
+<a href="#menu" id="menuLink" class="menu-link">
+  
+  <span></span>
+</a>
+<div id="menu">
+
+  
+
+  <div class="pure-menu">
+    <ul class="pure-menu-list">
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/"><i class='fa fa-home fa-fw'></i>Home</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/post/"><i class='fa fa-list fa-fw'></i>Posts</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/about/"><i class='fa fa-user fa-fw'></i>About</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/contact/"><i class='fa fa-phone fa-fw'></i>Contact</a>
+      
+        </li>
+      
+    </ul>
+  </div>
+
+  <div class="pure-menu social">
+  <ul class="pure-menu-list">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <li class="pure-menu-item">
+      <a class="pure-menu-link" href="https://linkedin.com/in/usbuild" target="_blank"><i class="fa fa-linkedin-square fa-fw"></i>LinkedIn</a>
+    </li>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <li class="pure-menu-item">
+      <a class="pure-menu-link" href="https://github.com/usbuild" target="_blank"><i class="fa fa-github-square fa-fw"></i>GitHub</a>
+    </li>
+    
+
+    
+
+    
+
+  </ul>
+</div>
+
+
+  <div>
+  <div class="small-print">
+    <small>&copy; 2016. All rights reserved.</small>
+  </div>
+  <div class="small-print">
+    <small>Built with&nbsp;<a href="https://gohugo.io/" target="_blank">Hugo</a></small>
+    <small>Theme&nbsp;<a href="https://github.com/yoshiharuyamashita/blackburn" target="_blank">Blackburn</a></small>
+  </div>
+</div>
+
+</div>
+
+
+  <div id="main">
+
+
+<div class="header">
+  <h1>lua与C交互中的死循环检测</h1>
+  <h2></h2>
+</div>
+<div class="content">
+
+  <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>21 Apr 2017, 17:37</time>
+  </div>
+
+  
+
+  
+  
+  
+  
+
+  
+  
+  
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="http://sysfork.com/tags/lua">lua</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://sysfork.com/tags/game">game</a>
+    
+  </div>
+  
+  
+
+</div>
+
+  
+
+<p>现在很多游戏引擎都是<code>C++</code> + <code>lua</code>的结构，一旦某个服务器开发人员大意写出死循环代码，很容易导致服务无响应，影响服务器稳定。所以引擎中最好能提供一个死循环的检测机制，一旦出现死循环则执行一些行为打断当前流程。</p>
+
+<p>死循环的检测是一个<a href="https://en.wikipedia.org/wiki/Halting_problem">停机问题</a>。我们无法判断到底是任务执行时间过长，还是进入了真正的死循环，好在这对我们的服务来说区别并不重要。所以一个简单的判断条件是，执行时间是否超过了预定的阈值。</p>
+
+<p><code>C++</code>中集成<code>lua</code>，调用到游戏逻辑时，一般通过<a href="http://pgl.yoyo.org/luai/i/lua_pcall">pcall</a>，但是一旦调用了<code>pcall</code>，代码的执行路径便进入了<code>lua</code>的世界，除非通过信号机制才能在当前线程中中断，实现执行其他分支的目的。除此之外，<code>lua</code>还提供了<code>debug.sethook</code>函数，可以在执行正常逻辑中触发<code>hook</code>，实现监测超时的功能。所以我们有以下两种方案：</p>
+
+<h1 id="1-使用-debug-sethook-来实现">1. 使用<code>debug.sethook()</code>来实现</h1>
+
+<blockquote>
+<p>debug.sethook ([thread,] hook, mask [, count])
+Sets the given function as a hook. The string mask and the number count describe when the hook will be called. The string mask may have the following characters, with the given meaning:</p>
+
+<p>&ldquo;c&rdquo;: the hook is called every time Lua calls a function;
+&ldquo;r&rdquo;: the hook is called every time Lua returns from a function;
+&ldquo;l&rdquo;: the hook is called every time Lua enters a new line of code.
+With a count different from zero, the hook is called after every count instructions.</p>
+</blockquote>
+
+<p>所以我们只要在执行<code>pcall</code>之前设定类似如下的代码:</p>
+
+<pre><code class="language-lua">debug.sethook(function()error(&quot;timeout&quot;)end, &quot;c&quot;, 10000)
+</code></pre>
+
+<p>理论上只要代码指令数超过10000条就能触发<code>error</code>。好像挺完美的。</p>
+
+<p>But，在<code>luajit</code>下这条不一定成立，因为执行的逻辑被<code>jit</code>编译了，而在这种情况下，<code>hook</code>是不会触发的
+&gt; If your program is running in a tight loop and never falls back to the interpreter, the debug hook never runs and can&rsquo;t throw the &ldquo;interrupted!&rdquo; error.</p>
+
+<p>但是还有一个未公开的编译选项<code>LUAJIT_ENABLE_CHECKHOOK</code>，在<code>lj_record.c</code>文件的最后面，上面写道
+&gt; Regularly check for instruction/line hooks from compiled code and
+&gt; exit to the interpreter if the hooks are set.
+&gt;
+&gt; This is a compile-time option and disabled by default, since the
+&gt; hook checks may be quite expensive in tight loops.</p>
+
+<p>看似可以，但是注意，如果<code>hook</code>被设置了，则执行的代价是比较昂贵的。对于游戏而言，大部分的时间都在<code>lua</code>层，而为了监测死循环，几乎
+要在所有的lua执行过程中设置<code>hook</code>，这是不太容易接受的。好在下面的注释提到了
+&gt; You can set the instruction hook via lua_sethook() with a count of 1
+&gt; from a signal handler or another native thread. Please have a look
+&gt; at the first few functions in luajit.c for an example (Ctrl-C handler).</p>
+
+<p>嗯，看样子只能使用第二种方案了。</p>
+
+<h1 id="2-使用信号来实现">2. 使用信号来实现</h1>
+
+<p>在lua的命令行程序中我们可以通过<code>Ctrl-C</code>中断正在执行的程序</p>
+
+<pre><code>&gt;  for i=1,10000000 do sum = sum + i end
+^Cinterrupted!
+stack traceback:
+        stdin:1: in main chunk
+        [C]: in ?
+
+</code></pre>
+
+<p>仔细看<code>lua.c</code>文件，可以看到以下代码</p>
+
+<pre><code class="language-C">static void lstop (lua_State *L, lua_Debug *ar) {
+  (void)ar;  /* unused arg. */
+  lua_sethook(L, NULL, 0, 0);
+  luaL_error(L, &quot;interrupted!&quot;);
+}
+
+
+static void laction (int i) {
+  signal(i, SIG_DFL); /* if another SIGINT happens before lstop,
+                              terminate process (default action) */
+  lua_sethook(globalL, lstop, LUA_MASKCALL | LUA_MASKRET | LUA_MASKCOUNT, 1);
+}
+
+// ....
+//in docall
+signal(SIGINT, laction);
+status = lua_pcall(L, narg, (clear ? 0 : LUA_MULTRET), base);
+signal(SIGINT, SIG_DFL);
+</code></pre>
+
+<p>嗯，在执行<code>pcall</code>之前设置了信号处理函数，捕捉<code>Ctrl-C</code>的信号，一旦发生，则立马调用<code>lua_sethook</code>函数，指定在执行下一行代码时调用<code>lstop</code>，而在<code>lstop</code>中就直接抛出<code>error</code>了。所以问题是 <strong><code>lua_sethook</code>是可以在信号处理函数中调用的</strong>？</p>
+
+<p>答案：是</p>
+
+<p>从源码中可以看到</p>
+
+<pre><code>/* This function can be called asynchronously (e.g. during a signal). */
+LUA_API int lua_sethook(lua_State *L, lua_Hook func, int mask, int count)
+</code></pre>
+
+<p>除此之外，从<code>luajit</code>的源码注释来看，不仅仅在信号处理函数中，在其他线程中也能被调用
+&gt; from a signal handler or another native thread.</p>
+
+<p>所以，这种方案是可行的。因此，对于单线程程序而言，可以通过设置<code>alarm</code>来实现超时设置</p>
+
+<pre><code>alarm(10);// trigger after 10s
+signal(SIGALRM, laction);
+status = lua_pcall(L, narg, (clear ? 0 : LUA_MULTRET), base);
+alarm(0)
+signal(SIGALRM, SIG_DFL);
+</code></pre>
+
+<p>而对于多线程程序，可以直接启一个定时器来来<code>check</code>，而不用使用很恶心的信号。</p>
+
+<p>值得一提的是，使用这种方式触发超时<code>error</code>可以很轻易地在<code>pcall</code>中捕获，从而而已实现堆栈的打印等功能，方便查找和定位问题。</p>
+
+
+  
+<div class="prev-next-post pure-g">
+  <div class="pure-u-1-24" style="text-align: left;">
+    
+    <a href="http://sysfork.com/post/about-cpp-alignment/"><i class="fa fa-chevron-left"></i></a>
+    
+  </div>
+  <div class="pure-u-10-24">
+    
+    <nav class="prev">
+      <a href="http://sysfork.com/post/about-cpp-alignment/">浅谈C&#43;&#43;中的地址对齐</a>
+    </nav>
+    
+  </div>
+  <div class="pure-u-2-24">
+    &nbsp;
+  </div>
+  <div class="pure-u-10-24">
+    
+  </div>
+  <div class="pure-u-1-24" style="text-align: right;">
+    
+  </div>
+</div>
+
+
+
+  
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'sysfork-com';
+    dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+  
+  
+</div>
+
+</div>
+</div>
+<script src="http://sysfork.com/js/ui.js"></script>
+
+
+
+</script>
+</body>
+</html>
+
