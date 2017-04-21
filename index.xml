@@ -6,7 +6,7 @@
     <description>Recent content on sys🔱fork</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <copyright>&amp;copy; 2016. All rights reserved.</copyright>
+    <copyright>&amp;copy; 2017. All rights reserved.</copyright>
     <lastBuildDate>Fri, 21 Apr 2017 17:37:30 +0800</lastBuildDate>
     <atom:link href="http://sysfork.com/index.xml" rel="self" type="application/rss+xml" />
     
@@ -267,7 +267,7 @@ layout的时候，pack能让我们更好地控制产出的代码。&lt;/p&gt;
       <pubDate>Thu, 08 Sep 2016 23:23:26 +0800</pubDate>
       
       <guid>http://sysfork.com/contact/</guid>
-      <description>&lt;p&gt;邮箱： &lt;span class=&#34;reverse&#34;&gt;moc.liamg@oahciqgnahzujn&lt;/span&gt;&lt;/p&gt;
+      <description>&lt;p&gt;邮箱： &lt;span&gt;njuzhangqichao # gmail.com&lt;/span&gt;&lt;/p&gt;
 </description>
     </item>
     
@@ -689,7 +689,7 @@ C++11中添加新的&lt;a href=&#34;http://en.cppreference.com/w/cpp/container/u
 
 &lt;p&gt;Lua table使用了一个折中的方案，叫做&lt;a href=&#34;https://en.wikipedia.org/wiki/Coalesced_hashing&#34;&gt;Coalesced_hashing&lt;/a&gt;，结合使用了链表法和开放寻址法。&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;https://upload.wikimedia.org/wikipedia/en/4/4c/CoalescedHash.jpg&#34; alt=&#34;Coalesced_hashing&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://upload.wikimedia.org/wikipedia/commons/4/4c/CoalescedHash.jpg&#34; alt=&#34;Coalesced_hashing&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;当插入一个元素时，定义其原本应该在的位置为mainposition，如果mainpoisition对应的slot是空的，则直接插入；如果非空，看看在那个位置上的元素的mainposition是不是当前的slot，如果不是的
 话，则将其移动到任意一个空的slot(位置A)，然后将当前的元素插入到mainposition位置，并将当前的next字段设置成位置A，形成链表。如果占用元素mainposition就是当前位置，则将待插入的
