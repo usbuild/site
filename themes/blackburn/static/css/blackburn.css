@@ -107,3 +107,9 @@ span.reverse {
   unicode-bidi: bidi-override;
   direction: rtl;
 }
+
+blockquote {
+    border-left: solid lightgray;
+    padding-left: 10px;
+    margin-left: 10px;
+}

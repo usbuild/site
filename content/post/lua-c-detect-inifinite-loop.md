@@ -32,9 +32,11 @@ debug.sethook(function()error("timeout")end, "c", 10000)
 理论上只要代码指令数超过10000条就能触发`error`。好像挺完美的。
 
 But，在`luajit`下这条不一定成立，因为执行的逻辑被`jit`编译了，而在这种情况下，`hook`是不会触发的
+
 > If your program is running in a tight loop and never falls back to the interpreter, the debug hook never runs and can't throw the "interrupted!" error.
 
 但是还有一个未公开的编译选项`LUAJIT_ENABLE_CHECKHOOK`，在`lj_record.c`文件的最后面，上面写道
+
 > Regularly check for instruction/line hooks from compiled code and
 > exit to the interpreter if the hooks are set.
 > 
@@ -43,6 +45,7 @@ But，在`luajit`下这条不一定成立，因为执行的逻辑被`jit`编译�
 
 看似可以，但是注意，如果`hook`被设置了，则执行的代价是比较昂贵的。对于游戏而言，大部分的时间都在`lua`层，而为了监测死循环，几乎
 要在所有的lua执行过程中设置`hook`，这是不太容易接受的。好在下面的注释提到了
+
 > You can set the instruction hook via lua_sethook() with a count of 1
 > from a signal handler or another native thread. Please have a look
 > at the first few functions in luajit.c for an example (Ctrl-C handler).
