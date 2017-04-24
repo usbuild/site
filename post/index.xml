@@ -43,21 +43,30 @@ With a count different from zero, the hook is called after every count instructi
 
 &lt;p&gt;理论上只要代码指令数超过10000条就能触发&lt;code&gt;error&lt;/code&gt;。好像挺完美的。&lt;/p&gt;
 
-&lt;p&gt;But，在&lt;code&gt;luajit&lt;/code&gt;下这条不一定成立，因为执行的逻辑被&lt;code&gt;jit&lt;/code&gt;编译了，而在这种情况下，&lt;code&gt;hook&lt;/code&gt;是不会触发的
-&amp;gt; If your program is running in a tight loop and never falls back to the interpreter, the debug hook never runs and can&amp;rsquo;t throw the &amp;ldquo;interrupted!&amp;rdquo; error.&lt;/p&gt;
+&lt;p&gt;But，在&lt;code&gt;luajit&lt;/code&gt;下这条不一定成立，因为执行的逻辑被&lt;code&gt;jit&lt;/code&gt;编译了，而在这种情况下，&lt;code&gt;hook&lt;/code&gt;是不会触发的&lt;/p&gt;
 
-&lt;p&gt;但是还有一个未公开的编译选项&lt;code&gt;LUAJIT_ENABLE_CHECKHOOK&lt;/code&gt;，在&lt;code&gt;lj_record.c&lt;/code&gt;文件的最后面，上面写道
-&amp;gt; Regularly check for instruction/line hooks from compiled code and
-&amp;gt; exit to the interpreter if the hooks are set.
-&amp;gt;
-&amp;gt; This is a compile-time option and disabled by default, since the
-&amp;gt; hook checks may be quite expensive in tight loops.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;If your program is running in a tight loop and never falls back to the interpreter, the debug hook never runs and can&amp;rsquo;t throw the &amp;ldquo;interrupted!&amp;rdquo; error.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;但是还有一个未公开的编译选项&lt;code&gt;LUAJIT_ENABLE_CHECKHOOK&lt;/code&gt;，在&lt;code&gt;lj_record.c&lt;/code&gt;文件的最后面，上面写道&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Regularly check for instruction/line hooks from compiled code and
+exit to the interpreter if the hooks are set.&lt;/p&gt;
+
+&lt;p&gt;This is a compile-time option and disabled by default, since the
+hook checks may be quite expensive in tight loops.&lt;/p&gt;
+&lt;/blockquote&gt;
 
 &lt;p&gt;看似可以，但是注意，如果&lt;code&gt;hook&lt;/code&gt;被设置了，则执行的代价是比较昂贵的。对于游戏而言，大部分的时间都在&lt;code&gt;lua&lt;/code&gt;层，而为了监测死循环，几乎
-要在所有的lua执行过程中设置&lt;code&gt;hook&lt;/code&gt;，这是不太容易接受的。好在下面的注释提到了
-&amp;gt; You can set the instruction hook via lua_sethook() with a count of 1
-&amp;gt; from a signal handler or another native thread. Please have a look
-&amp;gt; at the first few functions in luajit.c for an example (Ctrl-C handler).&lt;/p&gt;
+要在所有的lua执行过程中设置&lt;code&gt;hook&lt;/code&gt;，这是不太容易接受的。好在下面的注释提到了&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;You can set the instruction hook via lua_sethook() with a count of 1
+from a signal handler or another native thread. Please have a look
+at the first few functions in luajit.c for an example (Ctrl-C handler).&lt;/p&gt;
+&lt;/blockquote&gt;
 
 &lt;p&gt;嗯，看样子只能使用第二种方案了。&lt;/p&gt;
 
