@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="generator" content="Hugo 0.16" />
+
+  <title>使用C&#43;&#43; map实现注册回调的功能 &middot; sys🔱fork</title>
+
+  
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/pure-min.css">
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/grids-responsive-old-ie-min.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/grids-responsive-min.css">
+  <!--<![endif]-->
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="http://sysfork.com/css/side-menu-old-ie.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="http://sysfork.com/css/side-menu.css">
+  <!--<![endif]-->
+
+  <link rel="stylesheet" href="http://sysfork.com/css/blackburn.css">
+
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css">
+
+  
+  
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.4.0/styles/github.min.css">
+  <script src="//cdn.bootcss.com/highlight.js/9.4.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  
+
+  <link rel="shortcut icon" href="http://sysfork.com/img/favicon.ico" type="image/x-icon" />
+
+</head>
+
+
+<body>
+<div id="layout">
+
+  
+<a href="#menu" id="menuLink" class="menu-link">
+  
+  <span></span>
+</a>
+<div id="menu">
+
+  
+
+  <div class="pure-menu">
+    <ul class="pure-menu-list">
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/"><i class='fa fa-home fa-fw'></i>Home</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/post/"><i class='fa fa-list fa-fw'></i>Posts</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/about/"><i class='fa fa-user fa-fw'></i>About</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/contact/"><i class='fa fa-phone fa-fw'></i>Contact</a>
+      
+        </li>
+      
+    </ul>
+  </div>
+
+  <div class="pure-menu social">
+  <ul class="pure-menu-list">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <li class="pure-menu-item">
+      <a class="pure-menu-link" href="https://linkedin.com/in/usbuild" target="_blank"><i class="fa fa-linkedin-square fa-fw"></i>LinkedIn</a>
+    </li>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <li class="pure-menu-item">
+      <a class="pure-menu-link" href="https://github.com/usbuild" target="_blank"><i class="fa fa-github-square fa-fw"></i>GitHub</a>
+    </li>
+    
+
+    
+
+    
+
+  </ul>
+</div>
+
+
+  <div>
+  <div class="small-print">
+    <small>&copy; 2017. All rights reserved.</small>
+  </div>
+  <div class="small-print">
+    <small>Built with&nbsp;<a href="https://gohugo.io/" target="_blank">Hugo</a></small>
+    <small>Theme&nbsp;<a href="https://github.com/yoshiharuyamashita/blackburn" target="_blank">Blackburn</a></small>
+  </div>
+</div>
+
+</div>
+
+
+  <div id="main">
+
+
+<div class="header">
+  <h1>使用C&#43;&#43; map实现注册回调的功能</h1>
+  <h2></h2>
+</div>
+<div class="content">
+
+  <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>29 Apr 2017, 15:38</time>
+  </div>
+
+  
+
+  
+  
+  
+  
+
+  
+  
+  
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="http://sysfork.com/tags/meta-programming">meta-programming</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://sysfork.com/tags/c&#43;&#43;">C&#43;&#43;</a>
+    
+  </div>
+  
+  
+
+</div>
+
+  
+
+<p>在<code>C++/lua</code>混合编程中，往往存在需要回调的情况。比如在游戏中，逻辑进程中的脚本需要一个数据库访问操作，如下:</p>
+
+<pre><code class="language-lua">dbmgr.query({name=&quot;hello&quot;}, function(ret)
+-- do something
+end)
+</code></pre>
+
+<p>由于<code>dbmgr.query</code>是异步操作，这条语句是立即返回的。内部执行过程中是通过向<code>dbmgr</code>进程发送一个<code>query</code>请求，然后逻辑进程继续执行。当<code>dbmgr</code>收到请求后，其执行数据库查询操作，得到
+结果然后也是通过网络将其发送给逻辑进程。逻辑进程收到结果后调用到<code>lua</code>的回调函数里。</p>
+
+<p>这里有一个简化方案，如果时仅仅针对<code>lua</code>的话，只需要在向<code>dbmgr</code>进程发送请求的时候带上<code>lua function</code>的注册ID就好了，查询到结果后返回过来就能直接调用。但是我们希望这个接口不仅仅在
+<code>lua</code>中使用，希望在<code>C++</code>中也能调用，并且希望提供一个统一的模块来负责这类事情，该如何设计？一个简化后的问题如下：</p>
+
+<pre><code>#include &lt;functional&gt;
+#include &lt;map&gt;
+
+std::map&lt;int, std::function&lt;void(void*)&gt;&gt; callbacks;
+int last_idx = 0;
+
+//用于注册回调函数，需要支持各种function
+template&lt;typename T&gt;
+int addCallback(T &amp;&amp; t) {
+}
+
+//用于调用回调函数
+template&lt;typename ... ARGS&gt;
+void call(int idx, ARGS &amp;&amp; ... args) {
+}
+
+void func(int i) {}
+
+class Functor {
+public:
+	void operator()(const std::string &amp;s, int i) {}
+};
+
+int main() {
+	int c1 = addCallback(&amp;func);
+	int i;
+	int c2 = addCallback([i](double j) {});
+	int c3 = addCallback(Functor());
+
+	call(c1, 1);
+	call(c2, 1.0);
+	call(c3, std::string(&quot;string&quot;), 1);
+
+	return 0;
+}
+</code></pre>
+
+<p>其中<code>addCallback</code>的作用用于注册回调函数，参数可以是<code>std::function</code>、<code>lambda</code>、<code>functor</code>、普通的函数、成员函数等等。这里为了简化处理，我们只
+处理<code>std::function</code>、<code>lambda</code>和普通函数，其余的不再赘述。下面是一些问题：</p>
+
+<h1 id="1-参数的处理">1. 参数的处理？</h1>
+
+<p>由于我们使用的是<code>map</code>，<code>value_type</code>是一定的，你无法将多个不同类型的<code>std::function</code>放进去，所以需要需要包一层，这里存储的是<code>std::function&lt;void(void*)&gt;</code>，
+由于是异步调用，返回值我们不关心。参数使用的是<code>void*</code>，将类型给抹除掉了。那么参数的具体内容是什么呢？可以使用<code>std::tuple</code>来存储，那<code>call</code>的实现就很简单了:</p>
+
+<pre><code>template&lt;typename ... ARGS&gt;
+void call(int idx, ARGS &amp;&amp; ... args) {
+	auto it = callbacks.find(idx);
+	if (it != callbacks.end() {
+		auto tuple = std::tuple&lt;ARGS...&gt;(args...);
+		it-&gt;second(&amp;tuple);
+	}
+}
+</code></pre>
+
+<h1 id="2-callbacks-存储的内容是">2. <code>callbacks</code>存储的内容是？</h1>
+
+<p>上面的讨论中，<code>map</code>的<code>value_type</code>是<code>std::function&lt;void(*)&gt;</code>，所以我们不能直接将外部传入的回调设置进去，需要再包一层</p>
+
+<pre><code>template&lt;typename T&gt;
+int addCallback(T &amp;&amp; t) {
+    last_idx++;
+    callbacks[last_idx] = [t](void *data){
+        auto ptr = static_cast&lt;std::tuple&lt;...&gt; *&gt;(data); // 模板参数怎么处理？
+        std::apply(t, *ptr);
+    };
+}
+</code></pre>
+
+<p>这里我们使用了<code>C++17</code>中的<a href="http://en.cppreference.com/w/cpp/utility/apply">std::apply</a>，其作用就是调用函数，参数是一个<code>tuple</code>，有兴趣的可以从源码中看看<code>apply</code>的实现，
+这里就不详细介绍了。
+问题是，<code>tuple</code>的参数如何处理？我们没法从<code>data</code>中得到类型心系，唯一的方法就是从<code>T</code>中获取，那如何获取呢？</p>
+
+<h1 id="3-callable对象调用参数萃取">3. callable对象调用参数萃取</h1>
+
+<p>现在的主要问题是，如何从<code>std::function</code>、<code>lambda</code>、普通函数等类型中提取参数信息。对于普通函数和<code>std::function</code>我们可以通过特化来做</p>
+
+<pre><code>template&lt;typename T&gt;
+struct CallbackTypeHelper;
+
+template&lt;typename RET, typename ... ARGS&gt;
+struct CallbackTypeHelper&lt;RET(*)(ARGS...)&gt; {
+    typedef std::tuple&lt;ARGS...&gt; typle_type;
+}
+
+template&lt;typename RET, typename ... ARGS&gt;
+struct CallbackTypeHelper&lt;std::function&lt;RET(ARGS...)&gt;&gt; {
+    typedef std::tuple&lt;ARGS...&gt; typle_type;
+}
+</code></pre>
+
+<p>对于<code>lambda</code>该如何处理呢？</p>
+
+<p><code>lambda</code>作为<code>C++11</code>中新引进的特性，其作用是实现一个匿名函数，由于捕获组的存在，其不能仅仅实现成一个<code>C Function</code>。为了实现这个目的，编译器会生成一个匿名类，各个捕获参数即为成员
+变量，为了实现可被调用，其重载了<code>operator()</code>。根据这个思路，我们找到了获取参数的方法：</p>
+
+<pre><code>template&lt;typename T&gt;
+struct CallbackFunctorHelper;
+
+template&lt;typename RET, typename C, typename ... ARGS&gt;
+struct CallbackFunctorHelper&lt;RET(C::*)(ARGS...) const&gt; {
+  typedef std::tuple&lt;ARGS...&gt; tuple_type;
+};
+
+template&lt;typename RET, typename C, typename ... ARGS&gt;
+struct CallbackFunctorHelper&lt;RET(C::*)(ARGS...)&gt; {
+  typedef std::tuple&lt;ARGS...&gt; tuple_type;
+};
+
+template &lt;typename T, typename Enabled=void&gt;
+struct CallbackTypeHelper {
+  typedef typename CallbackFunctorHelper&lt;decltype(&amp;std::decay&lt;T&gt;::type::operator())&gt;::tuple_type tuple_type;
+};
+
+</code></pre>
+
+<p>注意由于参数有可能是引用，所有这里需要<a href="http://en.cppreference.com/w/cpp/types/decay">decay</a>来处理这些引用。同时由于<code>lambda</code>的<code>mutable</code>属性的存在，所以<code>CallbackFunctorHelper</code>
+需要<code>const</code>和<code>non-const</code>的特化。</p>
+
+<p>最后，由于这只是演示性质的代码，有些逻辑如成员函数等并没有考虑进去，除此之外，可以使用<code>enable_if</code>做个单独的特化，而不需要在默认函数上写<code>functor</code>的实现等。在实际
+应用中可以修改得更加全面和优雅。</p>
+
+
+  
+<div class="prev-next-post pure-g">
+  <div class="pure-u-1-24" style="text-align: left;">
+    
+    <a href="http://sysfork.com/post/lua-c-detect-inifinite-loop/"><i class="fa fa-chevron-left"></i></a>
+    
+  </div>
+  <div class="pure-u-10-24">
+    
+    <nav class="prev">
+      <a href="http://sysfork.com/post/lua-c-detect-inifinite-loop/">lua与C交互中的死循环检测</a>
+    </nav>
+    
+  </div>
+  <div class="pure-u-2-24">
+    &nbsp;
+  </div>
+  <div class="pure-u-10-24">
+    
+  </div>
+  <div class="pure-u-1-24" style="text-align: right;">
+    
+  </div>
+</div>
+
+
+
+  
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'sysfork-com';
+    dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+  
+  
+</div>
+
+</div>
+</div>
+<script src="http://sysfork.com/js/ui.js"></script>
+
+
+
+</script>
+</body>
+</html>
+

@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Meta Programming on sys🔱fork</title>
+    <link>http://sysfork.com/tags/meta-programming/</link>
+    <description>Recent content in Meta Programming on sys🔱fork</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <copyright>&amp;copy; 2017. All rights reserved.</copyright>
+    <lastBuildDate>Sat, 29 Apr 2017 15:38:38 +0800</lastBuildDate>
+    <atom:link href="http://sysfork.com/tags/meta-programming/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>使用C&#43;&#43; map实现注册回调的功能</title>
+      <link>http://sysfork.com/post/cpp-function-container/</link>
+      <pubDate>Sat, 29 Apr 2017 15:38:38 +0800</pubDate>
+      
+      <guid>http://sysfork.com/post/cpp-function-container/</guid>
+      <description>
+
+&lt;p&gt;在&lt;code&gt;C++/lua&lt;/code&gt;混合编程中，往往存在需要回调的情况。比如在游戏中，逻辑进程中的脚本需要一个数据库访问操作，如下:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-lua&#34;&gt;dbmgr.query({name=&amp;quot;hello&amp;quot;}, function(ret)
+-- do something
+end)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;由于&lt;code&gt;dbmgr.query&lt;/code&gt;是异步操作，这条语句是立即返回的。内部执行过程中是通过向&lt;code&gt;dbmgr&lt;/code&gt;进程发送一个&lt;code&gt;query&lt;/code&gt;请求，然后逻辑进程继续执行。当&lt;code&gt;dbmgr&lt;/code&gt;收到请求后，其执行数据库查询操作，得到
+结果然后也是通过网络将其发送给逻辑进程。逻辑进程收到结果后调用到&lt;code&gt;lua&lt;/code&gt;的回调函数里。&lt;/p&gt;
+
+&lt;p&gt;这里有一个简化方案，如果时仅仅针对&lt;code&gt;lua&lt;/code&gt;的话，只需要在向&lt;code&gt;dbmgr&lt;/code&gt;进程发送请求的时候带上&lt;code&gt;lua function&lt;/code&gt;的注册ID就好了，查询到结果后返回过来就能直接调用。但是我们希望这个接口不仅仅在
+&lt;code&gt;lua&lt;/code&gt;中使用，希望在&lt;code&gt;C++&lt;/code&gt;中也能调用，并且希望提供一个统一的模块来负责这类事情，该如何设计？一个简化后的问题如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;#include &amp;lt;functional&amp;gt;
+#include &amp;lt;map&amp;gt;
+
+std::map&amp;lt;int, std::function&amp;lt;void(void*)&amp;gt;&amp;gt; callbacks;
+int last_idx = 0;
+
+//用于注册回调函数，需要支持各种function
+template&amp;lt;typename T&amp;gt;
+int addCallback(T &amp;amp;&amp;amp; t) {
+}
+
+//用于调用回调函数
+template&amp;lt;typename ... ARGS&amp;gt;
+void call(int idx, ARGS &amp;amp;&amp;amp; ... args) {
+}
+
+void func(int i) {}
+
+class Functor {
+public:
+	void operator()(const std::string &amp;amp;s, int i) {}
+};
+
+int main() {
+	int c1 = addCallback(&amp;amp;func);
+	int i;
+	int c2 = addCallback([i](double j) {});
+	int c3 = addCallback(Functor());
+
+	call(c1, 1);
+	call(c2, 1.0);
+	call(c3, std::string(&amp;quot;string&amp;quot;), 1);
+
+	return 0;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;其中&lt;code&gt;addCallback&lt;/code&gt;的作用用于注册回调函数，参数可以是&lt;code&gt;std::function&lt;/code&gt;、&lt;code&gt;lambda&lt;/code&gt;、&lt;code&gt;functor&lt;/code&gt;、普通的函数、成员函数等等。这里为了简化处理，我们只
+处理&lt;code&gt;std::function&lt;/code&gt;、&lt;code&gt;lambda&lt;/code&gt;和普通函数，其余的不再赘述。下面是一些问题：&lt;/p&gt;
+
+&lt;h1 id=&#34;1-参数的处理&#34;&gt;1. 参数的处理？&lt;/h1&gt;
+
+&lt;p&gt;由于我们使用的是&lt;code&gt;map&lt;/code&gt;，&lt;code&gt;value_type&lt;/code&gt;是一定的，你无法将多个不同类型的&lt;code&gt;std::function&lt;/code&gt;放进去，所以需要需要包一层，这里存储的是&lt;code&gt;std::function&amp;lt;void(void*)&amp;gt;&lt;/code&gt;，
+由于是异步调用，返回值我们不关心。参数使用的是&lt;code&gt;void*&lt;/code&gt;，将类型给抹除掉了。那么参数的具体内容是什么呢？可以使用&lt;code&gt;std::tuple&lt;/code&gt;来存储，那&lt;code&gt;call&lt;/code&gt;的实现就很简单了:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;template&amp;lt;typename ... ARGS&amp;gt;
+void call(int idx, ARGS &amp;amp;&amp;amp; ... args) {
+	auto it = callbacks.find(idx);
+	if (it != callbacks.end() {
+		auto tuple = std::tuple&amp;lt;ARGS...&amp;gt;(args...);
+		it-&amp;gt;second(&amp;amp;tuple);
+	}
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;2-callbacks-存储的内容是&#34;&gt;2. &lt;code&gt;callbacks&lt;/code&gt;存储的内容是？&lt;/h1&gt;
+
+&lt;p&gt;上面的讨论中，&lt;code&gt;map&lt;/code&gt;的&lt;code&gt;value_type&lt;/code&gt;是&lt;code&gt;std::function&amp;lt;void(*)&amp;gt;&lt;/code&gt;，所以我们不能直接将外部传入的回调设置进去，需要再包一层&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;template&amp;lt;typename T&amp;gt;
+int addCallback(T &amp;amp;&amp;amp; t) {
+    last_idx++;
+    callbacks[last_idx] = [t](void *data){
+        auto ptr = static_cast&amp;lt;std::tuple&amp;lt;...&amp;gt; *&amp;gt;(data); // 模板参数怎么处理？
+        std::apply(t, *ptr);
+    };
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这里我们使用了&lt;code&gt;C++17&lt;/code&gt;中的&lt;a href=&#34;http://en.cppreference.com/w/cpp/utility/apply&#34;&gt;std::apply&lt;/a&gt;，其作用就是调用函数，参数是一个&lt;code&gt;tuple&lt;/code&gt;，有兴趣的可以从源码中看看&lt;code&gt;apply&lt;/code&gt;的实现，
+这里就不详细介绍了。
+问题是，&lt;code&gt;tuple&lt;/code&gt;的参数如何处理？我们没法从&lt;code&gt;data&lt;/code&gt;中得到类型心系，唯一的方法就是从&lt;code&gt;T&lt;/code&gt;中获取，那如何获取呢？&lt;/p&gt;
+
+&lt;h1 id=&#34;3-callable对象调用参数萃取&#34;&gt;3. callable对象调用参数萃取&lt;/h1&gt;
+
+&lt;p&gt;现在的主要问题是，如何从&lt;code&gt;std::function&lt;/code&gt;、&lt;code&gt;lambda&lt;/code&gt;、普通函数等类型中提取参数信息。对于普通函数和&lt;code&gt;std::function&lt;/code&gt;我们可以通过特化来做&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;template&amp;lt;typename T&amp;gt;
+struct CallbackTypeHelper;
+
+template&amp;lt;typename RET, typename ... ARGS&amp;gt;
+struct CallbackTypeHelper&amp;lt;RET(*)(ARGS...)&amp;gt; {
+    typedef std::tuple&amp;lt;ARGS...&amp;gt; typle_type;
+}
+
+template&amp;lt;typename RET, typename ... ARGS&amp;gt;
+struct CallbackTypeHelper&amp;lt;std::function&amp;lt;RET(ARGS...)&amp;gt;&amp;gt; {
+    typedef std::tuple&amp;lt;ARGS...&amp;gt; typle_type;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;对于&lt;code&gt;lambda&lt;/code&gt;该如何处理呢？&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;lambda&lt;/code&gt;作为&lt;code&gt;C++11&lt;/code&gt;中新引进的特性，其作用是实现一个匿名函数，由于捕获组的存在，其不能仅仅实现成一个&lt;code&gt;C Function&lt;/code&gt;。为了实现这个目的，编译器会生成一个匿名类，各个捕获参数即为成员
+变量，为了实现可被调用，其重载了&lt;code&gt;operator()&lt;/code&gt;。根据这个思路，我们找到了获取参数的方法：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;template&amp;lt;typename T&amp;gt;
+struct CallbackFunctorHelper;
+
+template&amp;lt;typename RET, typename C, typename ... ARGS&amp;gt;
+struct CallbackFunctorHelper&amp;lt;RET(C::*)(ARGS...) const&amp;gt; {
+  typedef std::tuple&amp;lt;ARGS...&amp;gt; tuple_type;
+};
+
+template&amp;lt;typename RET, typename C, typename ... ARGS&amp;gt;
+struct CallbackFunctorHelper&amp;lt;RET(C::*)(ARGS...)&amp;gt; {
+  typedef std::tuple&amp;lt;ARGS...&amp;gt; tuple_type;
+};
+
+template &amp;lt;typename T, typename Enabled=void&amp;gt;
+struct CallbackTypeHelper {
+  typedef typename CallbackFunctorHelper&amp;lt;decltype(&amp;amp;std::decay&amp;lt;T&amp;gt;::type::operator())&amp;gt;::tuple_type tuple_type;
+};
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;注意由于参数有可能是引用，所有这里需要&lt;a href=&#34;http://en.cppreference.com/w/cpp/types/decay&#34;&gt;decay&lt;/a&gt;来处理这些引用。同时由于&lt;code&gt;lambda&lt;/code&gt;的&lt;code&gt;mutable&lt;/code&gt;属性的存在，所以&lt;code&gt;CallbackFunctorHelper&lt;/code&gt;
+需要&lt;code&gt;const&lt;/code&gt;和&lt;code&gt;non-const&lt;/code&gt;的特化。&lt;/p&gt;
+
+&lt;p&gt;最后，由于这只是演示性质的代码，有些逻辑如成员函数等并没有考虑进去，除此之外，可以使用&lt;code&gt;enable_if&lt;/code&gt;做个单独的特化，而不需要在默认函数上写&lt;code&gt;functor&lt;/code&gt;的实现等。在实际
+应用中可以修改得更加全面和优雅。&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
