@@ -7,8 +7,220 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2017. All rights reserved.</copyright>
-    <lastBuildDate>Fri, 21 Apr 2017 17:37:30 +0800</lastBuildDate>
+    <lastBuildDate>Mon, 01 May 2017 22:30:00 +0800</lastBuildDate>
     <atom:link href="http://sysfork.com/tags/lua/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>一种在elf中集成脚本文件的方案</title>
+      <link>http://sysfork.com/post/a-solution-for-elf-integrate-scripts/</link>
+      <pubDate>Mon, 01 May 2017 22:30:00 +0800</pubDate>
+      
+      <guid>http://sysfork.com/post/a-solution-for-elf-integrate-scripts/</guid>
+      <description>
+
+&lt;p&gt;进行游戏服务器开发时，我们将&lt;code&gt;C++&lt;/code&gt;的部分称之为引擎层，而&lt;code&gt;lua&lt;/code&gt;称之为脚本层。但是往往有些核心逻辑是各个游戏公用的，
+或者说有些引擎层的代码用&lt;code&gt;C++&lt;/code&gt;写起来十分麻烦，我们还是会使用&lt;code&gt;lua&lt;/code&gt;来编写。这就带来了一些问题，我们的游戏目录结构如下:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;├─bin               // 可执行文件
+└─scripts           // 脚本目录，lua文件
+    ├─framework     // 核心lua文件，各个项目公用的
+    └─server        // 游戏逻辑lua文件
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;其中&lt;code&gt;scripts/framework&lt;/code&gt;是各个项目公用的，并且和&lt;code&gt;bin&lt;/code&gt;目录中的可执行文件同时发布和更新。所以有一个想法，就是将&lt;code&gt;framework&lt;/code&gt;中
+的lua文件集成到可执行文件中，减少维护的成本。&lt;/p&gt;
+
+&lt;h1 id=&#34;1-文件存储&#34;&gt;1. 文件存储&lt;/h1&gt;
+
+&lt;p&gt;下面是elf文件的示意图&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Elf-layout--en.svg/260px-Elf-layout--en.svg.png&#34; alt=&#34;elf&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;elf文件有多个section，除了一些预定义的section如&lt;code&gt;.rodata&lt;/code&gt;、&lt;code&gt;.text&lt;/code&gt;、&lt;code&gt;.init&lt;/code&gt;等，我们也可以定义一些自己的section。所以我们可以将所需要的lua文件
+放进这个section中，在执行的时候动态读出来，实现目的。我们可以使用&lt;a href=&#34;https://linux.die.net/man/1/objcopy&#34;&gt;objcopy&lt;/a&gt;命令来实现创建自定义section的功能。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;objcopy infile.out --add-section .lua-data=section_file outfile.out
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然而&lt;code&gt;framework&lt;/code&gt;里面有多个文件，而且包含嵌套的文件夹，我们需要一个将文件夹变成单个文件的功能，类似于&lt;a href=&#34;https://linux.die.net/man/1/tar&#34;&gt;tar&lt;/a&gt;。虽然创建
+section时使用&lt;code&gt;tar&lt;/code&gt;命令是简单的，但是在读取的时候需要一些第三方的库来支持，这是比较麻烦的。而由于我们的目录中只包含&lt;code&gt;lua&lt;/code&gt;文件，所以可以简化设计。
+首先空文件夹对于我们是无意义的，只需要&lt;code&gt;lua&lt;/code&gt;文件就可以。所以最终我们得到如下的表:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;┌────────────────────┐
+│ libs/json.lua      │
+├────────────────────┤
+│ core/entity.lua    │
+├────────────────────┤
+│ app/game.lua       │
+├────────────────────┤
+│ libs/bson.lua      │
+└────────────────────┘
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;我们可以按照如下的格式转换成单个文件&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;┌────────┬───────────┐
+│name_len│content_len│
+├────────┴───────────┤
+│ core.entity        │
+├────────────────────┤
+│name_len│content_len│
+├────────────────────┤
+│ libs.bson          │
+├────────────────────┤
+│ .................  │
+└────────────────────┘
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;其中&lt;code&gt;name_len&lt;/code&gt;为文件名的长度，这里直接转换成了lua中&lt;code&gt;require&lt;/code&gt;的格式，使用点符号。&lt;code&gt;content_len&lt;/code&gt;是文件内容的长度，即文件的具体内容长度。最后我们可以使用&lt;code&gt;zip&lt;/code&gt;指令
+将这部分内容压缩存储在&lt;code&gt;elf&lt;/code&gt;文件中。完整的代码如下:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;#!/usr/bin/env python
+#coding: utf-8
+
+import os, struct, StringIO, zlib, subprocess, sys, tempfile, argparse
+
+argParser = argparse.ArgumentParser()
+
+argParser.add_argument(&amp;quot;luafolder&amp;quot;, type=str)
+argParser.add_argument(&amp;quot;exe&amp;quot;, type=str)
+argParser.add_argument(&amp;quot;out&amp;quot;, type=str)
+
+args = argParser.parse_args()
+
+files = []
+
+path = args.luafolder
+
+for (dirpath, dirname, filenames) in os.walk(path):
+    dirp = dirpath[len(path):]
+    if dirp:
+        if dirp[-1] != &amp;quot;/&amp;quot;:
+            dirp += &amp;quot;/&amp;quot;
+
+        while dirp[0] == &amp;quot;/&amp;quot;:
+            dirp = dirp[1:]
+
+    files.extend([dirp + x for x in filenames])
+
+output = StringIO.StringIO()
+
+for fpath in files:
+    realp = path + &amp;quot;/&amp;quot; + fpath
+    filesize = os.path.getsize(realp)
+
+    if fpath.endswith(&amp;quot;.lua&amp;quot;):
+        fpath = fpath[:-4]
+    elif fpath.endswith(&amp;quot;.luac&amp;quot;):
+        fpath = fpath[:-5]
+    else:
+        continue
+
+    package_pattern = fpath.replace(&amp;quot;/&amp;quot;, &amp;quot;.&amp;quot;)
+    package_pattern = &amp;quot;pg.&amp;quot; + package_pattern
+    with open(realp, &amp;quot;rb&amp;quot;) as rf:
+        content = rf.read()
+        output.write(struct.pack(&amp;quot;=hL&amp;quot;, len(package_pattern), len(content)))
+        output.write(package_pattern)
+        output.write(content)
+
+f = tempfile.NamedTemporaryFile()
+
+outdata = output.getvalue()
+f.write(struct.pack(&amp;quot;=L&amp;quot;, len(outdata)))
+f.write(zlib.compress(output.getvalue()))
+f.flush()
+
+subprocess.call(&amp;quot;objcopy %s --remove-section .lua-data&amp;quot;%(args.exe, ), shell=True)
+subprocess.call(&amp;quot;objcopy %s --add-section .lua-data=%s %s&amp;quot;%(args.exe, f.name, args.out), shell=True)
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;2-文件内容的读取&#34;&gt;2. 文件内容的读取&lt;/h1&gt;
+
+&lt;p&gt;我们需要使用&lt;code&gt;elf.h&lt;/code&gt;文件来读取文件内容。根据上述的格式示意图，&lt;code&gt;elf&lt;/code&gt;文件开头的是Header，其格式为&lt;code&gt;ElfXX_Ehdr&lt;/code&gt;，
+我们可以直接读取文件内容到内存。然后读取&lt;code&gt;e_shoff&lt;/code&gt;字段获得section header的位置，定位到位置并依次读取内容到&lt;code&gt;ElfXX_Shdr&lt;/code&gt;
+结构体中，然后通过各个entry的&lt;code&gt;sh_name&lt;/code&gt;得到最终section，然后读取文件达到目的。完整代码如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;static std::map&amp;lt;std::string, std::string&amp;gt; readElfLuaData(const std::string &amp;amp;filepath) {
+    std::map&amp;lt;std::string, std::string&amp;gt; files;
+#if __x86_64__
+    typedef Elf64_Ehdr ELF_EHDR;
+    typedef Elf64_Shdr ELF_SHDR;
+#else
+    typedef Elf32_Ehdr ELF_EHDR;
+    typedef Elf32_Shdr ELF_SHDR;
+#endif
+
+    std::ifstream ifs(filepath);
+
+    ELF_EHDR hdr;
+    ifs.read(reinterpret_cast&amp;lt;char *&amp;gt;(&amp;amp;hdr), sizeof(hdr));
+
+    std::vector&amp;lt;ELF_SHDR&amp;gt; sh_tables(hdr.e_shnum);
+    ifs.seekg(static_cast&amp;lt;long&amp;gt;(hdr.e_shoff));
+
+    for (size_t i = 0; i &amp;lt; hdr.e_shnum; ++i) {
+        ifs.read(reinterpret_cast&amp;lt;char *&amp;gt;(&amp;amp;sh_tables[i]), sizeof(sh_tables[i]));
+    }
+
+    // read shstr
+
+    std::vector&amp;lt;char&amp;gt; shstr(sh_tables[hdr.e_shstrndx].sh_size);
+    ifs.seekg(static_cast&amp;lt;long&amp;gt;(sh_tables[hdr.e_shstrndx].sh_offset));
+    ifs.read(shstr.data(), static_cast&amp;lt;long&amp;gt;(shstr.size()));
+
+    ELF_SHDR *lua_sh = nullptr;
+
+    for (size_t i = 0; i &amp;lt; hdr.e_shnum; ++i) {
+        char *name = shstr.data() + sh_tables[i].sh_name;
+        if (strcmp(name, &amp;quot;.lua-data&amp;quot;) == 0) {
+            lua_sh = &amp;amp;sh_tables[i];
+            break;
+        }
+    }
+
+    if (lua_sh) {
+        std::vector&amp;lt;char&amp;gt; buf(lua_sh-&amp;gt;sh_size);
+        ifs.seekg(static_cast&amp;lt;long&amp;gt;(lua_sh-&amp;gt;sh_offset));
+        ifs.read(buf.data(), static_cast&amp;lt;std::streamsize&amp;gt;(buf.size()));
+
+        size_t idx = 0;
+#define READ_TO(TARGET, SIZE)                                                                      \
+    memcpy(TARGET, buf.data() + idx, SIZE);                                                        \
+    idx += SIZE;
+
+        uint32_t raw_len = 0;
+        READ_TO(&amp;amp;raw_len, sizeof(raw_len));
+
+        std::vector&amp;lt;char&amp;gt; tmp(raw_len);
+        uLongf dest_len = tmp.size();
+        uncompress(reinterpret_cast&amp;lt;Bytef *&amp;gt;(tmp.data()), &amp;amp;dest_len,
+                   reinterpret_cast&amp;lt;Bytef *&amp;gt;(buf.data() + idx), buf.size() - idx);
+
+        buf.swap(tmp);
+        idx = 0;
+
+        while (idx &amp;lt; dest_len) {
+            uint16_t name_len;
+            uint32_t content_len;
+            READ_TO(&amp;amp;name_len, sizeof(name_len));
+            READ_TO(&amp;amp;content_len, sizeof(content_len));
+            std::string filename(name_len, 0), content(content_len, 0);
+            READ_TO(&amp;amp;*filename.begin(), filename.size());
+            READ_TO(&amp;amp;*content.begin(), content.size());
+            files.emplace(std::piecewise_construct, std::forward_as_tuple(std::move(filename)),
+                          std::forward_as_tuple(std::move(content)));
+        }
+#undef READ_TO
+    }
+    return files;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;接下来便可以通过添加到&lt;code&gt;package.preload&lt;/code&gt;实现在lua中调用这些文件的目的。&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>lua与C交互中的死循环检测</title>

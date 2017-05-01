@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="generator" content="Hugo 0.16" />
+
+  <title>一种在elf中集成脚本文件的方案 &middot; sys🔱fork</title>
+
+  
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/pure-min.css">
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/grids-responsive-old-ie-min.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/grids-responsive-min.css">
+  <!--<![endif]-->
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="http://sysfork.com/css/side-menu-old-ie.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="http://sysfork.com/css/side-menu.css">
+  <!--<![endif]-->
+
+  <link rel="stylesheet" href="http://sysfork.com/css/blackburn.css">
+
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css">
+
+  
+  
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.4.0/styles/github.min.css">
+  <script src="//cdn.bootcss.com/highlight.js/9.4.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  
+
+  <link rel="shortcut icon" href="http://sysfork.com/img/favicon.ico" type="image/x-icon" />
+
+</head>
+
+
+<body>
+<div id="layout">
+
+  
+<a href="#menu" id="menuLink" class="menu-link">
+  
+  <span></span>
+</a>
+<div id="menu">
+
+  
+
+  <div class="pure-menu">
+    <ul class="pure-menu-list">
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/"><i class='fa fa-home fa-fw'></i>Home</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/post/"><i class='fa fa-list fa-fw'></i>Posts</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/about/"><i class='fa fa-user fa-fw'></i>About</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/contact/"><i class='fa fa-phone fa-fw'></i>Contact</a>
+      
+        </li>
+      
+    </ul>
+  </div>
+
+  <div class="pure-menu social">
+  <ul class="pure-menu-list">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <li class="pure-menu-item">
+      <a class="pure-menu-link" href="https://linkedin.com/in/usbuild" target="_blank"><i class="fa fa-linkedin-square fa-fw"></i>LinkedIn</a>
+    </li>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <li class="pure-menu-item">
+      <a class="pure-menu-link" href="https://github.com/usbuild" target="_blank"><i class="fa fa-github-square fa-fw"></i>GitHub</a>
+    </li>
+    
+
+    
+
+    
+
+  </ul>
+</div>
+
+
+  <div>
+  <div class="small-print">
+    <small>&copy; 2017. All rights reserved.</small>
+  </div>
+  <div class="small-print">
+    <small>Built with&nbsp;<a href="https://gohugo.io/" target="_blank">Hugo</a></small>
+    <small>Theme&nbsp;<a href="https://github.com/yoshiharuyamashita/blackburn" target="_blank">Blackburn</a></small>
+  </div>
+</div>
+
+</div>
+
+
+  <div id="main">
+
+
+<div class="header">
+  <h1>一种在elf中集成脚本文件的方案</h1>
+  <h2></h2>
+</div>
+<div class="content">
+
+  <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>01 May 2017, 22:30</time>
+  </div>
+
+  
+
+  
+  
+  
+  
+
+  
+  
+  
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="http://sysfork.com/tags/elf">elf</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://sysfork.com/tags/lua">lua</a>
+    
+  </div>
+  
+  
+
+</div>
+
+  
+
+<p>进行游戏服务器开发时，我们将<code>C++</code>的部分称之为引擎层，而<code>lua</code>称之为脚本层。但是往往有些核心逻辑是各个游戏公用的，
+或者说有些引擎层的代码用<code>C++</code>写起来十分麻烦，我们还是会使用<code>lua</code>来编写。这就带来了一些问题，我们的游戏目录结构如下:</p>
+
+<pre><code>├─bin               // 可执行文件
+└─scripts           // 脚本目录，lua文件
+    ├─framework     // 核心lua文件，各个项目公用的
+    └─server        // 游戏逻辑lua文件
+</code></pre>
+
+<p>其中<code>scripts/framework</code>是各个项目公用的，并且和<code>bin</code>目录中的可执行文件同时发布和更新。所以有一个想法，就是将<code>framework</code>中
+的lua文件集成到可执行文件中，减少维护的成本。</p>
+
+<h1 id="1-文件存储">1. 文件存储</h1>
+
+<p>下面是elf文件的示意图</p>
+
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Elf-layout--en.svg/260px-Elf-layout--en.svg.png" alt="elf" /></p>
+
+<p>elf文件有多个section，除了一些预定义的section如<code>.rodata</code>、<code>.text</code>、<code>.init</code>等，我们也可以定义一些自己的section。所以我们可以将所需要的lua文件
+放进这个section中，在执行的时候动态读出来，实现目的。我们可以使用<a href="https://linux.die.net/man/1/objcopy">objcopy</a>命令来实现创建自定义section的功能。</p>
+
+<pre><code>objcopy infile.out --add-section .lua-data=section_file outfile.out
+</code></pre>
+
+<p>然而<code>framework</code>里面有多个文件，而且包含嵌套的文件夹，我们需要一个将文件夹变成单个文件的功能，类似于<a href="https://linux.die.net/man/1/tar">tar</a>。虽然创建
+section时使用<code>tar</code>命令是简单的，但是在读取的时候需要一些第三方的库来支持，这是比较麻烦的。而由于我们的目录中只包含<code>lua</code>文件，所以可以简化设计。
+首先空文件夹对于我们是无意义的，只需要<code>lua</code>文件就可以。所以最终我们得到如下的表:</p>
+
+<pre><code>┌────────────────────┐
+│ libs/json.lua      │
+├────────────────────┤
+│ core/entity.lua    │
+├────────────────────┤
+│ app/game.lua       │
+├────────────────────┤
+│ libs/bson.lua      │
+└────────────────────┘
+</code></pre>
+
+<p>我们可以按照如下的格式转换成单个文件</p>
+
+<pre><code>┌────────┬───────────┐
+│name_len│content_len│
+├────────┴───────────┤
+│ core.entity        │
+├────────────────────┤
+│name_len│content_len│
+├────────────────────┤
+│ libs.bson          │
+├────────────────────┤
+│ .................  │
+└────────────────────┘
+</code></pre>
+
+<p>其中<code>name_len</code>为文件名的长度，这里直接转换成了lua中<code>require</code>的格式，使用点符号。<code>content_len</code>是文件内容的长度，即文件的具体内容长度。最后我们可以使用<code>zip</code>指令
+将这部分内容压缩存储在<code>elf</code>文件中。完整的代码如下:</p>
+
+<pre><code class="language-python">#!/usr/bin/env python
+#coding: utf-8
+
+import os, struct, StringIO, zlib, subprocess, sys, tempfile, argparse
+
+argParser = argparse.ArgumentParser()
+
+argParser.add_argument(&quot;luafolder&quot;, type=str)
+argParser.add_argument(&quot;exe&quot;, type=str)
+argParser.add_argument(&quot;out&quot;, type=str)
+
+args = argParser.parse_args()
+
+files = []
+
+path = args.luafolder
+
+for (dirpath, dirname, filenames) in os.walk(path):
+    dirp = dirpath[len(path):]
+    if dirp:
+        if dirp[-1] != &quot;/&quot;:
+            dirp += &quot;/&quot;
+
+        while dirp[0] == &quot;/&quot;:
+            dirp = dirp[1:]
+
+    files.extend([dirp + x for x in filenames])
+
+output = StringIO.StringIO()
+
+for fpath in files:
+    realp = path + &quot;/&quot; + fpath
+    filesize = os.path.getsize(realp)
+
+    if fpath.endswith(&quot;.lua&quot;):
+        fpath = fpath[:-4]
+    elif fpath.endswith(&quot;.luac&quot;):
+        fpath = fpath[:-5]
+    else:
+        continue
+
+    package_pattern = fpath.replace(&quot;/&quot;, &quot;.&quot;)
+    package_pattern = &quot;pg.&quot; + package_pattern
+    with open(realp, &quot;rb&quot;) as rf:
+        content = rf.read()
+        output.write(struct.pack(&quot;=hL&quot;, len(package_pattern), len(content)))
+        output.write(package_pattern)
+        output.write(content)
+
+f = tempfile.NamedTemporaryFile()
+
+outdata = output.getvalue()
+f.write(struct.pack(&quot;=L&quot;, len(outdata)))
+f.write(zlib.compress(output.getvalue()))
+f.flush()
+
+subprocess.call(&quot;objcopy %s --remove-section .lua-data&quot;%(args.exe, ), shell=True)
+subprocess.call(&quot;objcopy %s --add-section .lua-data=%s %s&quot;%(args.exe, f.name, args.out), shell=True)
+
+</code></pre>
+
+<h1 id="2-文件内容的读取">2. 文件内容的读取</h1>
+
+<p>我们需要使用<code>elf.h</code>文件来读取文件内容。根据上述的格式示意图，<code>elf</code>文件开头的是Header，其格式为<code>ElfXX_Ehdr</code>，
+我们可以直接读取文件内容到内存。然后读取<code>e_shoff</code>字段获得section header的位置，定位到位置并依次读取内容到<code>ElfXX_Shdr</code>
+结构体中，然后通过各个entry的<code>sh_name</code>得到最终section，然后读取文件达到目的。完整代码如下：</p>
+
+<pre><code>static std::map&lt;std::string, std::string&gt; readElfLuaData(const std::string &amp;filepath) {
+    std::map&lt;std::string, std::string&gt; files;
+#if __x86_64__
+    typedef Elf64_Ehdr ELF_EHDR;
+    typedef Elf64_Shdr ELF_SHDR;
+#else
+    typedef Elf32_Ehdr ELF_EHDR;
+    typedef Elf32_Shdr ELF_SHDR;
+#endif
+
+    std::ifstream ifs(filepath);
+
+    ELF_EHDR hdr;
+    ifs.read(reinterpret_cast&lt;char *&gt;(&amp;hdr), sizeof(hdr));
+
+    std::vector&lt;ELF_SHDR&gt; sh_tables(hdr.e_shnum);
+    ifs.seekg(static_cast&lt;long&gt;(hdr.e_shoff));
+
+    for (size_t i = 0; i &lt; hdr.e_shnum; ++i) {
+        ifs.read(reinterpret_cast&lt;char *&gt;(&amp;sh_tables[i]), sizeof(sh_tables[i]));
+    }
+
+    // read shstr
+
+    std::vector&lt;char&gt; shstr(sh_tables[hdr.e_shstrndx].sh_size);
+    ifs.seekg(static_cast&lt;long&gt;(sh_tables[hdr.e_shstrndx].sh_offset));
+    ifs.read(shstr.data(), static_cast&lt;long&gt;(shstr.size()));
+
+    ELF_SHDR *lua_sh = nullptr;
+
+    for (size_t i = 0; i &lt; hdr.e_shnum; ++i) {
+        char *name = shstr.data() + sh_tables[i].sh_name;
+        if (strcmp(name, &quot;.lua-data&quot;) == 0) {
+            lua_sh = &amp;sh_tables[i];
+            break;
+        }
+    }
+
+    if (lua_sh) {
+        std::vector&lt;char&gt; buf(lua_sh-&gt;sh_size);
+        ifs.seekg(static_cast&lt;long&gt;(lua_sh-&gt;sh_offset));
+        ifs.read(buf.data(), static_cast&lt;std::streamsize&gt;(buf.size()));
+
+        size_t idx = 0;
+#define READ_TO(TARGET, SIZE)                                                                      \
+    memcpy(TARGET, buf.data() + idx, SIZE);                                                        \
+    idx += SIZE;
+
+        uint32_t raw_len = 0;
+        READ_TO(&amp;raw_len, sizeof(raw_len));
+
+        std::vector&lt;char&gt; tmp(raw_len);
+        uLongf dest_len = tmp.size();
+        uncompress(reinterpret_cast&lt;Bytef *&gt;(tmp.data()), &amp;dest_len,
+                   reinterpret_cast&lt;Bytef *&gt;(buf.data() + idx), buf.size() - idx);
+
+        buf.swap(tmp);
+        idx = 0;
+
+        while (idx &lt; dest_len) {
+            uint16_t name_len;
+            uint32_t content_len;
+            READ_TO(&amp;name_len, sizeof(name_len));
+            READ_TO(&amp;content_len, sizeof(content_len));
+            std::string filename(name_len, 0), content(content_len, 0);
+            READ_TO(&amp;*filename.begin(), filename.size());
+            READ_TO(&amp;*content.begin(), content.size());
+            files.emplace(std::piecewise_construct, std::forward_as_tuple(std::move(filename)),
+                          std::forward_as_tuple(std::move(content)));
+        }
+#undef READ_TO
+    }
+    return files;
+}
+</code></pre>
+
+<p>接下来便可以通过添加到<code>package.preload</code>实现在lua中调用这些文件的目的。</p>
+
+
+  
+<div class="prev-next-post pure-g">
+  <div class="pure-u-1-24" style="text-align: left;">
+    
+    <a href="http://sysfork.com/post/cpp-function-container/"><i class="fa fa-chevron-left"></i></a>
+    
+  </div>
+  <div class="pure-u-10-24">
+    
+    <nav class="prev">
+      <a href="http://sysfork.com/post/cpp-function-container/">使用C&#43;&#43; map实现注册回调的功能</a>
+    </nav>
+    
+  </div>
+  <div class="pure-u-2-24">
+    &nbsp;
+  </div>
+  <div class="pure-u-10-24">
+    
+  </div>
+  <div class="pure-u-1-24" style="text-align: right;">
+    
+  </div>
+</div>
+
+
+
+  
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'sysfork-com';
+    dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+  
+  
+</div>
+
+</div>
+</div>
+<script src="http://sysfork.com/js/ui.js"></script>
+
+
+
+</script>
+</body>
+</html>
+
