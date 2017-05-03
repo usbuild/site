@@ -1,6 +1,6 @@
 baseurl = "https://lecoding.com/"
 languageCode = "zh-cn"
-title = "sys🔱fork"
+title = "[[ leCoding ]]"
 theme = "blackburn"
 hasCJKLanguage = true
 
