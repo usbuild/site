@@ -619,7 +619,7 @@ const forum = "lecoding"
         setTimeout(() => { if (!done) resolve(); }, 2000);
       })
 .then(() => {
-      return api.get('threads/details', { "thread:link": url, forum})
+      return api.get('threads/details', { "thread": "link:" + url, forum})
 })
 .then((response) => {
       api.threadInfo = response.response;
