@@ -1,0 +1,12 @@
+{{ with .Site.Params.disqus }}
+<ul id="recent" style="list-style: none;"></ul>
+<div id="disqus_thread"></div>
+<script src="//npm.elemecdn.com/jinkela@1.2.18/umd.js"></script>
+<script src="//cdn.bootcss.com/fetch-jsonp/1.0.6/fetch-jsonp.min.js"> </script>
+
+<script src="{{ $.Site.BaseURL }}js/disqus.js"></script>
+
+<script type="text/javascript">
+DisqusJS.getArticleComments();
+</script>
+{{ end }}

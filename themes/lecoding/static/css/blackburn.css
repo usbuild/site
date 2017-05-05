@@ -1,0 +1,115 @@
+a {
+    color: #3b8bba;
+    text-decoration: none;
+}
+
+a:hover, a:focus {
+    text-decoration: underline;
+}
+
+a:visited {
+    color: #265778;
+}
+
+.small-print {
+    font-size: 0.8em;
+    margin: 0.6em;
+}
+
+.post-meta {
+    font-size: 90%;
+}
+
+article > footer {
+    text-align: right;
+}
+
+.prev-next-post {
+    margin-top: 2em;
+    padding-top: 2em;
+    padding-bottom: 2em;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+}
+
+.prev-next-post .prev {
+    float: left;
+    text-align: left;
+    overflow: hidden;
+}
+
+.prev-next-post .next {
+    float: right;
+    text-align: right;
+    overflow: hidden;
+}
+
+#menu .brand {
+    font-weight: bold;
+    font-size: 1em;
+    letter-spacing: 0.1em;
+    text-transform: none;
+    background: transparent;
+    text-decoration: none;
+    margin: 0.5em 0;
+}
+
+#menu .pure-menu {
+    font-size: 0.9em;
+}
+
+i {
+    display: inline-block;
+    margin-right: 0.2em;
+}
+
+.pagination {
+    text-align: center;
+    margin-top: 3em;
+}
+
+.pagination a {
+    color: #265778;
+}
+
+.content p {
+    color: #2f2f2f;
+    font-size: 16px;
+    font-weight: normal;
+    line-height: 1.5;
+}
+
+code {
+    font-family: "Consolas", "Menlo", "Monaco", "Courier New", monospace;
+}
+
+pre > code {
+    line-height: 1.2;
+    font-size: 13px;
+}
+
+p > code {
+    padding: 0;
+    padding-top: 0.2em;
+    padding-bottom: 0.2em;
+    margin: 0;
+    font-size: 85%;
+    background-color: rgba(0, 0, 0, 0.04);
+    border-radius: 3px;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+}
+
+span.reverse {
+  unicode-bidi: bidi-override;
+  direction: rtl;
+}
+
+blockquote {
+    border-left: solid lightgray;
+    padding-left: 10px;
+    margin-left: 10px;
+}
