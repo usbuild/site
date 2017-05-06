@@ -158,6 +158,8 @@ function onPostComment(data) {
     if (resp.code == 0) {
       openedWins[data.windows].close();
       alert("评论已提交，请等待审核");
+    } else if (resp.code == 2) {
+      alert("已发表过相同内容");
     }
   });
 }
@@ -268,5 +270,14 @@ function CommentAPI(forum, apiPath, selector, url) {
 CommentAPI.prototype = commentAPI;
 
 function RenderComment(forum, apiPath, selector, url) {
-  api = new CommentAPI(forum, apiPath, selector, url)
+  var done = false;
+  var dsq = document.createElement('script');
+  dsq.src = '//'+forum+'.disqus.com/embed.js';
+  dsq.onload = function()  {
+    done = true;
+  };
+  document.head.appendChild(dsq);
+  setTimeout(function () { if (!done)
+    api = new CommentAPI(forum, apiPath, selector, url);
+  }, 2000);
 }
