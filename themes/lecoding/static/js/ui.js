@@ -144,15 +144,17 @@ function postComment(parentId) {
 }
 
 function onPostComment(data) {
-  console.log(api);
-  console.log(data);
-  api.post("post/create", {
+  var postData = {
     message: data.message,
-    "parent": data.parent,
     "thread": api.threadId,
     "author_name": data.author_name,
     "author_email": data.author_email
-  }, function(resp){
+  };
+
+  if (data.parent) {
+    postData["parent"] = data.parent;
+  }
+  api.post("posts/create", postData, function(resp){
     if (resp.code == 0) {
       openedWins[data.windows].close();
       alert("评论已提交，请等待审核");
