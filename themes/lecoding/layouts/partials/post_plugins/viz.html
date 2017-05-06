@@ -11,7 +11,8 @@
         });
         var image = new DOMParser().parseFromString(Viz(x.innerText, {format:"svg", engine:engine}), "image/svg+xml");
         x.parentNode.insertBefore(image.documentElement, x);
-        x.style.display = 'none'
+        x.parentNode.className += " plain";
+        x.style.display = 'none';
     });
 })();
 </script>

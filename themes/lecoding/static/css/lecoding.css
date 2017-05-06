@@ -39,12 +39,12 @@ div#main {
   color: #444;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
-  line-height: 1.8;
   word-wrap: break-word;
 }
 
 div.content {
   padding: 10px 30px 10px 30px;
+  line-height: 1.8;
 }
 
 div.content .header {
@@ -114,6 +114,7 @@ h3 {
 p {
   text-align: justify;
   line-height: 1.3em;
+  margin: 0.5em 0;
 }
 
 p.title {
@@ -276,4 +277,114 @@ p code {
 .center {
   margin:auto;
   text-align:center;
+}
+.prev-next-post {
+  overflow: auto;
+}
+
+.comments {
+  line-height: 1em;
+}
+
+.comment-header {
+  border-bottom: solid 1px #ccc;
+  font-size: 1.3em;
+  padding: 10px;
+  font-weight: bold;
+}
+
+#disqus_thread {
+  margin-top: 20px;
+}
+
+.comments .comment .avatar {
+  display: block;
+  width: 2.5em;
+  height: auto;
+  float: left;
+  margin: .2em 0 0;
+}
+
+.comments .comment>.avatar~.comment-msg {
+  margin-left: 3.0em;
+}
+
+.comments .comment>.comment-msg {
+  display: block;
+}
+
+.comments .comment a.author {
+  cursor: pointer;
+}
+
+.comments .comment .author {
+  font-size: 1em;
+  color: rgba(0,0,0,.87);
+  font-weight: 700;
+}
+
+.comments .comment .metadata {
+  display: inline-block;
+  color: rgba(0,0,0,.4);
+  font-size: .875em;
+}
+
+.comments .comment .text {
+  margin: .25em 0 .5em;
+  font-size: 1em;
+  word-wrap: break-word;
+  color: rgba(0,0,0,.87);
+  line-height: 1.3;
+}
+
+.comments .comment .avatar img, .comments .comment img.avatar {
+    display: block;
+    margin: 0 auto;
+    width: 100%;
+    height: 100%;
+    border-radius: .25rem;
+}
+
+.comments .comment .comments {
+  margin: 0 0 0 1em;
+  padding: 0;
+}
+
+.comments .comment .metadata>:last-child {
+    margin-right: 0;
+}
+.comments .comment .metadata>* {
+    display: inline-block;
+    margin: 0 .5em 0 0;
+}
+
+.comments .comment .text>p{
+  margin: 0 0 ;
+}
+
+.comments a.reply {
+  color: #BBB;
+  text-decoration: none;
+  font-size: 12px;
+}
+
+.comments .data {
+  font-size: 12px;
+}
+
+.comments a.reply:hover {
+  color: #AAA;
+  text-decoration: none;
+}
+
+.comments a.reply:visited {
+  color: #BBB;
+  text-decoration: none;
+}
+
+.comments .comment {
+  margin: 20px 0 0 0;
+}
+.comments .post-comment-btn {
+  float: right;
 }
