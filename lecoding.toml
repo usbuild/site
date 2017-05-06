@@ -14,27 +14,24 @@ paginate = 10
   # Shown in the side menu.
   [[menu.main]]
     name = "Home"
-    pre = "<i class='fa fa-home fa-fw'></i>"
-    weight = 0
+    weight = 1
     identifier = "home"
     url = "/"
   [[menu.main]]
-    name = "Posts"
-    pre = "<i class='fa fa-list fa-fw'></i>"
-    weight = 1
+    name = "归档"
+    weight = 2
     identifier = "post"
     url = "/post/"
   [[menu.main]]
-    name = "About"
-    pre = "<i class='fa fa-user fa-fw'></i>"
-    weight = 2
+    name = "tags"
+    weight = 3
+    identifier = "tags"
+    url = "/tags/"
+  [[menu.main]]
+    name = "关于"
+    weight = 4
     identifier = "about"
     url = "/about/"
-  [[menu.main]]
-    name = "Contact"
-    pre = "<i class='fa fa-phone fa-fw'></i>"
-    weight = 3
-    url = "/contact/"
 
 [indexes]
   tag = "tags"
@@ -42,7 +39,7 @@ paginate = 10
   
 [params]
   # CSS name for highlight.js
-  highlightjs = "github"
+  highlightjs = "gruvbox-light"
   dateFormat = "02 Jan 2006, 15:04" 
   disqus = "lecoding"
 

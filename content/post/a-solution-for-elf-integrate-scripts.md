@@ -21,7 +21,7 @@ topics = []
 其中`scripts/framework`是各个项目公用的，并且和`bin`目录中的可执行文件同时发布和更新。所以有一个想法，就是将`framework`中
 的lua文件集成到可执行文件中，减少维护的成本。
 
-# 1. 文件存储
+#  文件存储
 
 下面是elf文件的示意图
 
@@ -129,7 +129,7 @@ subprocess.call("objcopy %s --add-section .lua-data=%s %s"%(args.exe, f.name, ar
 
 ```
 
-# 2. 文件内容的读取
+# 文件内容的读取
 我们需要使用`elf.h`文件来读取文件内容。根据上述的格式示意图，`elf`文件开头的是Header，其格式为`ElfXX_Ehdr`，
 我们可以直接读取文件内容到内存。然后读取`e_shoff`字段获得section header的位置，定位到位置并依次读取内容到`ElfXX_Shdr`
 结构体中，然后通过各个entry的`sh_name`得到最终section，然后读取文件达到目的。完整代码如下：

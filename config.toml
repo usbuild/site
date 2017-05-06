@@ -42,7 +42,7 @@ paginate = 10
   
 [params]
   # CSS name for highlight.js
-  highlightjs = "github"
+  highlightjs = "gruvbox-light"
   dateFormat = "02 Jan 2006, 15:04" 
   disqus = "sysfork-com"
 

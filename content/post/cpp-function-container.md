@@ -62,7 +62,7 @@ int main() {
 其中`addCallback`的作用用于注册回调函数，参数可以是`std::function`、`lambda`、`functor`、普通的函数、成员函数等等。这里为了简化处理，我们只
 处理`std::function`、`lambda`和普通函数，其余的不再赘述。下面是一些问题：
 
-# 1. 参数的处理？
+# 参数的处理？
 由于我们使用的是`map`，`value_type`是一定的，你无法将多个不同类型的`std::function`放进去，所以需要需要包一层，这里存储的是`std::function<void(void*)>`，
 由于是异步调用，返回值我们不关心。参数使用的是`void*`，将类型给抹除掉了。那么参数的具体内容是什么呢？可以使用`std::tuple`来存储，那`call`的实现就很简单了:
 
@@ -78,7 +78,7 @@ void call(int idx, ARGS && ... args) {
 }
 ```
 
-# 2. `callbacks`存储的内容是？
+# `callbacks`存储的内容是？
 
 上面的讨论中，`map`的`value_type`是`std::function<void(*)>`，所以我们不能直接将外部传入的回调设置进去，需要再包一层
 ```
@@ -95,7 +95,7 @@ int addCallback(T && t) {
 这里就不详细介绍了。
 问题是，`tuple`的参数如何处理？我们没法从`data`中得到类型心系，唯一的方法就是从`T`中获取，那如何获取呢？
 
-# 3. callable对象调用参数萃取
+# callable对象调用参数萃取
 
 现在的主要问题是，如何从`std::function`、`lambda`、普通函数等类型中提取参数信息。对于普通函数和`std::function`我们可以通过特化来做
 

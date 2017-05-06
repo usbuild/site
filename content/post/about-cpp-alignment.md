@@ -9,27 +9,27 @@ topics = []
 
 +++
 
-# 1. 动机
+# 动机
 
 最近在整理C++11中的新增特性，其中有一个[alignas](http://en.cppreference.com/w/cpp/language/alignas)关键字。在学习这个的时候顺便研究了
 下C/C++中的字节对齐问题，发现有很多可以探索的地方。
 
-# 2. 什么是地址对齐
+# 什么是地址对齐
 
 参考维基百科的解释：[Data_structure_alignment](https://en.wikipedia.org/wiki/Data_structure_alignment)。所谓地址对齐，即某个地址A满足是n的倍数，其中n是2的幂次方(如1、2、4、8等等)。如果用二进制表示的话，那么
 A的末尾至少有<code>log<sub>2</sub>n</code>个0(废话)。当我们说到某个变量是n字节对齐的时候，其意思是指这个变量的地址是对齐的。
 
-# 3. 地址对齐的意义
+# 地址对齐的意义
 从我们编写的程序来看，CPU好像可以访问内存中的任意位置；但是实际上CPU往往是按照块为基本单位访问内存的。如果某个变量的起始地址位于某个块的的起始处，则只需较少的次数便能完成读取。
 比如在某个CPU中，其每次取内存的大小为8字节，对于一个8字节的long类型变量，如果该变量的地址是8的倍数，那么每次load这个long变量只需要一次操作。如果不是8的倍数则需要两次，影响了效率。
 更多的数据测评参考[这里](http://www.ibm.com/developerworks/library/pa-dalign/)
 
-# 4. 自然对齐
+# 自然对齐
 为了保证运行效率，编译器在生成可执行程序的时候会对我们使用的变量自动对齐。这个值往往就是变量类型的size或是能被size整除。如char的自然对齐地址为1，而int则是4或8。但是，这也是有上限的。在`C++11`中，
 上限为`std::max_align_t`的对齐值，在大多数平台上，这个类型都被定义为`long double`，因为这往往也是最大的标量。当我们定义数组时，如 `TYPE f[10]`，其中第N个元素的地址为`f + sizeof(TYPE) * N`。
 如果`TYPE`的对齐值能被`sizeof(TYPE)`整除的话，则能保证只要数组开始地址时对齐的，那么所有元素都是对齐的。
 
-# 4. 变量的内存对齐控制
+# 变量的内存对齐控制
 
 GCC有一个自己的扩展来控制变量的对齐内存，`__attribute__((aligned()))`。 
 ```
@@ -51,7 +51,7 @@ alignment.cpp:15:3: error: requested alignment is less than minimum alignment of
 ```
 所以大家在使用的时候，就不要随便将一个变量设置成小于自然对齐的值，否则容易导致跨平台问题。
 
-# 5. struct
+# struct
 struct不是一个标量，并且是一个自定义数据类型。这里有ESR的[一篇文章](http://www.catb.org/esr/structure-packing/)，本文简单的总结一起他的意思。
 struct中的元素并不是紧致排列的，为了保证每个成员都是对齐的，编译器会在struct中的元素之间插入pad，例
 ```
@@ -122,6 +122,6 @@ struct A {
 ```
 其size为`21 = 1(char) + 8(double) + 1(pad) + 1(char) + 1(pad) + 8(double) + 1(char) + 1(pad)`。
 
-# 6. 总结
+# 总结
 align在实际开发中应用得并不多，但是当我们了解其原理，就能更好地优化struct或类的结构，减少无谓的pad，从达到减少内存占用的目的。除此只玩，当编写某些需要严格控制内存
 layout的时候，pack能让我们更好地控制产出的代码。

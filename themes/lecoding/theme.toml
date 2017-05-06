@@ -1,18 +1,18 @@
-name = "Blackburn"
+name = "lecoding"
 license = "MIT"
-licenselink = "https://github.com/yoshiharuyamashita/blackburn/blob/master/LICENSE.md"
-description = "A clear, responsive theme constructed using Pure CSS from Yahoo"
-homepage = "https://github.com/yoshiharuyamashita/blackburn"
+licenselink = ""
+description = "a simple blog theme"
+homepage = "https://lecoding.com"
 tags = ["blog", "personal", "purecss", "responsive"]
 features = ["blog", "personal", "purecss", "responsive"]
 min_version = 0.15
 
 [author]
-  name = "Yoshiharu Yamashita"
-  homepage = "http://yoshiharuyamashita.com"
+  name = "Usbuild"
+  homepage = "https://lecoding.com"
 
 # If porting an existing theme
 [original]
-  name = "Responsive side menu"
-  homepage = "http://purecss.io/layouts/"
-  repo = "https://github.com/yahoo/pure"
+  name = "Blackburn"
+  homepage = "https://github.com/yoshiharuyamashita/blackburn"
+  repo = "https://github.com/yoshiharuyamashita/blackburn"

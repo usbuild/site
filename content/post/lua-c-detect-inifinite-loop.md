@@ -14,7 +14,7 @@ topics = []
 
 `C++`中集成`lua`，调用到游戏逻辑时，一般通过[pcall](http://pgl.yoyo.org/luai/i/lua_pcall)，但是一旦调用了`pcall`，代码的执行路径便进入了`lua`的世界，除非通过信号机制才能在当前线程中中断，实现执行其他分支的目的。除此之外，`lua`还提供了`debug.sethook`函数，可以在执行正常逻辑中触发`hook`，实现监测超时的功能。所以我们有以下两种方案：
 
-# 1. 使用`debug.sethook()`来实现
+# 使用`debug.sethook()`来实现
 
 
 > debug.sethook ([thread,] hook, mask [, count])
@@ -52,7 +52,7 @@ But，在`luajit`下这条不一定成立，因为执行的逻辑被`jit`编译�
 
 嗯，看样子只能使用第二种方案了。
 
-# 2. 使用信号来实现
+# 使用信号来实现
 
 在lua的命令行程序中我们可以通过`Ctrl-C`中断正在执行的程序
 ```
