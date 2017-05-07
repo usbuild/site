@@ -148,13 +148,13 @@ pre {
   color: #000000;
   background-color: #fbf1c7;
   padding: 8px 16px 8px 8px;
-  margin-left: 20px;
   border: #000000;
   border-style: dashed;
   border-width: 1px;
   display: inline-block;
   margin-top: 0px;
   margin-bottom: 0px;
+  line-height: 1em;
 }
 
 pre.plain {
@@ -201,15 +201,8 @@ iframe.sitenav {
     font-weight: 400;
   }
   pre {
-    /* was 2016: default */
-    font-size: 150%;
     overflow: scroll;
-    width: 100%;
-  }
-  div.recent,
-  div.nav {
-    display: none;
-    visibility: hidden;
+    
   }
 }
 
