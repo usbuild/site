@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="generator" content="Hugo 0.16" />
+
+  <title>让disqus支持大陆访问 &middot; sys🔱fork</title>
+
+  
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/pure-min.css">
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/grids-responsive-old-ie-min.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/grids-responsive-min.css">
+  <!--<![endif]-->
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="http://sysfork.com/css/side-menu-old-ie.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="http://sysfork.com/css/side-menu.css">
+  <!--<![endif]-->
+
+  <link rel="stylesheet" href="http://sysfork.com/css/blackburn.css">
+
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css">
+
+  
+  
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.4.0/styles/gruvbox-light.min.css">
+  <script src="//cdn.bootcss.com/highlight.js/9.4.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  
+
+  <link rel="shortcut icon" href="http://sysfork.com/img/favicon.ico" type="image/x-icon" />
+
+</head>
+
+
+<body>
+<div id="layout">
+
+  
+<a href="#menu" id="menuLink" class="menu-link">
+  
+  <span></span>
+</a>
+<div id="menu">
+
+  
+
+  <div class="pure-menu">
+    <ul class="pure-menu-list">
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/"><i class='fa fa-home fa-fw'></i>Home</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/post/"><i class='fa fa-list fa-fw'></i>Posts</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/about/"><i class='fa fa-user fa-fw'></i>About</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/contact/"><i class='fa fa-phone fa-fw'></i>Contact</a>
+      
+        </li>
+      
+    </ul>
+  </div>
+
+  <div class="pure-menu social">
+  <ul class="pure-menu-list">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <li class="pure-menu-item">
+      <a class="pure-menu-link" href="https://linkedin.com/in/usbuild" target="_blank"><i class="fa fa-linkedin-square fa-fw"></i>LinkedIn</a>
+    </li>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <li class="pure-menu-item">
+      <a class="pure-menu-link" href="https://github.com/usbuild" target="_blank"><i class="fa fa-github-square fa-fw"></i>GitHub</a>
+    </li>
+    
+
+    
+
+    
+
+  </ul>
+</div>
+
+
+  <div>
+  <div class="small-print">
+    <small>&copy; 2017. All rights reserved.</small>
+  </div>
+  <div class="small-print">
+    <small>Built with&nbsp;<a href="https://gohugo.io/" target="_blank">Hugo</a></small>
+    <small>Theme&nbsp;<a href="https://github.com/yoshiharuyamashita/blackburn" target="_blank">Blackburn</a></small>
+  </div>
+</div>
+
+</div>
+
+
+  <div id="main">
+
+
+<div class="header">
+  <h1>让disqus支持大陆访问</h1>
+  <h2></h2>
+</div>
+<div class="content">
+
+  <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>07 May 2017, 18:11</time>
+  </div>
+
+  
+
+  
+  
+  
+  
+
+  
+  
+  
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="http://sysfork.com/tags/disqus">disqus</a>
+    
+  </div>
+  
+  
+
+</div>
+
+  
+
+<p>由于众所周知的原因，<a href="https://disqus.com/">disqus</a> 在大陆难以访问，随着<a href="https://duoshuo.com">多说</a>的关闭，无法正常地使用评论功能已经成为
+「静态博客生成器类博客」的一个问题。 好在 disqus 提供了一些 <a href="https://disqus.com/api/docs/">api</a> ，在这里我们可以使用一些方法实现评论的功能。</p>
+
+<h1 id="后端">后端</h1>
+
+<p>之前已经有部分的解决方案，其中最完善的是 <a href="https://shijianan.com/2017/01/02/build-your-own-disqus/">这里</a> ，其中使用的方法是创建一个
+<a href="https://disqus.com/api/applications/">disqus application</a> ，
+然后使用各种 api ，这里可以使用 python 或者直接使用 nginx 的反向代理。我也更新这段 <a href="https://github.com/shijn/disqus-proxy">python</a> 代码，但是在
+创建评论的时候总是出错， 提示 <code>This application cannot create posts on the chosen forum (code 12)</code> 。在尝试了多种
+<a href="http://stackoverflow.com/questions/15416688/disqus-api-create-comment-as-guest">方法</a>，查阅了众多网页均没有解决。后来找到一种说法，说是这个接口无法使用
+自己创建的<code>api_key</code>，最终找到了<a href="http://spirytoos.blogspot.com/2013/12/not-so-easy-posting-as-guest-via-disqus.html">解决方案</a>。</p>
+
+<p>其实答案就在 disqus 的前端 js 里面。使用 chrome network tools 可以看到有一些访问：</p>
+
+<pre><code>Request URL:https://disqus.com/api/3.0/embed/threadDetails.json?thread=5781899723
+&amp;api_key=E8Uh5l5fHZ6gD8U3KycjAIAk46f68Zw7C6eW8WSjZvCLXebZ7p0r1yrYDrLilk2F
+Request Method:GET
+Status Code:200 OK
+Remote Address:127.0.0.1:1081
+Referrer Policy:no-referrer-when-downgrade
+</code></pre>
+
+<p>其中 disqus 官方的 js 也是使用了这套 api ，其中 api_key 赫然在列，并且在3年后的今天这个 key 依然有效，并且这个 key cd 是无限的，不像 <a href="https://data.disqus.com/capabilities/">disqus application </a>
+有着 1000 次/hour 的全局限制。值得注意的是，使用这个 api_key 要求必须提供 Referer 和 Origin，并且都要是官方的地址：</p>
+
+<pre><code>Referer https://disqus.com;
+Origin https://disqus.com;
+</code></pre>
+
+<p>所以本站采用的一个反向代理的配置为</p>
+
+<pre><code>location ~ ^/disqus/(.*) {
+    proxy_pass https://disqus.com/api/3.0/$1?api_key=E8Uh5l5fHZ6gD8U3KycjAIAk46f68Zw7C6eW8WSjZvCLXebZ7p0r1yrYDrLilk2F&amp;$args;
+    proxy_set_header Referer https://disqus.com;
+    proxy_set_header Origin https://disqus.com;
+    proxy_redirect off;
+}
+</code></pre>
+
+<p>接下来就可以直接使用正常的接口了。大部分的接口都是支持 jsonp 的，所以可以跨域调用，对于 POST 请求如发表评论等无法使用 jsonp 的情况，只能放在同一个服务器下面了。期待有人能做一个支持跨域的公共接口 :)。</p>
+
+<h1 id="前端">前端</h1>
+
+<p>前端的部分有点麻烦，但是至少是有解决方案的，可以使用各种插件如<a href="https://github.com/Viima/jquery-comments">jquery comments</a>等，本站使用的是一个自己随便写的实现，所以界面比较挫，有兴趣的可以看看
+本站的<a href="https://github.com/usbuild/site">代码实现</a>。</p>
+
+<p>对于一些有「梯子」的用户，我们还是希望能够这些用户能够正常访问，所以使用了一个策略：当能够正常加载 disqus 官方 js 时就使用官方版本，否则就使用简易版本，代码如下：</p>
+
+<pre><code class="language-js">function RenderComment(forum, apiPath, selector, url) {
+  var done = false;
+  var dsq = document.createElement('script');
+  dsq.src = '//'+forum+'.disqus.com/embed.js';
+  dsq.onload = function()  {
+    done = true;
+  };
+  document.head.appendChild(dsq);
+  setTimeout(function () { if (!done)
+    api = new CommentAPI(forum, apiPath, selector, url);
+  }, 2000);
+}
+</code></pre>
+
+<p>本站的代码实现相当简陋，仅仅提供一个思路，希望能有所帮助。</p>
+
+
+  
+<div class="prev-next-post pure-g">
+  <div class="pure-u-1-24" style="text-align: left;">
+    
+    <a href="http://sysfork.com/post/a-solution-for-elf-integrate-scripts/"><i class="fa fa-chevron-left"></i></a>
+    
+  </div>
+  <div class="pure-u-10-24">
+    
+    <nav class="prev">
+      <a href="http://sysfork.com/post/a-solution-for-elf-integrate-scripts/">一种在elf中集成脚本文件的方案</a>
+    </nav>
+    
+  </div>
+  <div class="pure-u-2-24">
+    &nbsp;
+  </div>
+  <div class="pure-u-10-24">
+    
+  </div>
+  <div class="pure-u-1-24" style="text-align: right;">
+    
+  </div>
+</div>
+
+
+
+  
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'sysfork-com';
+    dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+  
+  
+</div>
+
+</div>
+</div>
+<script src="http://sysfork.com/js/ui.js"></script>
+
+
+
+</script>
+</body>
+</html>
+
