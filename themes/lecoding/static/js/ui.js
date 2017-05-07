@@ -256,7 +256,7 @@ function CommentAPI(forum, apiPath, selector, url) {
   this.threadId = {}
   this.apiPath = apiPath;
   this.commentsCount = 0;
-  var root = $('<div class="comments" id="cmt_root"><div class="comment-header">评论&nbsp;(<span id="comment_count"></span>) <span><a href="javascript:postComment()" class="post-comment-btn btn">发表评论</a></span></div></div>');
+  var root = $('<div class="comments" id="cmt_root"><div class="comment-header">评论&nbsp;(<span id="comment_count">0</span>) <span><a href="javascript:postComment()" class="post-comment-btn btn">发表评论</a></span></div></div>');
   $(selector).append(root);
 
   var self = this;
