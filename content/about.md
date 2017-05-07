@@ -8,8 +8,6 @@ topics = []
 
 +++
 
-<link rel="stylesheet" href="//cdn.bootcss.com/cc-icons/1.2.1/css/cc-icons.min.css" />
+联系我： [github](https://github.com/usbuild), [linkedin](https://www.linkedin.com/in/usbuild/), [njuzhangqichao@gmail.com](mailto:njuzhangqichao@gmail.com)
 
-
-
-如无特殊说明，本站文章均为原创，采用 [<i class="cc cc-lg cc-by-nc-sa"></i>](http://creativecommons.org/licenses/by-nc-sa/2.5/deed.zh)协议。
+如无特殊说明，本站文章均为原创，采用 [署名-非商业性使用-相同方式共享 2.5 通用 (CC BY-NC-SA 2.5)](http://creativecommons.org/licenses/by-nc-sa/2.5/deed.zh)协议。
