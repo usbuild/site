@@ -9,7 +9,7 @@
 
   <div class="pure-menu">
     <ul class="pure-menu-list">
-      {{ range .Site.Menus.main "weight"}}
+      {{ range .Site.Menus.main}}
       {{ if .HasChildren }}
         <li class="pure-menu-item pure-menu-has-children">
           <a class="pure-menu-link" href="#">{{ .Pre }}{{ .Name }}</a>
