@@ -1,6 +1,6 @@
 baseurl = "https://lecoding.com/"
 languageCode = "zh-cn"
-title = "[[ leCoding ]]"
+title = "Usbuild's Blog"
 theme = "lecoding"
 hasCJKLanguage = true
 
@@ -18,7 +18,7 @@ paginate = 10
     identifier = "home"
     url = "/"
   [[menu.main]]
-    name = "归档"
+    name = "Archives"
     weight = 2
     identifier = "post"
     url = "/post/"
@@ -28,7 +28,7 @@ paginate = 10
     identifier = "tags"
     url = "/tags/"
   [[menu.main]]
-    name = "关于"
+    name = "About"
     weight = 4
     identifier = "about"
     url = "/about/"
@@ -42,6 +42,7 @@ paginate = 10
   highlightjs = "gruvbox-light"
   dateFormat = "02 Jan 2006, 15:04" 
   disqus = "lecoding"
+  author = "usbuild"
 
 [social]
   github = "usbuild"

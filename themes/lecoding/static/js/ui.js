@@ -121,7 +121,7 @@ function postComment(parentId) {
                 <ul>
                     <li><span>昵称：</span><input class=line name=author_name required placeholder="昵称" value="${author_name}">
                         <li><span>邮箱：</span><input class=line name=author_email type=email required placeholder="邮箱" value="${author_email}">
-                            <li><span>内容：</span><textarea class="line" name="message" required placeholder="回复内容"></textarea>
+                            <li><span>内容：</span><textarea class="line" name="message" required placeholder="由于 disqus 的限制，评论内容需要审核后才会出现"></textarea>
                                 <li><input type=hidden name=parent value="${parentId}">
                                     <input type=hidden name=windows value="${openedWinsCount}">
                                     <button class="btn-submit" type=submit>立即发表</button>
@@ -162,7 +162,6 @@ function onPostComment(data) {
   api.post("posts/create", postData, function(resp){
     if (resp.code == 0) {
       openedWins[data.windows].close();
-      alert("评论已提交，请等待审核");
     } else if (resp.code == 2) {
       alert("已发表过相同内容");
     }
