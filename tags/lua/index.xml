@@ -30,7 +30,7 @@
 &lt;p&gt;其中&lt;code&gt;scripts/framework&lt;/code&gt;是各个项目公用的，并且和&lt;code&gt;bin&lt;/code&gt;目录中的可执行文件同时发布和更新。所以有一个想法，就是将&lt;code&gt;framework&lt;/code&gt;中
 的lua文件集成到可执行文件中，减少维护的成本。&lt;/p&gt;
 
-&lt;h1 id=&#34;1-文件存储&#34;&gt;1. 文件存储&lt;/h1&gt;
+&lt;h1 id=&#34;文件存储&#34;&gt;文件存储&lt;/h1&gt;
 
 &lt;p&gt;下面是elf文件的示意图&lt;/p&gt;
 
@@ -136,7 +136,7 @@ subprocess.call(&amp;quot;objcopy %s --add-section .lua-data=%s %s&amp;quot;%(ar
 
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h1 id=&#34;2-文件内容的读取&#34;&gt;2. 文件内容的读取&lt;/h1&gt;
+&lt;h1 id=&#34;文件内容的读取&#34;&gt;文件内容的读取&lt;/h1&gt;
 
 &lt;p&gt;我们需要使用&lt;code&gt;elf.h&lt;/code&gt;文件来读取文件内容。根据上述的格式示意图，&lt;code&gt;elf&lt;/code&gt;文件开头的是Header，其格式为&lt;code&gt;ElfXX_Ehdr&lt;/code&gt;，
 我们可以直接读取文件内容到内存。然后读取&lt;code&gt;e_shoff&lt;/code&gt;字段获得section header的位置，定位到位置并依次读取内容到&lt;code&gt;ElfXX_Shdr&lt;/code&gt;
@@ -236,7 +236,7 @@ subprocess.call(&amp;quot;objcopy %s --add-section .lua-data=%s %s&amp;quot;%(ar
 
 &lt;p&gt;&lt;code&gt;C++&lt;/code&gt;中集成&lt;code&gt;lua&lt;/code&gt;，调用到游戏逻辑时，一般通过&lt;a href=&#34;http://pgl.yoyo.org/luai/i/lua_pcall&#34;&gt;pcall&lt;/a&gt;，但是一旦调用了&lt;code&gt;pcall&lt;/code&gt;，代码的执行路径便进入了&lt;code&gt;lua&lt;/code&gt;的世界，除非通过信号机制才能在当前线程中中断，实现执行其他分支的目的。除此之外，&lt;code&gt;lua&lt;/code&gt;还提供了&lt;code&gt;debug.sethook&lt;/code&gt;函数，可以在执行正常逻辑中触发&lt;code&gt;hook&lt;/code&gt;，实现监测超时的功能。所以我们有以下两种方案：&lt;/p&gt;
 
-&lt;h1 id=&#34;1-使用-debug-sethook-来实现&#34;&gt;1. 使用&lt;code&gt;debug.sethook()&lt;/code&gt;来实现&lt;/h1&gt;
+&lt;h1 id=&#34;使用-debug-sethook-来实现&#34;&gt;使用&lt;code&gt;debug.sethook()&lt;/code&gt;来实现&lt;/h1&gt;
 
 &lt;blockquote&gt;
 &lt;p&gt;debug.sethook ([thread,] hook, mask [, count])
@@ -282,7 +282,7 @@ at the first few functions in luajit.c for an example (Ctrl-C handler).&lt;/p&gt
 
 &lt;p&gt;嗯，看样子只能使用第二种方案了。&lt;/p&gt;
 
-&lt;h1 id=&#34;2-使用信号来实现&#34;&gt;2. 使用信号来实现&lt;/h1&gt;
+&lt;h1 id=&#34;使用信号来实现&#34;&gt;使用信号来实现&lt;/h1&gt;
 
 &lt;p&gt;在lua的命令行程序中我们可以通过&lt;code&gt;Ctrl-C&lt;/code&gt;中断正在执行的程序&lt;/p&gt;
 

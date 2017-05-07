@@ -30,7 +30,7 @@
 &lt;p&gt;其中&lt;code&gt;scripts/framework&lt;/code&gt;是各个项目公用的，并且和&lt;code&gt;bin&lt;/code&gt;目录中的可执行文件同时发布和更新。所以有一个想法，就是将&lt;code&gt;framework&lt;/code&gt;中
 的lua文件集成到可执行文件中，减少维护的成本。&lt;/p&gt;
 
-&lt;h1 id=&#34;1-文件存储&#34;&gt;1. 文件存储&lt;/h1&gt;
+&lt;h1 id=&#34;文件存储&#34;&gt;文件存储&lt;/h1&gt;
 
 &lt;p&gt;下面是elf文件的示意图&lt;/p&gt;
 
@@ -136,7 +136,7 @@ subprocess.call(&amp;quot;objcopy %s --add-section .lua-data=%s %s&amp;quot;%(ar
 
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h1 id=&#34;2-文件内容的读取&#34;&gt;2. 文件内容的读取&lt;/h1&gt;
+&lt;h1 id=&#34;文件内容的读取&#34;&gt;文件内容的读取&lt;/h1&gt;
 
 &lt;p&gt;我们需要使用&lt;code&gt;elf.h&lt;/code&gt;文件来读取文件内容。根据上述的格式示意图，&lt;code&gt;elf&lt;/code&gt;文件开头的是Header，其格式为&lt;code&gt;ElfXX_Ehdr&lt;/code&gt;，
 我们可以直接读取文件内容到内存。然后读取&lt;code&gt;e_shoff&lt;/code&gt;字段获得section header的位置，定位到位置并依次读取内容到&lt;code&gt;ElfXX_Shdr&lt;/code&gt;
@@ -283,7 +283,7 @@ int main() {
 &lt;p&gt;其中&lt;code&gt;addCallback&lt;/code&gt;的作用用于注册回调函数，参数可以是&lt;code&gt;std::function&lt;/code&gt;、&lt;code&gt;lambda&lt;/code&gt;、&lt;code&gt;functor&lt;/code&gt;、普通的函数、成员函数等等。这里为了简化处理，我们只
 处理&lt;code&gt;std::function&lt;/code&gt;、&lt;code&gt;lambda&lt;/code&gt;和普通函数，其余的不再赘述。下面是一些问题：&lt;/p&gt;
 
-&lt;h1 id=&#34;1-参数的处理&#34;&gt;1. 参数的处理？&lt;/h1&gt;
+&lt;h1 id=&#34;参数的处理&#34;&gt;参数的处理？&lt;/h1&gt;
 
 &lt;p&gt;由于我们使用的是&lt;code&gt;map&lt;/code&gt;，&lt;code&gt;value_type&lt;/code&gt;是一定的，你无法将多个不同类型的&lt;code&gt;std::function&lt;/code&gt;放进去，所以需要需要包一层，这里存储的是&lt;code&gt;std::function&amp;lt;void(void*)&amp;gt;&lt;/code&gt;，
 由于是异步调用，返回值我们不关心。参数使用的是&lt;code&gt;void*&lt;/code&gt;，将类型给抹除掉了。那么参数的具体内容是什么呢？可以使用&lt;code&gt;std::tuple&lt;/code&gt;来存储，那&lt;code&gt;call&lt;/code&gt;的实现就很简单了:&lt;/p&gt;
@@ -298,7 +298,7 @@ void call(int idx, ARGS &amp;amp;&amp;amp; ... args) {
 }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h1 id=&#34;2-callbacks-存储的内容是&#34;&gt;2. &lt;code&gt;callbacks&lt;/code&gt;存储的内容是？&lt;/h1&gt;
+&lt;h1 id=&#34;callbacks-存储的内容是&#34;&gt;&lt;code&gt;callbacks&lt;/code&gt;存储的内容是？&lt;/h1&gt;
 
 &lt;p&gt;上面的讨论中，&lt;code&gt;map&lt;/code&gt;的&lt;code&gt;value_type&lt;/code&gt;是&lt;code&gt;std::function&amp;lt;void(*)&amp;gt;&lt;/code&gt;，所以我们不能直接将外部传入的回调设置进去，需要再包一层&lt;/p&gt;
 
@@ -316,7 +316,7 @@ int addCallback(T &amp;amp;&amp;amp; t) {
 这里就不详细介绍了。
 问题是，&lt;code&gt;tuple&lt;/code&gt;的参数如何处理？我们没法从&lt;code&gt;data&lt;/code&gt;中得到类型心系，唯一的方法就是从&lt;code&gt;T&lt;/code&gt;中获取，那如何获取呢？&lt;/p&gt;
 
-&lt;h1 id=&#34;3-callable对象调用参数萃取&#34;&gt;3. callable对象调用参数萃取&lt;/h1&gt;
+&lt;h1 id=&#34;callable对象调用参数萃取&#34;&gt;callable对象调用参数萃取&lt;/h1&gt;
 
 &lt;p&gt;现在的主要问题是，如何从&lt;code&gt;std::function&lt;/code&gt;、&lt;code&gt;lambda&lt;/code&gt;、普通函数等类型中提取参数信息。对于普通函数和&lt;code&gt;std::function&lt;/code&gt;我们可以通过特化来做&lt;/p&gt;
 
@@ -381,7 +381,7 @@ struct CallbackTypeHelper {
 
 &lt;p&gt;&lt;code&gt;C++&lt;/code&gt;中集成&lt;code&gt;lua&lt;/code&gt;，调用到游戏逻辑时，一般通过&lt;a href=&#34;http://pgl.yoyo.org/luai/i/lua_pcall&#34;&gt;pcall&lt;/a&gt;，但是一旦调用了&lt;code&gt;pcall&lt;/code&gt;，代码的执行路径便进入了&lt;code&gt;lua&lt;/code&gt;的世界，除非通过信号机制才能在当前线程中中断，实现执行其他分支的目的。除此之外，&lt;code&gt;lua&lt;/code&gt;还提供了&lt;code&gt;debug.sethook&lt;/code&gt;函数，可以在执行正常逻辑中触发&lt;code&gt;hook&lt;/code&gt;，实现监测超时的功能。所以我们有以下两种方案：&lt;/p&gt;
 
-&lt;h1 id=&#34;1-使用-debug-sethook-来实现&#34;&gt;1. 使用&lt;code&gt;debug.sethook()&lt;/code&gt;来实现&lt;/h1&gt;
+&lt;h1 id=&#34;使用-debug-sethook-来实现&#34;&gt;使用&lt;code&gt;debug.sethook()&lt;/code&gt;来实现&lt;/h1&gt;
 
 &lt;blockquote&gt;
 &lt;p&gt;debug.sethook ([thread,] hook, mask [, count])
@@ -427,7 +427,7 @@ at the first few functions in luajit.c for an example (Ctrl-C handler).&lt;/p&gt
 
 &lt;p&gt;嗯，看样子只能使用第二种方案了。&lt;/p&gt;
 
-&lt;h1 id=&#34;2-使用信号来实现&#34;&gt;2. 使用信号来实现&lt;/h1&gt;
+&lt;h1 id=&#34;使用信号来实现&#34;&gt;使用信号来实现&lt;/h1&gt;
 
 &lt;p&gt;在lua的命令行程序中我们可以通过&lt;code&gt;Ctrl-C&lt;/code&gt;中断正在执行的程序&lt;/p&gt;
 
@@ -497,29 +497,29 @@ signal(SIGALRM, SIG_DFL);
       <guid>http://sysfork.com/post/about-cpp-alignment/</guid>
       <description>
 
-&lt;h1 id=&#34;1-动机&#34;&gt;1. 动机&lt;/h1&gt;
+&lt;h1 id=&#34;动机&#34;&gt;动机&lt;/h1&gt;
 
 &lt;p&gt;最近在整理C++11中的新增特性，其中有一个&lt;a href=&#34;http://en.cppreference.com/w/cpp/language/alignas&#34;&gt;alignas&lt;/a&gt;关键字。在学习这个的时候顺便研究了
 下C/C++中的字节对齐问题，发现有很多可以探索的地方。&lt;/p&gt;
 
-&lt;h1 id=&#34;2-什么是地址对齐&#34;&gt;2. 什么是地址对齐&lt;/h1&gt;
+&lt;h1 id=&#34;什么是地址对齐&#34;&gt;什么是地址对齐&lt;/h1&gt;
 
 &lt;p&gt;参考维基百科的解释：&lt;a href=&#34;https://en.wikipedia.org/wiki/Data_structure_alignment&#34;&gt;Data_structure_alignment&lt;/a&gt;。所谓地址对齐，即某个地址A满足是n的倍数，其中n是2的幂次方(如1、2、4、8等等)。如果用二进制表示的话，那么
 A的末尾至少有&lt;code&gt;log&lt;sub&gt;2&lt;/sub&gt;n&lt;/code&gt;个0(废话)。当我们说到某个变量是n字节对齐的时候，其意思是指这个变量的地址是对齐的。&lt;/p&gt;
 
-&lt;h1 id=&#34;3-地址对齐的意义&#34;&gt;3. 地址对齐的意义&lt;/h1&gt;
+&lt;h1 id=&#34;地址对齐的意义&#34;&gt;地址对齐的意义&lt;/h1&gt;
 
 &lt;p&gt;从我们编写的程序来看，CPU好像可以访问内存中的任意位置；但是实际上CPU往往是按照块为基本单位访问内存的。如果某个变量的起始地址位于某个块的的起始处，则只需较少的次数便能完成读取。
 比如在某个CPU中，其每次取内存的大小为8字节，对于一个8字节的long类型变量，如果该变量的地址是8的倍数，那么每次load这个long变量只需要一次操作。如果不是8的倍数则需要两次，影响了效率。
 更多的数据测评参考&lt;a href=&#34;http://www.ibm.com/developerworks/library/pa-dalign/&#34;&gt;这里&lt;/a&gt;&lt;/p&gt;
 
-&lt;h1 id=&#34;4-自然对齐&#34;&gt;4. 自然对齐&lt;/h1&gt;
+&lt;h1 id=&#34;自然对齐&#34;&gt;自然对齐&lt;/h1&gt;
 
 &lt;p&gt;为了保证运行效率，编译器在生成可执行程序的时候会对我们使用的变量自动对齐。这个值往往就是变量类型的size或是能被size整除。如char的自然对齐地址为1，而int则是4或8。但是，这也是有上限的。在&lt;code&gt;C++11&lt;/code&gt;中，
 上限为&lt;code&gt;std::max_align_t&lt;/code&gt;的对齐值，在大多数平台上，这个类型都被定义为&lt;code&gt;long double&lt;/code&gt;，因为这往往也是最大的标量。当我们定义数组时，如 &lt;code&gt;TYPE f[10]&lt;/code&gt;，其中第N个元素的地址为&lt;code&gt;f + sizeof(TYPE) * N&lt;/code&gt;。
 如果&lt;code&gt;TYPE&lt;/code&gt;的对齐值能被&lt;code&gt;sizeof(TYPE)&lt;/code&gt;整除的话，则能保证只要数组开始地址时对齐的，那么所有元素都是对齐的。&lt;/p&gt;
 
-&lt;h1 id=&#34;4-变量的内存对齐控制&#34;&gt;4. 变量的内存对齐控制&lt;/h1&gt;
+&lt;h1 id=&#34;变量的内存对齐控制&#34;&gt;变量的内存对齐控制&lt;/h1&gt;
 
 &lt;p&gt;GCC有一个自己的扩展来控制变量的对齐内存，&lt;code&gt;__attribute__((aligned()))&lt;/code&gt;。&lt;/p&gt;
 
@@ -543,7 +543,7 @@ typedef int more_aligned_int __attribute__ ((aligned (8)));  //(4)
 
 &lt;p&gt;所以大家在使用的时候，就不要随便将一个变量设置成小于自然对齐的值，否则容易导致跨平台问题。&lt;/p&gt;
 
-&lt;h1 id=&#34;5-struct&#34;&gt;5. struct&lt;/h1&gt;
+&lt;h1 id=&#34;struct&#34;&gt;struct&lt;/h1&gt;
 
 &lt;p&gt;struct不是一个标量，并且是一个自定义数据类型。这里有ESR的&lt;a href=&#34;http://www.catb.org/esr/structure-packing/&#34;&gt;一篇文章&lt;/a&gt;，本文简单的总结一起他的意思。
 struct中的元素并不是紧致排列的，为了保证每个成员都是对齐的，编译器会在struct中的元素之间插入pad，例&lt;/p&gt;
@@ -620,7 +620,7 @@ struct A {
 
 &lt;p&gt;其size为&lt;code&gt;21 = 1(char) + 8(double) + 1(pad) + 1(char) + 1(pad) + 8(double) + 1(char) + 1(pad)&lt;/code&gt;。&lt;/p&gt;
 
-&lt;h1 id=&#34;6-总结&#34;&gt;6. 总结&lt;/h1&gt;
+&lt;h1 id=&#34;总结&#34;&gt;总结&lt;/h1&gt;
 
 &lt;p&gt;align在实际开发中应用得并不多，但是当我们了解其原理，就能更好地优化struct或类的结构，减少无谓的pad，从达到减少内存占用的目的。除此只玩，当编写某些需要严格控制内存
 layout的时候，pack能让我们更好地控制产出的代码。&lt;/p&gt;

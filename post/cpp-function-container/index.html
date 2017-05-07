@@ -39,7 +39,7 @@
   
 
   
-  <link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.4.0/styles/github.min.css">
+  <link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.4.0/styles/gruvbox-light.min.css">
   <script src="//cdn.bootcss.com/highlight.js/9.4.0/highlight.min.js"></script>
   <script>hljs.initHighlightingOnLoad();</script>
   
@@ -261,7 +261,7 @@ int main() {
 <p>其中<code>addCallback</code>的作用用于注册回调函数，参数可以是<code>std::function</code>、<code>lambda</code>、<code>functor</code>、普通的函数、成员函数等等。这里为了简化处理，我们只
 处理<code>std::function</code>、<code>lambda</code>和普通函数，其余的不再赘述。下面是一些问题：</p>
 
-<h1 id="1-参数的处理">1. 参数的处理？</h1>
+<h1 id="参数的处理">参数的处理？</h1>
 
 <p>由于我们使用的是<code>map</code>，<code>value_type</code>是一定的，你无法将多个不同类型的<code>std::function</code>放进去，所以需要需要包一层，这里存储的是<code>std::function&lt;void(void*)&gt;</code>，
 由于是异步调用，返回值我们不关心。参数使用的是<code>void*</code>，将类型给抹除掉了。那么参数的具体内容是什么呢？可以使用<code>std::tuple</code>来存储，那<code>call</code>的实现就很简单了:</p>
@@ -276,7 +276,7 @@ void call(int idx, ARGS &amp;&amp; ... args) {
 }
 </code></pre>
 
-<h1 id="2-callbacks-存储的内容是">2. <code>callbacks</code>存储的内容是？</h1>
+<h1 id="callbacks-存储的内容是"><code>callbacks</code>存储的内容是？</h1>
 
 <p>上面的讨论中，<code>map</code>的<code>value_type</code>是<code>std::function&lt;void(*)&gt;</code>，所以我们不能直接将外部传入的回调设置进去，需要再包一层</p>
 
@@ -294,7 +294,7 @@ int addCallback(T &amp;&amp; t) {
 这里就不详细介绍了。
 问题是，<code>tuple</code>的参数如何处理？我们没法从<code>data</code>中得到类型心系，唯一的方法就是从<code>T</code>中获取，那如何获取呢？</p>
 
-<h1 id="3-callable对象调用参数萃取">3. callable对象调用参数萃取</h1>
+<h1 id="callable对象调用参数萃取">callable对象调用参数萃取</h1>
 
 <p>现在的主要问题是，如何从<code>std::function</code>、<code>lambda</code>、普通函数等类型中提取参数信息。对于普通函数和<code>std::function</code>我们可以通过特化来做</p>
 

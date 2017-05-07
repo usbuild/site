@@ -30,7 +30,7 @@
 &lt;p&gt;其中&lt;code&gt;scripts/framework&lt;/code&gt;是各个项目公用的，并且和&lt;code&gt;bin&lt;/code&gt;目录中的可执行文件同时发布和更新。所以有一个想法，就是将&lt;code&gt;framework&lt;/code&gt;中
 的lua文件集成到可执行文件中，减少维护的成本。&lt;/p&gt;
 
-&lt;h1 id=&#34;1-文件存储&#34;&gt;1. 文件存储&lt;/h1&gt;
+&lt;h1 id=&#34;文件存储&#34;&gt;文件存储&lt;/h1&gt;
 
 &lt;p&gt;下面是elf文件的示意图&lt;/p&gt;
 
@@ -136,7 +136,7 @@ subprocess.call(&amp;quot;objcopy %s --add-section .lua-data=%s %s&amp;quot;%(ar
 
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h1 id=&#34;2-文件内容的读取&#34;&gt;2. 文件内容的读取&lt;/h1&gt;
+&lt;h1 id=&#34;文件内容的读取&#34;&gt;文件内容的读取&lt;/h1&gt;
 
 &lt;p&gt;我们需要使用&lt;code&gt;elf.h&lt;/code&gt;文件来读取文件内容。根据上述的格式示意图，&lt;code&gt;elf&lt;/code&gt;文件开头的是Header，其格式为&lt;code&gt;ElfXX_Ehdr&lt;/code&gt;，
 我们可以直接读取文件内容到内存。然后读取&lt;code&gt;e_shoff&lt;/code&gt;字段获得section header的位置，定位到位置并依次读取内容到&lt;code&gt;ElfXX_Shdr&lt;/code&gt;

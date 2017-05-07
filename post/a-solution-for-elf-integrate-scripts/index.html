@@ -39,7 +39,7 @@
   
 
   
-  <link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.4.0/styles/github.min.css">
+  <link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.4.0/styles/gruvbox-light.min.css">
   <script src="//cdn.bootcss.com/highlight.js/9.4.0/highlight.min.js"></script>
   <script>hljs.initHighlightingOnLoad();</script>
   
@@ -220,7 +220,7 @@
 <p>其中<code>scripts/framework</code>是各个项目公用的，并且和<code>bin</code>目录中的可执行文件同时发布和更新。所以有一个想法，就是将<code>framework</code>中
 的lua文件集成到可执行文件中，减少维护的成本。</p>
 
-<h1 id="1-文件存储">1. 文件存储</h1>
+<h1 id="文件存储">文件存储</h1>
 
 <p>下面是elf文件的示意图</p>
 
@@ -326,7 +326,7 @@ subprocess.call(&quot;objcopy %s --add-section .lua-data=%s %s&quot;%(args.exe, 
 
 </code></pre>
 
-<h1 id="2-文件内容的读取">2. 文件内容的读取</h1>
+<h1 id="文件内容的读取">文件内容的读取</h1>
 
 <p>我们需要使用<code>elf.h</code>文件来读取文件内容。根据上述的格式示意图，<code>elf</code>文件开头的是Header，其格式为<code>ElfXX_Ehdr</code>，
 我们可以直接读取文件内容到内存。然后读取<code>e_shoff</code>字段获得section header的位置，定位到位置并依次读取内容到<code>ElfXX_Shdr</code>

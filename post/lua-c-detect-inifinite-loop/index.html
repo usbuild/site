@@ -39,7 +39,7 @@
   
 
   
-  <link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.4.0/styles/github.min.css">
+  <link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.4.0/styles/gruvbox-light.min.css">
   <script src="//cdn.bootcss.com/highlight.js/9.4.0/highlight.min.js"></script>
   <script>hljs.initHighlightingOnLoad();</script>
   
@@ -214,7 +214,7 @@
 
 <p><code>C++</code>中集成<code>lua</code>，调用到游戏逻辑时，一般通过<a href="http://pgl.yoyo.org/luai/i/lua_pcall">pcall</a>，但是一旦调用了<code>pcall</code>，代码的执行路径便进入了<code>lua</code>的世界，除非通过信号机制才能在当前线程中中断，实现执行其他分支的目的。除此之外，<code>lua</code>还提供了<code>debug.sethook</code>函数，可以在执行正常逻辑中触发<code>hook</code>，实现监测超时的功能。所以我们有以下两种方案：</p>
 
-<h1 id="1-使用-debug-sethook-来实现">1. 使用<code>debug.sethook()</code>来实现</h1>
+<h1 id="使用-debug-sethook-来实现">使用<code>debug.sethook()</code>来实现</h1>
 
 <blockquote>
 <p>debug.sethook ([thread,] hook, mask [, count])
@@ -260,7 +260,7 @@ at the first few functions in luajit.c for an example (Ctrl-C handler).</p>
 
 <p>嗯，看样子只能使用第二种方案了。</p>
 
-<h1 id="2-使用信号来实现">2. 使用信号来实现</h1>
+<h1 id="使用信号来实现">使用信号来实现</h1>
 
 <p>在lua的命令行程序中我们可以通过<code>Ctrl-C</code>中断正在执行的程序</p>
 
