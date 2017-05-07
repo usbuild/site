@@ -298,7 +298,7 @@ p code {
 }
 
 .comments .comment>.avatar~.comment-msg {
-  margin-left: 3.0em;
+  margin-left: 4.0em;
 }
 
 .comments .comment>.comment-msg {
@@ -322,7 +322,7 @@ p code {
 }
 
 .comments .comment .text {
-  margin: .25em 0 .5em;
+  margin: .35em 0 .5em;
   font-size: 1em;
   word-wrap: break-word;
   color: rgba(0,0,0,.87);
@@ -375,8 +375,12 @@ p code {
 }
 
 .comments .comment {
-  margin: 20px 0 0 0;
+  margin: 20px 0 10px 0;
 }
 .comments .post-comment-btn {
   float: right;
+}
+
+.comments .comment .date {
+    font-size: 11px;
 }

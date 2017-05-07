@@ -195,15 +195,16 @@ var commentAPI = {
   },
 
   buildComment: function(comment) {
+    var baseUrl = $("body").attr("data-url");
     return $(`
       <div class="comment" id="cmt_${comment.id}">
-    <a class="avatar">
-      <img src="${comment.author.avatar.permalink}">
+    <a class="avatar" href="${comment.author.profileUrl}">
+      <img src="${comment.author.avatar.permalink}" onerror="this.src='${baseUrl}img/noavatar.png'">
     </a>
     <div class="comment-msg">
       <div class="metadata">
-      <span class="author" data-name="${comment.author.name}"> <a>${comment.author.name}</a> </span>
-        <span class="date">${comment.createdAt}</span>
+      <span class="author" data-name="${comment.author.name}"> <a href="${comment.author.profileUrl}">${comment.author.name}</a> </span>
+        <span class="date">${new Date(comment.createdAt).toLocaleString()}</span>
         <span class="actions">
           <a class="reply" href="javascript: postComment('${comment.id}')">回复</a>
         </span>
