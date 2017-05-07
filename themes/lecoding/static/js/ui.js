@@ -44,7 +44,8 @@ function postComment(parentId) {
             font-size: 1.3em;
             line-height: 1.5;
             margin: 15px 30px;
-            text-align: center
+            text-align: center;
+            margin-top: 20px;
         }
 
         a {
