@@ -8,7 +8,11 @@ function postComment(parentId) {
   } else {
     targetName = document.title;
   }
-  var newWindow = window.open("", "comment", "width=400, height=500");
+
+  var author_name = localStorage.getItem("author_name") || "";
+  var author_email = localStorage.getItem("author_email") || "";
+
+  var newWindow = window.open("", "comment" + openedWinsCount, "width=400, height=500");
   openedWins[openedWinsCount] = newWindow;
   newWindow.document.write(`
 
@@ -109,15 +113,13 @@ function postComment(parentId) {
 </head>
 
 <body>
-    <header>
-        <h3>评论: ${targetName}</h3>
-    </header>
+    <h3>评论: ${targetName}</h3>
     <div class=bd>
         <div class="card submit">
             <form onsubmit="return false" id="create_post">
                 <ul>
-                    <li><span>昵称：</span><input class=line name=author_name required placeholder="昵称">
-                        <li><span>邮箱：</span><input class=line name=author_email type=email required placeholder="邮箱">
+                    <li><span>昵称：</span><input class=line name=author_name required placeholder="昵称" value="${author_name}">
+                        <li><span>邮箱：</span><input class=line name=author_email type=email required placeholder="邮箱" value="${author_email}">
                             <li><span>内容：</span><textarea class="line" name="message" required placeholder="回复内容"></textarea>
                                 <li><input type=hidden name=parent value="${parentId}">
                                     <input type=hidden name=windows value="${openedWinsCount}">
@@ -150,6 +152,8 @@ function onPostComment(data) {
     "author_name": data.author_name,
     "author_email": data.author_email
   };
+  localStorage.setItem("author_name", data.author_name);
+  localStorage.setItem("author_email", data.author_email);
 
   if (data.parent) {
     postData["parent"] = data.parent;
