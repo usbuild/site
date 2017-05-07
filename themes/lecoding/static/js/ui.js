@@ -31,7 +31,6 @@ function postComment(parentId) {
 
         html,
         body {
-            height: 100%
             padding-top: 20px;
         }
 
