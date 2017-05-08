@@ -30,9 +30,6 @@ function postComment(parentId) {
         }
 
         html,
-        body {
-            padding-top: 20px;
-        }
 
         body {
             font-size: 15px;
@@ -44,7 +41,6 @@ function postComment(parentId) {
             line-height: 1.5;
             margin: 15px 30px;
             text-align: center;
-            margin-top: 20px;
         }
 
         a {
@@ -255,7 +251,11 @@ function CommentAPI(forum, apiPath, selector, url) {
   this.threadId = {}
   this.apiPath = apiPath;
   this.commentsCount = 0;
-  var root = $('<div class="comments" id="cmt_root"><div class="comment-header">评论&nbsp;(<span id="comment_count">0</span>) <span><a href="javascript:postComment()" class="post-comment-btn btn">发表评论</a></span></div></div>');
+  var root = $(`<div class="comments" id="cmt_root">
+      <div class="comment-header clearfix">
+          <div class="comment-title">评论&nbsp;(<span id="comment_count">0</span>)</div>
+          <a href="javascript:postComment()" class="post-comment-btn btn">发表评论</a></div>
+          </div>`);
   $(selector).append(root);
 
   var self = this;
