@@ -23,7 +23,7 @@ paginate = 10
     identifier = "post"
     url = "/post/"
   [[menu.main]]
-    name = "tags"
+    name = "Tags"
     weight = 3
     identifier = "tags"
     url = "/tags/"
