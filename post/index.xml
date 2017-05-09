@@ -7,8 +7,110 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2017. All rights reserved.</copyright>
-    <lastBuildDate>Sun, 07 May 2017 18:11:51 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 09 May 2017 22:05:47 +0800</lastBuildDate>
     <atom:link href="http://sysfork.com/post/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>嵌入 luajit 时同时使用 ffi 和 c api 的解决方案</title>
+      <link>http://sysfork.com/post/compatible-embed-luajit-ffi-load/</link>
+      <pubDate>Tue, 09 May 2017 22:05:47 +0800</pubDate>
+      
+      <guid>http://sysfork.com/post/compatible-embed-luajit-ffi-load/</guid>
+      <description>&lt;p&gt;我们都喜欢&lt;a href=&#34;http://luajit.org/ext_ffi.html&#34;&gt;ffi&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;ffi 的接口简单易用，当使用第三方没有提供 lua 接口的库来说，使用 ffi 接入相当容易。
+而且效率比较高，通过 ffi 调用的接口是可以被 jit 编译的，效率相对于使用传统的 &lt;a href=&#34;https://www.lua.org/pil/24.html&#34;&gt;lua c api&lt;/a&gt;来说要
+高得多。ffi 直接使用了操作系统的调用模型，除了数据结构转化的代价外没有额外的负担。而使用传统 c api 则是
+通过 lua 虚拟栈来实现，并且需要和 lua 的调用模型兼容，实现起来比较复杂。&lt;/p&gt;
+
+&lt;p&gt;但是，对于接入 lua 的程序而言，仅仅支持 luajit 是有一定风险的，相对于 &lt;a href=&#34;https://www.lua.org/&#34;&gt;puc lua&lt;/a&gt;， luajit 的主要开发者和维护者
+比较少，应用面也不如 lua。所以大部分的面相 lua 的程序都会同时支持 luajit 和 lua。ffi 是 luajit 内置的模块，而 lua 却不携带这个模块，
+有一些开源的项目， 如 facebook 开发的&lt;a href=&#34;https://github.com/facebook/luaffifb&#34;&gt;这个&lt;/a&gt;，但是经过我们的测试其效率比普通的c api还慢: (。
+所以一个比较折中的方案是同时提供 ffi binding 和 c binding 的方案，这是大部分 lua 库的选择。&lt;/p&gt;
+
+&lt;p&gt;如果提供的是一个 so 库，那么只需要提供个 lua 入口文件，如果使用 ffi 的话，则调用相关的 lua 文件。如果是 c binding 的话，那就调用具体的
+so文件。然而这在我们的项目中是不可行的，为了保证部署的简化，我们的程序只有一个可执行文件，不会依赖除一些核心 so 库之外的 so 库。所有的
+c binding 代码都是在可执行文件里面的。这就意味着我们需要 &lt;code&gt;ffi.load&lt;/code&gt; 我们自己的可执行文件。大概的代码如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-C&#34;&gt;// main.c
+
+char* encode(const char* input, size_t size, size_t *out_size) { // 假设这是我们的工作函数
+    //...
+}
+
+// c api
+int l_encode(lua_State* L) { // 为了让上面的接口能被 lua 调用，需要转换一下
+    size_t length, out_size;
+    char *in_data, *out_data;
+    in_data = lua_tolstring(L, 1, &amp;amp;length);
+    out_data = encode(in_data, length, &amp;amp;out_size);
+    lua_pushlstring(L, out_data, out_size);
+    return 1;
+}
+
+// register in some place 
+lua_pushcfunction(L, l_encode); // 注册到 lua 虚拟机中
+lua_setglobal(L, &amp;quot;c_encode&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这里是统一的入口文件：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-lua&#34;&gt;-- ffi.lua
+
+if ffi then -- 如果能使用 ffi 的话
+    lib = ffi.load(????) -- 这里改怎么写
+    ffi.cdef[[
+        char* encode(const char* input, size_t size, size_t *out_size);
+    ]]
+    -- do some dirty jobs
+    lib.encode -- ...
+else
+    encode = c_encode -- 使用 c api 版本
+end
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然而这是不可行的。&lt;/p&gt;
+
+&lt;p&gt;ffi load 调用的其实就是&lt;a href=&#34;http://man7.org/linux/man-pages/man3/dlopen.3.html&#34;&gt;dlopen&lt;/a&gt;。如果我们有一个可执行文件 &lt;code&gt;a.out&lt;/code&gt;，在这里面
+调用 &lt;code&gt;dlopen(&amp;quot;a.out&amp;quot;, ...)&lt;/code&gt;，其作用是将 &lt;code&gt;a.out&lt;/code&gt; 的内容加载到内存中，加上我们之前运行 &lt;code&gt;a.out&lt;/code&gt; 的程序（其实也是用 &lt;code&gt;/lib64/ld-linux-x86-64.so&lt;/code&gt; 加载的）。
+这样内存中就有了两份一样的镜像，一个全局变量会对应两个内存地址。这种产生的原因可以参考&lt;a href=&#34;https://book.douban.com/subject/3652388/&#34;&gt;程序员的自我修养&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;使用现有的 luajit 接口是无法做到的。但是 &lt;code&gt;dlopen&lt;/code&gt; 可以&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;If filename is  NULL,  then  the  returned handle  is for the main program&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;当 filename 为 NULL 时，直接返回当前程序的 dl handle，可以取得各种 symbol 的地址。所以我们可以稍微修改下 luajit 的实现:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-c&#34;&gt;// in lj_clib.c
+static const char *clib_extname(lua_State *L, const char *name
+{
+  if (!name[0]) return NULL; // 添加这一行
+  if (!strchr(name, &#39;/&#39;)
+#if LJ_TARGET_CYGWIN
+      &amp;amp;&amp;amp; !strchr(name, &#39;\\&#39;)
+#endif
+     ) {
+    if (!strchr(name, &#39;.&#39;)) {
+      name = lj_strfmt_pushf(L, CLIB_SOEXT, name);
+      L-&amp;gt;top--;
+// ...
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;那么在应用中就可以这样使用了&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-lua&#34;&gt;local ffi = require(&amp;quot;ffi&amp;quot;)
+local lib = ffi.load(&amp;quot;&amp;quot;)
+ffi.cdef[[...]]
+-- lib.doSomething
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这样对于单可执行文件就可以是的 c binding 和 ffi binding 共存了。&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>让disqus支持大陆访问</title>

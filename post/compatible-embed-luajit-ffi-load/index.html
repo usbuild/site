@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="generator" content="Hugo 0.16" />
+
+  <title>嵌入 luajit 时同时使用 ffi 和 c api 的解决方案 &middot; sys🔱fork</title>
+
+  
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/pure-min.css">
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/grids-responsive-old-ie-min.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/grids-responsive-min.css">
+  <!--<![endif]-->
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="http://sysfork.com/css/side-menu-old-ie.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="http://sysfork.com/css/side-menu.css">
+  <!--<![endif]-->
+
+  <link rel="stylesheet" href="http://sysfork.com/css/blackburn.css">
+
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css">
+
+  
+  
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.4.0/styles/gruvbox-light.min.css">
+  <script src="//cdn.bootcss.com/highlight.js/9.4.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  
+
+  <link rel="shortcut icon" href="http://sysfork.com/img/favicon.ico" type="image/x-icon" />
+
+</head>
+
+
+<body>
+<div id="layout">
+
+  
+<a href="#menu" id="menuLink" class="menu-link">
+  
+  <span></span>
+</a>
+<div id="menu">
+
+  
+
+  <div class="pure-menu">
+    <ul class="pure-menu-list">
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/"><i class='fa fa-home fa-fw'></i>Home</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/post/"><i class='fa fa-list fa-fw'></i>Posts</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/about/"><i class='fa fa-user fa-fw'></i>About</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/contact/"><i class='fa fa-phone fa-fw'></i>Contact</a>
+      
+        </li>
+      
+    </ul>
+  </div>
+
+  <div class="pure-menu social">
+  <ul class="pure-menu-list">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <li class="pure-menu-item">
+      <a class="pure-menu-link" href="https://linkedin.com/in/usbuild" target="_blank"><i class="fa fa-linkedin-square fa-fw"></i>LinkedIn</a>
+    </li>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <li class="pure-menu-item">
+      <a class="pure-menu-link" href="https://github.com/usbuild" target="_blank"><i class="fa fa-github-square fa-fw"></i>GitHub</a>
+    </li>
+    
+
+    
+
+    
+
+  </ul>
+</div>
+
+
+  <div>
+  <div class="small-print">
+    <small>&copy; 2017. All rights reserved.</small>
+  </div>
+  <div class="small-print">
+    <small>Built with&nbsp;<a href="https://gohugo.io/" target="_blank">Hugo</a></small>
+    <small>Theme&nbsp;<a href="https://github.com/yoshiharuyamashita/blackburn" target="_blank">Blackburn</a></small>
+  </div>
+</div>
+
+</div>
+
+
+  <div id="main">
+
+
+<div class="header">
+  <h1>嵌入 luajit 时同时使用 ffi 和 c api 的解决方案</h1>
+  <h2></h2>
+</div>
+<div class="content">
+
+  <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>09 May 2017, 22:05</time>
+  </div>
+
+  
+
+  
+  
+  
+  
+
+  
+  
+  
+  
+
+</div>
+
+  <p>我们都喜欢<a href="http://luajit.org/ext_ffi.html">ffi</a>。</p>
+
+<p>ffi 的接口简单易用，当使用第三方没有提供 lua 接口的库来说，使用 ffi 接入相当容易。
+而且效率比较高，通过 ffi 调用的接口是可以被 jit 编译的，效率相对于使用传统的 <a href="https://www.lua.org/pil/24.html">lua c api</a>来说要
+高得多。ffi 直接使用了操作系统的调用模型，除了数据结构转化的代价外没有额外的负担。而使用传统 c api 则是
+通过 lua 虚拟栈来实现，并且需要和 lua 的调用模型兼容，实现起来比较复杂。</p>
+
+<p>但是，对于接入 lua 的程序而言，仅仅支持 luajit 是有一定风险的，相对于 <a href="https://www.lua.org/">puc lua</a>， luajit 的主要开发者和维护者
+比较少，应用面也不如 lua。所以大部分的面相 lua 的程序都会同时支持 luajit 和 lua。ffi 是 luajit 内置的模块，而 lua 却不携带这个模块，
+有一些开源的项目， 如 facebook 开发的<a href="https://github.com/facebook/luaffifb">这个</a>，但是经过我们的测试其效率比普通的c api还慢: (。
+所以一个比较折中的方案是同时提供 ffi binding 和 c binding 的方案，这是大部分 lua 库的选择。</p>
+
+<p>如果提供的是一个 so 库，那么只需要提供个 lua 入口文件，如果使用 ffi 的话，则调用相关的 lua 文件。如果是 c binding 的话，那就调用具体的
+so文件。然而这在我们的项目中是不可行的，为了保证部署的简化，我们的程序只有一个可执行文件，不会依赖除一些核心 so 库之外的 so 库。所有的
+c binding 代码都是在可执行文件里面的。这就意味着我们需要 <code>ffi.load</code> 我们自己的可执行文件。大概的代码如下：</p>
+
+<pre><code class="language-C">// main.c
+
+char* encode(const char* input, size_t size, size_t *out_size) { // 假设这是我们的工作函数
+    //...
+}
+
+// c api
+int l_encode(lua_State* L) { // 为了让上面的接口能被 lua 调用，需要转换一下
+    size_t length, out_size;
+    char *in_data, *out_data;
+    in_data = lua_tolstring(L, 1, &amp;length);
+    out_data = encode(in_data, length, &amp;out_size);
+    lua_pushlstring(L, out_data, out_size);
+    return 1;
+}
+
+// register in some place 
+lua_pushcfunction(L, l_encode); // 注册到 lua 虚拟机中
+lua_setglobal(L, &quot;c_encode&quot;);
+</code></pre>
+
+<p>这里是统一的入口文件：</p>
+
+<pre><code class="language-lua">-- ffi.lua
+
+if ffi then -- 如果能使用 ffi 的话
+    lib = ffi.load(????) -- 这里改怎么写
+    ffi.cdef[[
+        char* encode(const char* input, size_t size, size_t *out_size);
+    ]]
+    -- do some dirty jobs
+    lib.encode -- ...
+else
+    encode = c_encode -- 使用 c api 版本
+end
+
+
+</code></pre>
+
+<p>然而这是不可行的。</p>
+
+<p>ffi load 调用的其实就是<a href="http://man7.org/linux/man-pages/man3/dlopen.3.html">dlopen</a>。如果我们有一个可执行文件 <code>a.out</code>，在这里面
+调用 <code>dlopen(&quot;a.out&quot;, ...)</code>，其作用是将 <code>a.out</code> 的内容加载到内存中，加上我们之前运行 <code>a.out</code> 的程序（其实也是用 <code>/lib64/ld-linux-x86-64.so</code> 加载的）。
+这样内存中就有了两份一样的镜像，一个全局变量会对应两个内存地址。这种产生的原因可以参考<a href="https://book.douban.com/subject/3652388/">程序员的自我修养</a>。</p>
+
+<p>使用现有的 luajit 接口是无法做到的。但是 <code>dlopen</code> 可以</p>
+
+<blockquote>
+<p>If filename is  NULL,  then  the  returned handle  is for the main program</p>
+</blockquote>
+
+<p>当 filename 为 NULL 时，直接返回当前程序的 dl handle，可以取得各种 symbol 的地址。所以我们可以稍微修改下 luajit 的实现:</p>
+
+<pre><code class="language-c">// in lj_clib.c
+static const char *clib_extname(lua_State *L, const char *name
+{
+  if (!name[0]) return NULL; // 添加这一行
+  if (!strchr(name, '/')
+#if LJ_TARGET_CYGWIN
+      &amp;&amp; !strchr(name, '\\')
+#endif
+     ) {
+    if (!strchr(name, '.')) {
+      name = lj_strfmt_pushf(L, CLIB_SOEXT, name);
+      L-&gt;top--;
+// ...
+</code></pre>
+
+<p>那么在应用中就可以这样使用了</p>
+
+<pre><code class="language-lua">local ffi = require(&quot;ffi&quot;)
+local lib = ffi.load(&quot;&quot;)
+ffi.cdef[[...]]
+-- lib.doSomething
+</code></pre>
+
+<p>这样对于单可执行文件就可以是的 c binding 和 ffi binding 共存了。</p>
+
+
+  
+<div class="prev-next-post pure-g">
+  <div class="pure-u-1-24" style="text-align: left;">
+    
+    <a href="http://sysfork.com/post/use-disqus-in-china/"><i class="fa fa-chevron-left"></i></a>
+    
+  </div>
+  <div class="pure-u-10-24">
+    
+    <nav class="prev">
+      <a href="http://sysfork.com/post/use-disqus-in-china/">让disqus支持大陆访问</a>
+    </nav>
+    
+  </div>
+  <div class="pure-u-2-24">
+    &nbsp;
+  </div>
+  <div class="pure-u-10-24">
+    
+  </div>
+  <div class="pure-u-1-24" style="text-align: right;">
+    
+  </div>
+</div>
+
+
+
+  
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'sysfork-com';
+    dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+  
+  
+</div>
+
+</div>
+</div>
+<script src="http://sysfork.com/js/ui.js"></script>
+
+
+
+</script>
+</body>
+</html>
+
