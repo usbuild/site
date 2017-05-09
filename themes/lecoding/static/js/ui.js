@@ -34,6 +34,8 @@ function postComment(parentId) {
         body {
             font-size: 15px;
             font-family: "Helvetica Neue", arial, sans-serif;
+            padding-top: 40px;
+
         }
 
         h3 {
