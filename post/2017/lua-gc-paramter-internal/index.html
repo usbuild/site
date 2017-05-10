@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="generator" content="Hugo 0.16" />
+
+  <title>解析lua gc 中的参数控制 &middot; sys🔱fork</title>
+
+  
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/pure-min.css">
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/grids-responsive-old-ie-min.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/grids-responsive-min.css">
+  <!--<![endif]-->
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="http://sysfork.com/css/side-menu-old-ie.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="http://sysfork.com/css/side-menu.css">
+  <!--<![endif]-->
+
+  <link rel="stylesheet" href="http://sysfork.com/css/blackburn.css">
+
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css">
+
+  
+  
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.4.0/styles/gruvbox-light.min.css">
+  <script src="//cdn.bootcss.com/highlight.js/9.4.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  
+
+  <link rel="shortcut icon" href="http://sysfork.com/img/favicon.ico" type="image/x-icon" />
+
+</head>
+
+
+<body>
+<div id="layout">
+
+  
+<a href="#menu" id="menuLink" class="menu-link">
+  
+  <span></span>
+</a>
+<div id="menu">
+
+  
+
+  <div class="pure-menu">
+    <ul class="pure-menu-list">
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/"><i class='fa fa-home fa-fw'></i>Home</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/post/"><i class='fa fa-list fa-fw'></i>Posts</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/about/"><i class='fa fa-user fa-fw'></i>About</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/contact/"><i class='fa fa-phone fa-fw'></i>Contact</a>
+      
+        </li>
+      
+    </ul>
+  </div>
+
+  <div class="pure-menu social">
+  <ul class="pure-menu-list">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <li class="pure-menu-item">
+      <a class="pure-menu-link" href="https://linkedin.com/in/usbuild" target="_blank"><i class="fa fa-linkedin-square fa-fw"></i>LinkedIn</a>
+    </li>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <li class="pure-menu-item">
+      <a class="pure-menu-link" href="https://github.com/usbuild" target="_blank"><i class="fa fa-github-square fa-fw"></i>GitHub</a>
+    </li>
+    
+
+    
+
+    
+
+  </ul>
+</div>
+
+
+  <div>
+  <div class="small-print">
+    <small>&copy; 2017. All rights reserved.</small>
+  </div>
+  <div class="small-print">
+    <small>Built with&nbsp;<a href="https://gohugo.io/" target="_blank">Hugo</a></small>
+    <small>Theme&nbsp;<a href="https://github.com/yoshiharuyamashita/blackburn" target="_blank">Blackburn</a></small>
+  </div>
+</div>
+
+</div>
+
+
+  <div id="main">
+
+
+<div class="header">
+  <h1>解析lua gc 中的参数控制</h1>
+  <h2></h2>
+</div>
+<div class="content">
+
+  <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>10 May 2017, 20:05</time>
+  </div>
+
+  
+
+  
+  
+  
+  
+
+  
+  
+  
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="http://sysfork.com/tags/lua">lua</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://sysfork.com/tags/gc">gc</a>
+    
+  </div>
+  
+  
+
+</div>
+
+  <p>lua gc 调优主要涉及到两个两个参数<code>setpause</code>和<code>setstepmul</code>，使用方法如下：</p>
+
+<pre><code>collectgarbage(&quot;setpause&quot;, 200)
+collectgarbage(&quot;setstepmul&quot;, 200)
+</code></pre>
+
+<p>这两个值的默认值都是<code>200</code>，那么这代表着什么意思呢？通过查看代码</p>
+
+<pre><code>static const char *const opts[] = {&quot;stop&quot;, &quot;restart&quot;, &quot;collect&quot;,
+  &quot;count&quot;, &quot;step&quot;, &quot;setpause&quot;, &quot;setstepmul&quot;, NULL};
+static const int optsnum[] = {LUA_GCSTOP, LUA_GCRESTART, LUA_GCCOLLECT,
+  LUA_GCCOUNT, LUA_GCSTEP, LUA_GCSETPAUSE, LUA_GCSETSTEPMUL};
+</code></pre>
+
+<p>其实<code>collectgarbage</code>对应的就是<code>lua_gc</code>方法，下面是其中的部分逻辑的：</p>
+
+<pre><code class="language-c">LUA_API int lua_gc (lua_State *L, int what, int data) {
+  switch (what) {
+    case LUA_GCSTOP: g-&gt;GCthreshold = MAX_LUMEM;
+    case LUA_GCRESTART: g-&gt;GCthreshold = g-&gt;totalbytes;
+    case LUA_GCCOLLECT: luaC_fullgc(L);
+    case LUA_GCCOUNT: res = cast_int(g-&gt;totalbytes &gt;&gt; 10);
+    case LUA_GCCOUNTB:  res = cast_int(g-&gt;totalbytes &amp; 0x3ff);
+    case LUA_GCSTEP: {
+      lu_mem a = (cast(lu_mem, data) &lt;&lt; 10);
+      if (a &lt;= g-&gt;totalbytes)
+        g-&gt;GCthreshold = g-&gt;totalbytes - a;
+      else
+        g-&gt;GCthreshold = 0;
+      while (g-&gt;GCthreshold &lt;= g-&gt;totalbytes) {
+        luaC_step(L);
+        if (g-&gt;gcstate == GCSpause) {  /* end of cycle? */
+          res = 1;  /* signal it */
+          break;
+        }
+      }
+      break;
+    }
+    case LUA_GCSETPAUSE: res = g-&gt;gcpause; g-&gt;gcpause = data;
+    case LUA_GCSETSTEPMUL: res = g-&gt;gcstepmul; g-&gt;gcstepmul = data;
+}
+</code></pre>
+
+<p>其中我们看到一些有意思的参数，在<code>g(global_State)</code>中有如下定义：</p>
+
+<pre><code class="language-c">/*
+** `global state', shared by all threads of this state
+*/
+typedef struct global_State {
+//.....
+  lu_mem GCthreshold;
+  lu_mem totalbytes;  /* number of bytes currently allocated */
+  lu_mem estimate;  /* an estimate of number of bytes actually in use */
+  lu_mem gcdept;  /* how much GC is `behind schedule' */
+  int gcpause;  /* size of pause between successive GCs */
+  int gcstepmul;  /* GC `granularity' */
+//......
+} global_State;
+</code></pre>
+
+<p>可以看到，对于<code>LUA_GCSTOP</code>是将<code>GCthreshold</code>设置成一个很大的值<code>MAX_LUMEM</code>(<code>~(size_t)0)-2</code>)，而<code>LUA_GCRESTART</code>则将<code>GCthreshold</code>设置成<code>totalbytes</code>。对于<code>LUA_GCSETPAUSE</code>和<code>LUA_GCSETSTEPMUL</code>则是分别设置了<code>gcpause</code>和<code>gcstepmul</code>的值。从注释中我们可以看到各自值的解释。</p>
+
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>意义</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>GCthreshold</td>
+<td>GC的门槛，当totalbytes大于这个值时触发gc step</td>
+</tr>
+
+<tr>
+<td>totalbytes</td>
+<td>由内存分配器分配的<strong>实际</strong>内存</td>
+</tr>
+
+<tr>
+<td>estimate</td>
+<td><strong>估计</strong>的，正在使用的内存大小，小于 <code>totalbytes</code></td>
+</tr>
+</tbody>
+</table>
+
+<p>下面这段代码是代码中随处可见，如<code>lua_createtable</code>等，在执行操作之前都会检查是否需要触发<code>gc</code>，以保证内存利用率。</p>
+
+<pre><code class="language-c">80	#define luaC_checkGC(L) { \
+81	  condhardstacktests(luaD_reallocstack(L, L-&gt;stacksize - EXTRA_STACK - 1)); \
+82	  if (G(L)-&gt;totalbytes &gt;= G(L)-&gt;GCthreshold) \
+83		luaC_step(L); }
+</code></pre>
+
+<p>当 <code>totalbytes &gt;= GCthreshold</code>时触发step。因此<code>LUA_GCRESTART</code>之后，下一次<code>checkGC</code>的时候会立即出发<code>luaC_step</code>。可以看到
+<code>totalbytes</code>和<code>GCthreshold</code>是控制<code>GC</code>的关键参数。</p>
+
+<p>每个回收周期结束重置<code>GCthreshold</code> ，这里用到了的estimate。因为带有 __gc 元方法的 <code>userdata</code> 需要两个gc周期
+才能回收，在第一个gc周期中其 <code>__gc</code>元方法会被调用，而在第二个回收周期内内存会被真正回收。因此，<code>estimate</code>是不包含那些<code>__gc</code>元方法被调用的<code>userdata</code>的，而<code>totalbytes</code>会包含（因为其反映的是真实内存占用情况）。</p>
+
+<pre><code>#define setthreshold(g)  (g-&gt;GCthreshold = (g-&gt;estimate/100) * g-&gt;gcpause)
+</code></pre>
+
+<p>由这段代码可以看出，我们设置的<code>gcpause</code>值影响的是下一周期开始的事件，默认<code>200</code>的意思时，当当前<strong>真实</strong>内存占用超过当前<strong>估计</strong>内存占用的两倍时，才开启下一回收周期。所以如果你含<code>__gc</code>方法的<code>userdata</code>过大的话，很可能在第一次周期结束后立马开启了第二周期。如果设置的<code>gcpause</code>值小于<code>100</code>的话，那么同样两次<code>gc</code>周期中间是没有间隔的。</p>
+
+<p>接下来看<code>luaC_step</code>的代码</p>
+
+<pre><code class="language-c">610	void luaC_step (lua_State *L) {
+611	  global_State *g = G(L);
+612	  l_mem lim = (GCSTEPSIZE/100) * g-&gt;gcstepmul;
+613	  if (lim == 0)
+614	    lim = (MAX_LUMEM-1)/2;  /* no limit */
+615	  g-&gt;gcdept += g-&gt;totalbytes - g-&gt;GCthreshold;
+616	  do {
+617	    lim -= singlestep(L);
+618	    if (g-&gt;gcstate == GCSpause)
+619	      break;
+620	  } while (lim &gt; 0);
+621	  if (g-&gt;gcstate != GCSpause) {
+622	    if (g-&gt;gcdept &lt; GCSTEPSIZE)
+623	      g-&gt;GCthreshold = g-&gt;totalbytes + GCSTEPSIZE;  /* - lim/g-&gt;gcstepmul;*/
+624	    else {
+625	      g-&gt;gcdept -= GCSTEPSIZE;
+626	      g-&gt;GCthreshold = g-&gt;totalbytes;
+627	    }
+628	  }
+629	  else {
+630	    setthreshold(g);
+631	  }
+632	}
+</code></pre>
+
+<p>这里<code>stepmul</code>控制的就是<code>step</code>的长度，越大则每步所进行的操作也就越多，拥有更多的「费」。其中<code>GCSTEPSIZE</code>的值为<code>1024</code>。也就是说默认<code>stepmul</code>为200的情况下，大约可已进行<code>2048</code>「费」，那么「费」是怎么定义的呢？从代码可以看到清除一条<code>string</code>表和任意一个<code>gc</code>对象为<code>10</code>「费」，调用<code>__gc</code>元方法为<code>100</code>「费」，除非是<code>sweep</code>阶段否则内存不会减少，因此不能使用内存差值来表示工作进度，所以引入了「费」。如果你把<code>stepmul</code>设置为<code>0</code>的话，那么<code>lim</code>就是<code>(MAX_LUMEM-1)/2</code>
+为什么是这么奇怪的数值？因为<code>MAX_LUAEME</code>是<code>~(size_t)0)-2</code>，无符号整型，而<code>l_mem</code>是有符号的，直接赋值会溢出的。</p>
+
+<p><code>luaC_step</code>的设计思路是： 每当新增分配的内存数超过<code>GCSTEPSIZE</code>就触发一次。由于lua只会在gc过程中释放对象，所以
+<code>totalbytes</code>在gc过程外时只增不减的，因此<code>luaC_step</code>总是会得以触发。为了准确记录新增内存使用量，lua 使用了<code>gcdept</code>变量。
+这种设计是为了防止<code>luaC_step</code>被频繁触发，控制一个较合理的粒度。</p>
+
+<p>另外，<code>gcdept</code>在每个周期末尾会清零。</p>
+
+<pre><code>592	    case GCSfinalize: {
+593	      if (g-&gt;tmudata) {
+594	        GCTM(L);
+595	        if (g-&gt;estimate &gt; GCFINALIZECOST)
+596	          g-&gt;estimate -= GCFINALIZECOST;
+597	        return GCFINALIZECOST;
+598	      }
+599	      else {
+600	        g-&gt;gcstate = GCSpause;  /* end collection */
+601	        g-&gt;gcdept = 0;
+602	        return 0;
+603	      }
+604	    }
+</code></pre>
+
+
+  
+<div class="prev-next-post pure-g">
+  <div class="pure-u-1-24" style="text-align: left;">
+    
+    <a href="http://sysfork.com/post/2017/a-core-cause-by-curl-sighandler/"><i class="fa fa-chevron-left"></i></a>
+    
+  </div>
+  <div class="pure-u-10-24">
+    
+    <nav class="prev">
+      <a href="http://sysfork.com/post/2017/a-core-cause-by-curl-sighandler/">一个由 libcurl 导致的 core 分析</a>
+    </nav>
+    
+  </div>
+  <div class="pure-u-2-24">
+    &nbsp;
+  </div>
+  <div class="pure-u-10-24">
+    
+  </div>
+  <div class="pure-u-1-24" style="text-align: right;">
+    
+  </div>
+</div>
+
+
+
+  
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'sysfork-com';
+    dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+  
+  
+</div>
+
+</div>
+</div>
+<script src="http://sysfork.com/js/ui.js"></script>
+
+
+
+</script>
+</body>
+</html>
+

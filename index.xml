@@ -7,8 +7,174 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2017. All rights reserved.</copyright>
-    <lastBuildDate>Wed, 10 May 2017 15:31:06 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 10 May 2017 20:05:41 +0800</lastBuildDate>
     <atom:link href="http://sysfork.com/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>解析lua gc 中的参数控制</title>
+      <link>http://sysfork.com/post/2017/lua-gc-paramter-internal/</link>
+      <pubDate>Wed, 10 May 2017 20:05:41 +0800</pubDate>
+      
+      <guid>http://sysfork.com/post/2017/lua-gc-paramter-internal/</guid>
+      <description>&lt;p&gt;lua gc 调优主要涉及到两个两个参数&lt;code&gt;setpause&lt;/code&gt;和&lt;code&gt;setstepmul&lt;/code&gt;，使用方法如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;collectgarbage(&amp;quot;setpause&amp;quot;, 200)
+collectgarbage(&amp;quot;setstepmul&amp;quot;, 200)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这两个值的默认值都是&lt;code&gt;200&lt;/code&gt;，那么这代表着什么意思呢？通过查看代码&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;static const char *const opts[] = {&amp;quot;stop&amp;quot;, &amp;quot;restart&amp;quot;, &amp;quot;collect&amp;quot;,
+  &amp;quot;count&amp;quot;, &amp;quot;step&amp;quot;, &amp;quot;setpause&amp;quot;, &amp;quot;setstepmul&amp;quot;, NULL};
+static const int optsnum[] = {LUA_GCSTOP, LUA_GCRESTART, LUA_GCCOLLECT,
+  LUA_GCCOUNT, LUA_GCSTEP, LUA_GCSETPAUSE, LUA_GCSETSTEPMUL};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;其实&lt;code&gt;collectgarbage&lt;/code&gt;对应的就是&lt;code&gt;lua_gc&lt;/code&gt;方法，下面是其中的部分逻辑的：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-c&#34;&gt;LUA_API int lua_gc (lua_State *L, int what, int data) {
+  switch (what) {
+    case LUA_GCSTOP: g-&amp;gt;GCthreshold = MAX_LUMEM;
+    case LUA_GCRESTART: g-&amp;gt;GCthreshold = g-&amp;gt;totalbytes;
+    case LUA_GCCOLLECT: luaC_fullgc(L);
+    case LUA_GCCOUNT: res = cast_int(g-&amp;gt;totalbytes &amp;gt;&amp;gt; 10);
+    case LUA_GCCOUNTB:  res = cast_int(g-&amp;gt;totalbytes &amp;amp; 0x3ff);
+    case LUA_GCSTEP: {
+      lu_mem a = (cast(lu_mem, data) &amp;lt;&amp;lt; 10);
+      if (a &amp;lt;= g-&amp;gt;totalbytes)
+        g-&amp;gt;GCthreshold = g-&amp;gt;totalbytes - a;
+      else
+        g-&amp;gt;GCthreshold = 0;
+      while (g-&amp;gt;GCthreshold &amp;lt;= g-&amp;gt;totalbytes) {
+        luaC_step(L);
+        if (g-&amp;gt;gcstate == GCSpause) {  /* end of cycle? */
+          res = 1;  /* signal it */
+          break;
+        }
+      }
+      break;
+    }
+    case LUA_GCSETPAUSE: res = g-&amp;gt;gcpause; g-&amp;gt;gcpause = data;
+    case LUA_GCSETSTEPMUL: res = g-&amp;gt;gcstepmul; g-&amp;gt;gcstepmul = data;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;其中我们看到一些有意思的参数，在&lt;code&gt;g(global_State)&lt;/code&gt;中有如下定义：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-c&#34;&gt;/*
+** `global state&#39;, shared by all threads of this state
+*/
+typedef struct global_State {
+//.....
+  lu_mem GCthreshold;
+  lu_mem totalbytes;  /* number of bytes currently allocated */
+  lu_mem estimate;  /* an estimate of number of bytes actually in use */
+  lu_mem gcdept;  /* how much GC is `behind schedule&#39; */
+  int gcpause;  /* size of pause between successive GCs */
+  int gcstepmul;  /* GC `granularity&#39; */
+//......
+} global_State;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;可以看到，对于&lt;code&gt;LUA_GCSTOP&lt;/code&gt;是将&lt;code&gt;GCthreshold&lt;/code&gt;设置成一个很大的值&lt;code&gt;MAX_LUMEM&lt;/code&gt;(&lt;code&gt;~(size_t)0)-2&lt;/code&gt;)，而&lt;code&gt;LUA_GCRESTART&lt;/code&gt;则将&lt;code&gt;GCthreshold&lt;/code&gt;设置成&lt;code&gt;totalbytes&lt;/code&gt;。对于&lt;code&gt;LUA_GCSETPAUSE&lt;/code&gt;和&lt;code&gt;LUA_GCSETSTEPMUL&lt;/code&gt;则是分别设置了&lt;code&gt;gcpause&lt;/code&gt;和&lt;code&gt;gcstepmul&lt;/code&gt;的值。从注释中我们可以看到各自值的解释。&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;参数&lt;/th&gt;
+&lt;th&gt;意义&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;GCthreshold&lt;/td&gt;
+&lt;td&gt;GC的门槛，当totalbytes大于这个值时触发gc step&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;totalbytes&lt;/td&gt;
+&lt;td&gt;由内存分配器分配的&lt;strong&gt;实际&lt;/strong&gt;内存&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;estimate&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;估计&lt;/strong&gt;的，正在使用的内存大小，小于 &lt;code&gt;totalbytes&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;下面这段代码是代码中随处可见，如&lt;code&gt;lua_createtable&lt;/code&gt;等，在执行操作之前都会检查是否需要触发&lt;code&gt;gc&lt;/code&gt;，以保证内存利用率。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-c&#34;&gt;80	#define luaC_checkGC(L) { \
+81	  condhardstacktests(luaD_reallocstack(L, L-&amp;gt;stacksize - EXTRA_STACK - 1)); \
+82	  if (G(L)-&amp;gt;totalbytes &amp;gt;= G(L)-&amp;gt;GCthreshold) \
+83		luaC_step(L); }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;当 &lt;code&gt;totalbytes &amp;gt;= GCthreshold&lt;/code&gt;时触发step。因此&lt;code&gt;LUA_GCRESTART&lt;/code&gt;之后，下一次&lt;code&gt;checkGC&lt;/code&gt;的时候会立即出发&lt;code&gt;luaC_step&lt;/code&gt;。可以看到
+&lt;code&gt;totalbytes&lt;/code&gt;和&lt;code&gt;GCthreshold&lt;/code&gt;是控制&lt;code&gt;GC&lt;/code&gt;的关键参数。&lt;/p&gt;
+
+&lt;p&gt;每个回收周期结束重置&lt;code&gt;GCthreshold&lt;/code&gt; ，这里用到了的estimate。因为带有 __gc 元方法的 &lt;code&gt;userdata&lt;/code&gt; 需要两个gc周期
+才能回收，在第一个gc周期中其 &lt;code&gt;__gc&lt;/code&gt;元方法会被调用，而在第二个回收周期内内存会被真正回收。因此，&lt;code&gt;estimate&lt;/code&gt;是不包含那些&lt;code&gt;__gc&lt;/code&gt;元方法被调用的&lt;code&gt;userdata&lt;/code&gt;的，而&lt;code&gt;totalbytes&lt;/code&gt;会包含（因为其反映的是真实内存占用情况）。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;#define setthreshold(g)  (g-&amp;gt;GCthreshold = (g-&amp;gt;estimate/100) * g-&amp;gt;gcpause)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;由这段代码可以看出，我们设置的&lt;code&gt;gcpause&lt;/code&gt;值影响的是下一周期开始的事件，默认&lt;code&gt;200&lt;/code&gt;的意思时，当当前&lt;strong&gt;真实&lt;/strong&gt;内存占用超过当前&lt;strong&gt;估计&lt;/strong&gt;内存占用的两倍时，才开启下一回收周期。所以如果你含&lt;code&gt;__gc&lt;/code&gt;方法的&lt;code&gt;userdata&lt;/code&gt;过大的话，很可能在第一次周期结束后立马开启了第二周期。如果设置的&lt;code&gt;gcpause&lt;/code&gt;值小于&lt;code&gt;100&lt;/code&gt;的话，那么同样两次&lt;code&gt;gc&lt;/code&gt;周期中间是没有间隔的。&lt;/p&gt;
+
+&lt;p&gt;接下来看&lt;code&gt;luaC_step&lt;/code&gt;的代码&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-c&#34;&gt;610	void luaC_step (lua_State *L) {
+611	  global_State *g = G(L);
+612	  l_mem lim = (GCSTEPSIZE/100) * g-&amp;gt;gcstepmul;
+613	  if (lim == 0)
+614	    lim = (MAX_LUMEM-1)/2;  /* no limit */
+615	  g-&amp;gt;gcdept += g-&amp;gt;totalbytes - g-&amp;gt;GCthreshold;
+616	  do {
+617	    lim -= singlestep(L);
+618	    if (g-&amp;gt;gcstate == GCSpause)
+619	      break;
+620	  } while (lim &amp;gt; 0);
+621	  if (g-&amp;gt;gcstate != GCSpause) {
+622	    if (g-&amp;gt;gcdept &amp;lt; GCSTEPSIZE)
+623	      g-&amp;gt;GCthreshold = g-&amp;gt;totalbytes + GCSTEPSIZE;  /* - lim/g-&amp;gt;gcstepmul;*/
+624	    else {
+625	      g-&amp;gt;gcdept -= GCSTEPSIZE;
+626	      g-&amp;gt;GCthreshold = g-&amp;gt;totalbytes;
+627	    }
+628	  }
+629	  else {
+630	    setthreshold(g);
+631	  }
+632	}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这里&lt;code&gt;stepmul&lt;/code&gt;控制的就是&lt;code&gt;step&lt;/code&gt;的长度，越大则每步所进行的操作也就越多，拥有更多的「费」。其中&lt;code&gt;GCSTEPSIZE&lt;/code&gt;的值为&lt;code&gt;1024&lt;/code&gt;。也就是说默认&lt;code&gt;stepmul&lt;/code&gt;为200的情况下，大约可已进行&lt;code&gt;2048&lt;/code&gt;「费」，那么「费」是怎么定义的呢？从代码可以看到清除一条&lt;code&gt;string&lt;/code&gt;表和任意一个&lt;code&gt;gc&lt;/code&gt;对象为&lt;code&gt;10&lt;/code&gt;「费」，调用&lt;code&gt;__gc&lt;/code&gt;元方法为&lt;code&gt;100&lt;/code&gt;「费」，除非是&lt;code&gt;sweep&lt;/code&gt;阶段否则内存不会减少，因此不能使用内存差值来表示工作进度，所以引入了「费」。如果你把&lt;code&gt;stepmul&lt;/code&gt;设置为&lt;code&gt;0&lt;/code&gt;的话，那么&lt;code&gt;lim&lt;/code&gt;就是&lt;code&gt;(MAX_LUMEM-1)/2&lt;/code&gt;
+为什么是这么奇怪的数值？因为&lt;code&gt;MAX_LUAEME&lt;/code&gt;是&lt;code&gt;~(size_t)0)-2&lt;/code&gt;，无符号整型，而&lt;code&gt;l_mem&lt;/code&gt;是有符号的，直接赋值会溢出的。&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;luaC_step&lt;/code&gt;的设计思路是： 每当新增分配的内存数超过&lt;code&gt;GCSTEPSIZE&lt;/code&gt;就触发一次。由于lua只会在gc过程中释放对象，所以
+&lt;code&gt;totalbytes&lt;/code&gt;在gc过程外时只增不减的，因此&lt;code&gt;luaC_step&lt;/code&gt;总是会得以触发。为了准确记录新增内存使用量，lua 使用了&lt;code&gt;gcdept&lt;/code&gt;变量。
+这种设计是为了防止&lt;code&gt;luaC_step&lt;/code&gt;被频繁触发，控制一个较合理的粒度。&lt;/p&gt;
+
+&lt;p&gt;另外，&lt;code&gt;gcdept&lt;/code&gt;在每个周期末尾会清零。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;592	    case GCSfinalize: {
+593	      if (g-&amp;gt;tmudata) {
+594	        GCTM(L);
+595	        if (g-&amp;gt;estimate &amp;gt; GCFINALIZECOST)
+596	          g-&amp;gt;estimate -= GCFINALIZECOST;
+597	        return GCFINALIZECOST;
+598	      }
+599	      else {
+600	        g-&amp;gt;gcstate = GCSpause;  /* end collection */
+601	        g-&amp;gt;gcdept = 0;
+602	        return 0;
+603	      }
+604	    }
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
     
     <item>
       <title>一个由 libcurl 导致的 core 分析</title>

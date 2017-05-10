@@ -7,7 +7,7 @@
   <meta name="description" content="">
   <meta name="generator" content="Hugo 0.16" />
 
-  <title>Posts &middot; sys🔱fork</title>
+  <title>Gc &middot; sys🔱fork</title>
 
   
   
@@ -37,7 +37,7 @@
 
   
   
-  <link rel="alternate" type="application/rss+xml" title="sys🔱fork" href="http://sysfork.com/post/index.xml" />
+  <link rel="alternate" type="application/rss+xml" title="sys🔱fork" href="http://sysfork.com/tags/gc/index.xml" />
   
 
   
@@ -98,7 +98,7 @@
 
     
     <li class="pure-menu-item">
-      <a class="pure-menu-link" href="http://sysfork.com/post/index.xml"><i class="fa fa-rss fa-fw"></i>RSS</a>
+      <a class="pure-menu-link" href="http://sysfork.com/tags/gc/index.xml"><i class="fa fa-rss fa-fw"></i>RSS</a>
     </li>
     
 
@@ -177,52 +177,58 @@
 
 
 <div class="header">
-  <h1>Posts</h1>
+  <h1>Gc</h1>
 </div>
+
 <div class="content">
   
-  <h2>2017</h2>
-  <ul>
-  
-    <li><time>10 May 2017, 20:05</time> - <a href="http://sysfork.com/post/2017/lua-gc-paramter-internal/">解析lua gc 中的参数控制</a></li>
+    <article>
+  <header>
+    <h2><a href="http://sysfork.com/post/2017/lua-gc-paramter-internal/">解析lua gc 中的参数控制</a></h2>
+
+    <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>10 May 2017, 20:05</time>
+  </div>
 
   
-    <li><time>10 May 2017, 15:31</time> - <a href="http://sysfork.com/post/2017/a-core-cause-by-curl-sighandler/">一个由 libcurl 导致的 core 分析</a></li>
 
   
-    <li><time>09 May 2017, 22:05</time> - <a href="http://sysfork.com/post/2017/compatible-embed-luajit-ffi-load/">嵌入 luajit 时同时使用 ffi 和 c api 的解决方案</a></li>
+  
+  
+  
 
   
-    <li><time>07 May 2017, 18:11</time> - <a href="http://sysfork.com/post/2017/use-disqus-in-china/">让disqus支持大陆访问</a></li>
+  
+  
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="http://sysfork.com/tags/lua">lua</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://sysfork.com/tags/gc">gc</a>
+    
+  </div>
+  
+  
+
+</div>
+
+  </header>
+
+  <p>
+  lua gc 调优主要涉及到两个两个参数setpause和setstepmul，使用方法如下： collectgarbage(&quot;setpause&quot;, 200) collectgarbage(&quot;setstepmul&quot;, 200) 这两个值的默认值都是200，那么这代表着什么意思
+  </p>
 
   
-    <li><time>01 May 2017, 22:30</time> - <a href="http://sysfork.com/post/2017/a-solution-for-elf-integrate-scripts/">一种在elf中集成脚本文件的方案</a></li>
+  <footer>
+    <a href="http://sysfork.com/post/2017/lua-gc-paramter-internal/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+  </footer>
+  
+</article>
 
-  
-    <li><time>29 Apr 2017, 15:38</time> - <a href="http://sysfork.com/post/2017/cpp-function-container/">使用C&#43;&#43; map实现注册回调的功能</a></li>
-
-  
-    <li><time>21 Apr 2017, 17:37</time> - <a href="http://sysfork.com/post/2017/lua-c-detect-inifinite-loop/">lua与C交互中的死循环检测</a></li>
-
-  
-  </ul>
-  
-  <h2>2016</h2>
-  <ul>
-  
-    <li><time>25 Sep 2016, 09:13</time> - <a href="http://sysfork.com/post/2016/about-cpp-alignment/">浅谈C&#43;&#43;中的地址对齐</a></li>
-
-  
-    <li><time>07 Sep 2016, 22:08</time> - <a href="http://sysfork.com/post/2016/linux-dynamic-lib-lazy-load/">理解Linux下动态链接库延迟绑定</a></li>
-
-  
-    <li><time>02 Sep 2016, 09:41</time> - <a href="http://sysfork.com/post/2016/integrate-mathjax-viz-with-hugo/">Hugo 集成 Mathjax和graphviz</a></li>
-
-  
-    <li><time>01 Sep 2016, 17:40</time> - <a href="http://sysfork.com/post/2016/lua-hashtable-introduction/">Lua Table中HashMap介绍</a></li>
-
-  
-  </ul>
   
 </div>
 
@@ -235,4 +241,3 @@
 </script>
 </body>
 </html>
-
