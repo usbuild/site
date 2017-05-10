@@ -12,10 +12,10 @@
     
     <item>
       <title>Lua Table中HashMap介绍</title>
-      <link>http://sysfork.com/post/lua-hashtable-introduction/</link>
+      <link>http://sysfork.com/post/2016/lua-hashtable-introduction/</link>
       <pubDate>Thu, 01 Sep 2016 17:40:08 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/lua-hashtable-introduction/</guid>
+      <guid>http://sysfork.com/post/2016/lua-hashtable-introduction/</guid>
       <description>&lt;p&gt;&lt;a href=&#34;https://www.lua.org/pil/2.5.html&#34;&gt;Table&lt;/a&gt; 在Lua中有着极其重要的应用，从核心语言实现，如&lt;a href=&#34;https://en.wikipedia.org/wiki/String_interning&#34;&gt;short string intern&lt;/a&gt;，
 到利用&lt;a href=&#34;https://www.lua.org/pil/13.html&#34;&gt;metatable&lt;/a&gt;实现的&lt;a href=&#34;lua-users.org/wiki/LuaClassesWithMetatable&#34;&gt;class&lt;/a&gt;，table几乎无所不能。如此高频度地利用也就意味着lua必须要有一个高效的
 table实现。&lt;/p&gt;

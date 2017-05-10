@@ -12,10 +12,10 @@
     
     <item>
       <title>一种在elf中集成脚本文件的方案</title>
-      <link>http://sysfork.com/post/a-solution-for-elf-integrate-scripts/</link>
+      <link>http://sysfork.com/post/2017/a-solution-for-elf-integrate-scripts/</link>
       <pubDate>Mon, 01 May 2017 22:30:00 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/a-solution-for-elf-integrate-scripts/</guid>
+      <guid>http://sysfork.com/post/2017/a-solution-for-elf-integrate-scripts/</guid>
       <description>
 
 &lt;p&gt;进行游戏服务器开发时，我们将&lt;code&gt;C++&lt;/code&gt;的部分称之为引擎层，而&lt;code&gt;lua&lt;/code&gt;称之为脚本层。但是往往有些核心逻辑是各个游戏公用的，
@@ -224,10 +224,10 @@ subprocess.call(&amp;quot;objcopy %s --add-section .lua-data=%s %s&amp;quot;%(ar
     
     <item>
       <title>lua与C交互中的死循环检测</title>
-      <link>http://sysfork.com/post/lua-c-detect-inifinite-loop/</link>
+      <link>http://sysfork.com/post/2017/lua-c-detect-inifinite-loop/</link>
       <pubDate>Fri, 21 Apr 2017 17:37:30 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/lua-c-detect-inifinite-loop/</guid>
+      <guid>http://sysfork.com/post/2017/lua-c-detect-inifinite-loop/</guid>
       <description>
 
 &lt;p&gt;现在很多游戏引擎都是&lt;code&gt;C++&lt;/code&gt; + &lt;code&gt;lua&lt;/code&gt;的结构，一旦某个服务器开发人员大意写出死循环代码，很容易导致服务无响应，影响服务器稳定。所以引擎中最好能提供一个死循环的检测机制，一旦出现死循环则执行一些行为打断当前流程。&lt;/p&gt;
@@ -346,10 +346,10 @@ signal(SIGALRM, SIG_DFL);
     
     <item>
       <title>Lua Table中HashMap介绍</title>
-      <link>http://sysfork.com/post/lua-hashtable-introduction/</link>
+      <link>http://sysfork.com/post/2016/lua-hashtable-introduction/</link>
       <pubDate>Thu, 01 Sep 2016 17:40:08 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/lua-hashtable-introduction/</guid>
+      <guid>http://sysfork.com/post/2016/lua-hashtable-introduction/</guid>
       <description>&lt;p&gt;&lt;a href=&#34;https://www.lua.org/pil/2.5.html&#34;&gt;Table&lt;/a&gt; 在Lua中有着极其重要的应用，从核心语言实现，如&lt;a href=&#34;https://en.wikipedia.org/wiki/String_interning&#34;&gt;short string intern&lt;/a&gt;，
 到利用&lt;a href=&#34;https://www.lua.org/pil/13.html&#34;&gt;metatable&lt;/a&gt;实现的&lt;a href=&#34;lua-users.org/wiki/LuaClassesWithMetatable&#34;&gt;class&lt;/a&gt;，table几乎无所不能。如此高频度地利用也就意味着lua必须要有一个高效的
 table实现。&lt;/p&gt;

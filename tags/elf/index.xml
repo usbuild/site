@@ -12,10 +12,10 @@
     
     <item>
       <title>一种在elf中集成脚本文件的方案</title>
-      <link>http://sysfork.com/post/a-solution-for-elf-integrate-scripts/</link>
+      <link>http://sysfork.com/post/2017/a-solution-for-elf-integrate-scripts/</link>
       <pubDate>Mon, 01 May 2017 22:30:00 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/a-solution-for-elf-integrate-scripts/</guid>
+      <guid>http://sysfork.com/post/2017/a-solution-for-elf-integrate-scripts/</guid>
       <description>
 
 &lt;p&gt;进行游戏服务器开发时，我们将&lt;code&gt;C++&lt;/code&gt;的部分称之为引擎层，而&lt;code&gt;lua&lt;/code&gt;称之为脚本层。但是往往有些核心逻辑是各个游戏公用的，
@@ -224,10 +224,10 @@ subprocess.call(&amp;quot;objcopy %s --add-section .lua-data=%s %s&amp;quot;%(ar
     
     <item>
       <title>理解Linux下动态链接库延迟绑定</title>
-      <link>http://sysfork.com/post/linux-dynamic-lib-lazy-load/</link>
+      <link>http://sysfork.com/post/2016/linux-dynamic-lib-lazy-load/</link>
       <pubDate>Wed, 07 Sep 2016 22:08:20 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/linux-dynamic-lib-lazy-load/</guid>
+      <guid>http://sysfork.com/post/2016/linux-dynamic-lib-lazy-load/</guid>
       <description>&lt;script src=&#34;//cdn.bootcss.com/highlight.js/9.6.0/languages/x86asm.min.js&#34;&gt;&lt;/script&gt;
 
 &lt;p&gt;在编译动态链接库时，为了保证能被正常使用，一般我们会加上-fPIC参数。在使用的动态链接库中的函数时，Linux使用了一种

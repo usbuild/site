@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="generator" content="Hugo 0.16" />
+
+  <title>一个由 libcurl 导致的 core 分析 &middot; sys🔱fork</title>
+
+  
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/pure-min.css">
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/grids-responsive-old-ie-min.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/grids-responsive-min.css">
+  <!--<![endif]-->
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="http://sysfork.com/css/side-menu-old-ie.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="http://sysfork.com/css/side-menu.css">
+  <!--<![endif]-->
+
+  <link rel="stylesheet" href="http://sysfork.com/css/blackburn.css">
+
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css">
+
+  
+  
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.4.0/styles/gruvbox-light.min.css">
+  <script src="//cdn.bootcss.com/highlight.js/9.4.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  
+
+  <link rel="shortcut icon" href="http://sysfork.com/img/favicon.ico" type="image/x-icon" />
+
+</head>
+
+
+<body>
+<div id="layout">
+
+  
+<a href="#menu" id="menuLink" class="menu-link">
+  
+  <span></span>
+</a>
+<div id="menu">
+
+  
+
+  <div class="pure-menu">
+    <ul class="pure-menu-list">
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/"><i class='fa fa-home fa-fw'></i>Home</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/post/"><i class='fa fa-list fa-fw'></i>Posts</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/about/"><i class='fa fa-user fa-fw'></i>About</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/contact/"><i class='fa fa-phone fa-fw'></i>Contact</a>
+      
+        </li>
+      
+    </ul>
+  </div>
+
+  <div class="pure-menu social">
+  <ul class="pure-menu-list">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <li class="pure-menu-item">
+      <a class="pure-menu-link" href="https://linkedin.com/in/usbuild" target="_blank"><i class="fa fa-linkedin-square fa-fw"></i>LinkedIn</a>
+    </li>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <li class="pure-menu-item">
+      <a class="pure-menu-link" href="https://github.com/usbuild" target="_blank"><i class="fa fa-github-square fa-fw"></i>GitHub</a>
+    </li>
+    
+
+    
+
+    
+
+  </ul>
+</div>
+
+
+  <div>
+  <div class="small-print">
+    <small>&copy; 2017. All rights reserved.</small>
+  </div>
+  <div class="small-print">
+    <small>Built with&nbsp;<a href="https://gohugo.io/" target="_blank">Hugo</a></small>
+    <small>Theme&nbsp;<a href="https://github.com/yoshiharuyamashita/blackburn" target="_blank">Blackburn</a></small>
+  </div>
+</div>
+
+</div>
+
+
+  <div id="main">
+
+
+<div class="header">
+  <h1>一个由 libcurl 导致的 core 分析</h1>
+  <h2></h2>
+</div>
+<div class="content">
+
+  <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>10 May 2017, 15:31</time>
+  </div>
+
+  
+
+  
+  
+  
+  
+
+  
+  
+  
+  
+
+</div>
+
+  <p>最近我们的项目有多个core， 使用gdb查看如下：</p>
+
+<pre><code>(gdb) info threads
+  Id   Target Id         Frame 
+  5    Thread 0x7f28943d9700 (LWP 11079) 0x00007f2895cc5c03 in epoll_wait () at ../sysdeps/unix/syscall-template.S:81
+  4    Thread 0x7f2895bdc700 (LWP 11076) 0x00007f2895cbcaed in poll () at ../sysdeps/unix/syscall-template.S:81
+  3    Thread 0x7f28953db700 (LWP 11077) 0x00007f2895cc5c03 in epoll_wait () at ../sysdeps/unix/syscall-template.S:81
+  2    Thread 0x7f2894bda700 (LWP 11078) 0x00007f2895cc5c03 in epoll_wait () at ../sysdeps/unix/syscall-template.S:81
+* 1    Thread 0x7f28983af780 (LWP 11036) 0x00007f2895c12067 in __GI_raise (sig=sig@entry=6) at ../nptl/sysdeps/unix/sysv/linux/raise.c:56
+</code></pre>
+
+<p>gameapp启动了4个子线程，就是上面的2345，1是主线程，从LWP编号中也可以看出。从这里可以看到，是主线程挂掉了，bt一下</p>
+
+<pre><code>#0  0x00007f2895c12067 in __GI_raise (sig=sig@entry=6) at ../nptl/sysdeps/unix/sysv/linux/raise.c:56
+#1  0x00007f2895c13448 in __GI_abort () at abort.c:89
+#2  0x00007f2895c0b266 in __assert_fail_base (fmt=0x7f2895d43f18 &quot;%s%s%s:%u: %s%sAssertion `%s' failed.\n%n&quot;, assertion=assertion@entry=0x7f2897e30a7e &quot;inMainThread()&quot;, 
+    file=file@entry=0x7f2897e30a48 &quot;/home/shiwan/publish/engine/src/base/base_context.hpp&quot;, line=line@entry=57, 
+    function=function@entry=0x7f2897e313c0 &lt;pm::common::BaseContext::assertInThisThread() const::__PRETTY_FUNCTION__&gt; &quot;void pm::common::BaseContext::assertInThisThread() const&quot;) at assert.c:92
+#3  0x00007f2895c0b312 in __GI___assert_fail (assertion=0x7f2897e30a7e &quot;inMainThread()&quot;, file=0x7f2897e30a48 &quot;/home/shiwan/publish/engine/src/base/base_context.hpp&quot;, line=57, 
+    function=0x7f2897e313c0 &lt;pm::common::BaseContext::assertInThisThread() const::__PRETTY_FUNCTION__&gt; &quot;void pm::common::BaseContext::assertInThisThread() const&quot;) at assert.c:101
+#4  0x00007f289777b26d in pm::common::BaseContext::assertInThisThread (this=0x7f28998d4250) at /home/shiwan/publish/engine/src/base/base_context.hpp:57
+...
+#27 0x00007f2896555970 in ?? () from /usr/lib/x86_64-linux-gnu/libstdc++.so.6
+#28 0x00007f2896bbe0a4 in start_thread (arg=0x7f2895bdc700) at pthread_create.c:309
+#29 0x00007f2895cc562d in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:111
+</code></pre>
+
+<p>从栈顶可以看出，是代码中调用了<code>assert</code>失败了。因为我们的多线程模型属于<code>one loop per thread</code>模式，跨线程调用必须通过<code>event loop</code>来转发，这里的assert就是为了防止跨线程调用了别的线程中实例的方法。所以继续追踪栈看看调用来源。看到栈低</p>
+
+<pre><code>#28 0x00007f2896bbe0a4 in start_thread (arg=0x7f2895bdc700) at pthread_create.c:309
+#29 0x00007f2895cc562d in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:111
+</code></pre>
+
+<p>WTF?主线程调用不应该是从<code>main</code>开始的么？难道别的线程是主线程？</p>
+
+<pre><code>(gdb) thread apply all bt  -2                                                                                                                                                                                     
+
+Thread 5 (Thread 0x7f28943d9700 (LWP 11079)):
+#10 0x00007f2896bbe0a4 in start_thread (arg=0x7f28943d9700) at pthread_create.c:309
+#11 0x00007f2895cc562d in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:111
+
+Thread 4 (Thread 0x7f2895bdc700 (LWP 11076)):
+#56 0x00007f2896bbe0a4 in start_thread (arg=0x7f2895bdc700) at pthread_create.c:309
+#57 0x00007f2895cc562d in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:111
+
+Thread 3 (Thread 0x7f28953db700 (LWP 11077)):
+#10 0x00007f2896bbe0a4 in start_thread (arg=0x7f28953db700) at pthread_create.c:309
+#11 0x00007f2895cc562d in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:111
+
+Thread 2 (Thread 0x7f2894bda700 (LWP 11078)):
+#10 0x00007f2896bbe0a4 in start_thread (arg=0x7f2894bda700) at pthread_create.c:309
+#11 0x00007f2895cc562d in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:111
+
+Thread 1 (Thread 0x7f28983af780 (LWP 11036)):
+#28 0x00007f2896bbe0a4 in start_thread (arg=0x7f2895bdc700) at pthread_create.c:309
+#29 0x00007f2895cc562d in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:111
+</code></pre>
+
+<p>查看所有线程堆栈可以看到所有线程的启动函数都是<code>clone</code>，这是不正常的。所以问题是主线程的堆栈被覆盖了，那是被哪个线程覆盖了呢？继续在主线程下查看</p>
+
+<pre><code>(gdb) f 4
+#4  0x00007f289777b26d in pm::common::BaseContext::assertInThisThread (this=0x7f28998d4250) at /home/shiwan/publish/engine/src/base/base_context.hpp:57
+57          void assertInThisThread() const { assert(inMainThread()); }
+(gdb) p /x this-&gt;dispatch_thread_id_
+$3 = {_M_thread = 0x7f2895bdc700}
+</code></pre>
+
+<p>根据线程的ID可以看出这个堆栈本来是线程4(LWP 11076)的。查看线程4的堆栈如下</p>
+
+<pre><code>#0  0x00007f2895cbcaed in poll () at ../sysdeps/unix/syscall-template.S:81                                                                                                                               [38/1614]
+#1  0x00007f289339dcc0 in send_dg (ansp2_malloced=0x7f2895bdac08, resplen2=0x7f2895bdac04, anssizp2=0x7f2895bdac00, ansp2=0x7f2895bdac20, anscp=0x7f2895bdac10, gotsomewhere=&lt;synthetic pointer&gt;, 
+    v_circuit=&lt;synthetic pointer&gt;, ns=0, terrno=0x7f2895bd95c8, anssizp=0x7f2895bd9700, ansp=0x7f2895bd95b8, buflen2=47, buf2=0x7f2895bd9760 &quot;\vd\001&quot;, buflen=47, buf=0x7f2895bd9730 &quot;\344A\001&quot;, 
+    statp=0x7f2895bdcdb8) at res_send.c:1200
+#2  __libc_res_nsend (statp=statp@entry=0x7f2895bdcdb8, buf=buf@entry=0x7f2895bd9730 &quot;\344A\001&quot;, buflen=47, buf2=buf2@entry=0x7f2895bd9760 &quot;\vd\001&quot;, buflen2=buflen2@entry=47, 
+    ans=ans@entry=0x7f2895bda3d0 &quot;\344A\201\200&quot;, anssiz=anssiz@entry=2048, ansp=ansp@entry=0x7f2895bdac10, ansp2=ansp2@entry=0x7f2895bdac20, nansp2=0x7f2895bdac00, nansp2@entry=0x7f2897e5f1c0, 
+    resplen2=resplen2@entry=0x7f2895bdac04, ansp2_malloced=0x7f2895bdac08, ansp2_malloced@entry=0x7f2895bdb800) at res_send.c:545
+#3  0x00007f289339bc0c in __GI___libc_res_nquery (statp=statp@entry=0x7f2895bdcdb8, name=0x7f288002ef50 &quot;x&quot;, class=32552, class@entry=1, type=type@entry=62321, 
+    answer=answer@entry=0x7f2895bda3d0 &quot;\344A\201\200&quot;, anslen=2048, anslen@entry=3, answerp=answerp@entry=0x7f2895bdac10, answerp2=answerp2@entry=0x7f2895bdac20, nanswerp2=nanswerp2@entry=0x7f2895bdac00, 
+    resplen2=resplen2@entry=0x7f2895bdac04, answerp2_malloced=answerp2_malloced@entry=0x7f2895bdac08) at res_query.c:227
+#4  0x00007f289339c210 in __libc_res_nquerydomain (statp=0x7f2895bdcdb8, statp@entry=0x74007f2895bdcdb8, name=name@entry=0x7f288002ef50 &quot;x&quot;, domain=domain@entry=0x0, class=class@entry=1, 
+    type=type@entry=62321, answer=answer@entry=0x7f2895bda3d0 &quot;\344A\201\200&quot;, anslen=3, anslen@entry=-1751285904, answerp=0x0, answerp@entry=0x7f2895bdb4f0, answerp2=0x0, answerp2@entry=0x7f2895bdb4c0, 
+    nanswerp2=0x2d7, nanswerp2@entry=0x7f2895bdac00, resplen2=0x7f2895bdac04, resplen2@entry=0x7f2897e5f045, answerp2_malloced=answerp2_malloced@entry=0x7f2895bdac08) at res_query.c:594
+#5  0x00007f289339c7a9 in __GI___libc_res_nsearch (statp=0x74007f2895bdcdb8, name=name@entry=0x7f288002ef50 &quot;x&quot;, class=class@entry=1, type=type@entry=62321, answer=answer@entry=0x7f2895bda3d0 &quot;\344A\201\200&quot;, 
+    anslen=-1751285904, anslen@entry=2048, answerp=answerp@entry=0x7f2895bdac10, answerp2=answerp2@entry=0x7f2895bdac20, nanswerp2=nanswerp2@entry=0x7f2895bdac00, resplen2=resplen2@entry=0x7f2895bdac04, 
+    answerp2_malloced=answerp2_malloced@entry=0x7f2895bdac08) at res_query.c:381
+#6  0x00007f28935adacb in _nss_dns_gethostbyname4_r (name=0x7f288002ef50 &quot;x&quot;, name@entry=0x7f2895f83060 &lt;_IO_2_1_stderr_&gt; &quot;\207(\255&quot;, &lt;incomplete sequence \373&gt;, pat=0x7f2895bdb1f8, pat@entry=0xfbad2086, 
+    buffer=buffer@entry=0x7f2895bdaca0 &quot;H\025&quot;, &lt;incomplete sequence \310&gt;, buflen=buflen@entry=1064, errnop=0x7f2895bdb1e8, errnop@entry=0x7f2895bdb7b0, herrnop=0x7f2895bdb210, herrnop@entry=0x7f2895d42acf, 
+    ttlp=ttlp@entry=0x0) at nss_dns/dns-host.c:315
+#7  0x00007f2895cb113c in gaih_inet (name=&lt;optimized out&gt;, service=&lt;optimized out&gt;, req=&lt;optimized out&gt;, pai=&lt;optimized out&gt;, naddrs=&lt;optimized out&gt;) at ../sysdeps/posix/getaddrinfo.c:870
+#8  0x00007f2895bdb800 in ?? ()
+#9  0x00007f289994d1e0 in ?? ()
+#10 0x00007f2895bdb49f in ?? ()
+.....
+#29 0x00007f2897e30a48 in ?? ()
+#30 0x0000000000000039 in ?? ()
+#31 0x00007f2895c0b312 in __GI___assert_fail (assertion=0x7f2897e30a7e &quot;inMainThread()&quot;, 
+    file=0x7f2897e313c0 &lt;pm::common::BaseContext::assertInThisThread() const::__PRETTY_FUNCTION__&gt; &quot;void pm::common::BaseContext::assertInThisThread() const&quot;, line=2548241344, function=0x7f28998d6280 &quot;&quot;)
+    at assert.c:101
+#32 0x00007f289777b26d in pm::common::BaseContext::assertInThisThread (this=0x7f28998d4250) at /home/shiwan/publish/engine/src/base/base_context.hpp:57
+.....
+#54 0x00007f289790e56c in std::thread::_Impl&lt;std::_Bind_simple&lt;pm::common::ThreadBase::start()::&lt;lambda()&gt;()&gt; &gt;::_M_run(void) (this=0x7f28998d0e80) at /usr/include/c++/4.9/thread:115
+#55 0x00007f2896555970 in ?? () from /usr/lib/x86_64-linux-gnu/libstdc++.so.6
+#56 0x00007f2896bbe0a4 in start_thread (arg=0x7f2895bdc700) at pthread_create.c:309
+#57 0x00007f2895cc562d in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:111
+
+</code></pre>
+
+<p>堆栈下面的内容和刚刚在主线程中的堆栈一致，各种变量的值都是一样的。从31号frame往上就不正常了。</p>
+
+<pre><code>#29 0x00007f2897e30a48 in ?? ()
+#30 0x0000000000000039 in ?? ()
+#31 0x00007f2895c0b312 in __GI___assert_fail (assertion=0x7f2897e30a7e &quot;inMainThread()&quot;, 
+    file=0x7f2897e313c0 &lt;pm::common::BaseContext::assertInThisThread() const::__PRETTY_FUNCTION__&gt; &quot;void pm::common::BaseContext::assertInThisThread() const&quot;, line=2548241344, function=0x7f28998d6280 &quot;&quot;)
+    at assert.c:101
+#32 0x00007f289777b26
+</code></pre>
+
+<p>所以出现的情景是子线程4运行过程中，主线程的栈指针<code>%rsp</code>被修改到子线程4的栈空间了。由于<code>%rsp</code>被破坏，函数返回时，保存的pc就不是原来的返回点，而是线程4的控制流，调用栈就被错误地设置了。在开始debug的时候，我错误的以为由于线程4的栈
+被破坏，加上其中一堆&rdquo;???&ldquo;，所以没什么参考价值。但是仔细看看栈顶</p>
+
+<pre><code>#0  0x00007f2895cbcaed in poll () at ../sysdeps/unix/syscall-template.S:81                                                                                                                               [38/1614]
+#1  0x00007f289339dcc0 in send_dg (ansp2_malloced=0x7f2895bdac08, resplen2=0x7f2895bdac04, anssizp2=0x7f2895bdac00, ansp2=0x7f2895bdac20, anscp=0x7f2895bdac10, gotsomewhere=&lt;synthetic pointer&gt;, 
+    v_circuit=&lt;synthetic pointer&gt;, ns=0, terrno=0x7f2895bd95c8, anssizp=0x7f2895bd9700, ansp=0x7f2895bd95b8, buflen2=47, buf2=0x7f2895bd9760 &quot;\vd\001&quot;, buflen=47, buf=0x7f2895bd9730 &quot;\344A\001&quot;, 
+    statp=0x7f2895bdcdb8) at res_send.c:1200
+#2  __libc_res_nsend (statp=statp@entry=0x7f2895bdcdb8, buf=buf@entry=0x7f2895bd9730 &quot;\344A\001&quot;, buflen=47, buf2=buf2@entry=0x7f2895bd9760 &quot;\vd\001&quot;, buflen2=buflen2@entry=47, 
+    ans=ans@entry=0x7f2895bda3d0 &quot;\344A\201\200&quot;, anssiz=anssiz@entry=2048, ansp=ansp@entry=0x7f2895bdac10, ansp2=ansp2@entry=0x7f2895bdac20, nansp2=0x7f2895bdac00, nansp2@entry=0x7f2897e5f1c0, 
+    resplen2=resplen2@entry=0x7f2895bdac04, ansp2_malloced=0x7f2895bdac08, ansp2_malloced@entry=0x7f2895bdb800) at res_send.c:545
+#3  0x00007f289339bc0c in __GI___libc_res_nquery (statp=statp@entry=0x7f2895bdcdb8, name=0x7f288002ef50 &quot;x&quot;, class=32552, class@entry=1, type=type@entry=62321, 
+    answer=answer@entry=0x7f2895bda3d0 &quot;\344A\201\200&quot;, anslen=2048, anslen@entry=3, answerp=answerp@entry=0x7f2895bdac10, answerp2=answerp2@entry=0x7f2895bdac20, nanswerp2=nanswerp2@entry=0x7f2895bdac00, 
+    resplen2=resplen2@entry=0x7f2895bdac04, answerp2_malloced=answerp2_malloced@entry=0x7f2895bdac08) at res_query.c:227
+</code></pre>
+
+<p>线程正在poll，从上一层的调用来看应该是在做DNS查询, gameapp的最后一行log是</p>
+
+<pre><code>I0223 15:06:34.988075 11076 http_manager.cpp:237] Adding curl task url: http://pm01.gmsdk.gameyw.netease.com/app/gen_token.json?game_server=20001&amp;game_uid=4212937&amp;lang=zh_cn&amp;nickname=%E4%BA%8E%E5%AE%B6%E6%AD%8C&amp;pid=pm01&amp;platform=android&amp;refer=%2Fsprite.html&amp;sign=e17e1efcf43bfd036e4410e4b1b844b8&amp;time=1487833594&amp;type=1&amp;uid=aebfpu46xuf3q3ag%40ad.netease.win.163.com&amp;vip=1
+</code></pre>
+
+<p>这行log是线程4打出来的，所以可以判定，此时线程4正在做DNS查询，而调用这个这个DNS的正是curl。那一个简单的DNS查询怎么会导致程序挂掉呢？我们来分析一下CURL的源码：</p>
+
+<p><code>Curl_resolv_timeout</code>是curl用于做dns解析的入口，从函数名可以看出这是个支持timeout的DNS解析函数，然而我们操作系统的如<code>getaddrinfo</code>，<code>gethostbyname</code>之类的函数都是同步阻塞调用，不支持超时参数的啊。仔细看<code>Curl_resolv_timeout</code>
+的实现发现其使用<code>SIGALRM</code>信号的机制来实现在线程阻塞等待时，依然能够在一定时间之后得到通知，从而放弃继续等待的目的。下面是一个简化后的代码</p>
+
+<pre><code>static RETSIGTYPE alarmfunc(int sig)
+{
+  siglongjmp(curl_jmpenv, 1);
+  return;
+}
+
+int Curl_resolv_timeout()
+{
+if(sigsetjmp(curl_jmpenv, 1)) {
+  failf(data, &quot;name lookup timed out&quot;);
+  rc = CURLRESOLV_ERROR;
+  goto clean_up;
+}
+
+keep_sigact = signal(SIGALRM, alarmfunc);
+alarm(curlx_sltoui(timeout/1000L));
+Curl_resolv(conn, hostname, port, entry);
+signal(SIGALRM, keep_sigact);
+}
+
+</code></pre>
+
+<p>通过alarm触发超时，在调用<code>Curl_resolv</code>之前设置好jumppoint，一旦alarm触发，调用<code>alarmfunc</code>，再<code>longjump</code>到jumppoint位置，间接实现了目的。</p>
+
+<p><b>然而这种做法在多线程情况下是灾难</b></p>
+
+<p>在多线程情况下，当一个面向进程的信号事件发生时，系统会选择任意一个可以处理该信号的线程来处理。其中SIGALRM正是一个面向进程的信号事件，所以其可能会被其他线程处理。
+这个信号被主线程捕捉到了。现在来还原整个事件：</p>
+
+<ol>
+<li>子线程发起设置好alarm，发起DNS请求并等待</li>
+<li>由于DNS查询速度比较慢，ALARM信号事件触发</li>
+<li>主线程捕捉到这一信号，调用<code>alarmfunc</code></li>
+<li><code>alarmfunc</code>的作用是<code>longjump</code>，所以主线程的执行环境被替换成子线程的执行环境，栈被破坏</li>
+</ol>
+
+<p>解决方案：
+通过查看curl代码，发现其还有一种异步dns模式，但是需要使用<a href="https://c-ares.haxx.se">c-ares</a>库，所以最终引进了这个库，替换掉了原来的使用系统DNS查询方案。</p>
+
+
+  
+<div class="prev-next-post pure-g">
+  <div class="pure-u-1-24" style="text-align: left;">
+    
+    <a href="http://sysfork.com/post/2017/compatible-embed-luajit-ffi-load/"><i class="fa fa-chevron-left"></i></a>
+    
+  </div>
+  <div class="pure-u-10-24">
+    
+    <nav class="prev">
+      <a href="http://sysfork.com/post/2017/compatible-embed-luajit-ffi-load/">嵌入 luajit 时同时使用 ffi 和 c api 的解决方案</a>
+    </nav>
+    
+  </div>
+  <div class="pure-u-2-24">
+    &nbsp;
+  </div>
+  <div class="pure-u-10-24">
+    
+  </div>
+  <div class="pure-u-1-24" style="text-align: right;">
+    
+  </div>
+</div>
+
+
+
+  
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'sysfork-com';
+    dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+  
+  
+</div>
+
+</div>
+</div>
+<script src="http://sysfork.com/js/ui.js"></script>
+
+
+
+</script>
+</body>
+</html>
+

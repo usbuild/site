@@ -12,10 +12,10 @@
     
     <item>
       <title>lua与C交互中的死循环检测</title>
-      <link>http://sysfork.com/post/lua-c-detect-inifinite-loop/</link>
+      <link>http://sysfork.com/post/2017/lua-c-detect-inifinite-loop/</link>
       <pubDate>Fri, 21 Apr 2017 17:37:30 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/lua-c-detect-inifinite-loop/</guid>
+      <guid>http://sysfork.com/post/2017/lua-c-detect-inifinite-loop/</guid>
       <description>
 
 &lt;p&gt;现在很多游戏引擎都是&lt;code&gt;C++&lt;/code&gt; + &lt;code&gt;lua&lt;/code&gt;的结构，一旦某个服务器开发人员大意写出死循环代码，很容易导致服务无响应，影响服务器稳定。所以引擎中最好能提供一个死循环的检测机制，一旦出现死循环则执行一些行为打断当前流程。&lt;/p&gt;

@@ -12,10 +12,10 @@
     
     <item>
       <title>使用C&#43;&#43; map实现注册回调的功能</title>
-      <link>http://sysfork.com/post/cpp-function-container/</link>
+      <link>http://sysfork.com/post/2017/cpp-function-container/</link>
       <pubDate>Sat, 29 Apr 2017 15:38:38 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/cpp-function-container/</guid>
+      <guid>http://sysfork.com/post/2017/cpp-function-container/</guid>
       <description>
 
 &lt;p&gt;在&lt;code&gt;C++/lua&lt;/code&gt;混合编程中，往往存在需要回调的情况。比如在游戏中，逻辑进程中的脚本需要一个数据库访问操作，如下:&lt;/p&gt;

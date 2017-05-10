@@ -7,15 +7,204 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2017. All rights reserved.</copyright>
-    <lastBuildDate>Tue, 09 May 2017 22:05:47 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 10 May 2017 15:31:06 +0800</lastBuildDate>
     <atom:link href="http://sysfork.com/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
+      <title>一个由 libcurl 导致的 core 分析</title>
+      <link>http://sysfork.com/post/2017/a-core-cause-by-curl-sighandler/</link>
+      <pubDate>Wed, 10 May 2017 15:31:06 +0800</pubDate>
+      
+      <guid>http://sysfork.com/post/2017/a-core-cause-by-curl-sighandler/</guid>
+      <description>&lt;p&gt;最近我们的项目有多个core， 使用gdb查看如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(gdb) info threads
+  Id   Target Id         Frame 
+  5    Thread 0x7f28943d9700 (LWP 11079) 0x00007f2895cc5c03 in epoll_wait () at ../sysdeps/unix/syscall-template.S:81
+  4    Thread 0x7f2895bdc700 (LWP 11076) 0x00007f2895cbcaed in poll () at ../sysdeps/unix/syscall-template.S:81
+  3    Thread 0x7f28953db700 (LWP 11077) 0x00007f2895cc5c03 in epoll_wait () at ../sysdeps/unix/syscall-template.S:81
+  2    Thread 0x7f2894bda700 (LWP 11078) 0x00007f2895cc5c03 in epoll_wait () at ../sysdeps/unix/syscall-template.S:81
+* 1    Thread 0x7f28983af780 (LWP 11036) 0x00007f2895c12067 in __GI_raise (sig=sig@entry=6) at ../nptl/sysdeps/unix/sysv/linux/raise.c:56
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;gameapp启动了4个子线程，就是上面的2345，1是主线程，从LWP编号中也可以看出。从这里可以看到，是主线程挂掉了，bt一下&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;#0  0x00007f2895c12067 in __GI_raise (sig=sig@entry=6) at ../nptl/sysdeps/unix/sysv/linux/raise.c:56
+#1  0x00007f2895c13448 in __GI_abort () at abort.c:89
+#2  0x00007f2895c0b266 in __assert_fail_base (fmt=0x7f2895d43f18 &amp;quot;%s%s%s:%u: %s%sAssertion `%s&#39; failed.\n%n&amp;quot;, assertion=assertion@entry=0x7f2897e30a7e &amp;quot;inMainThread()&amp;quot;, 
+    file=file@entry=0x7f2897e30a48 &amp;quot;/home/shiwan/publish/engine/src/base/base_context.hpp&amp;quot;, line=line@entry=57, 
+    function=function@entry=0x7f2897e313c0 &amp;lt;pm::common::BaseContext::assertInThisThread() const::__PRETTY_FUNCTION__&amp;gt; &amp;quot;void pm::common::BaseContext::assertInThisThread() const&amp;quot;) at assert.c:92
+#3  0x00007f2895c0b312 in __GI___assert_fail (assertion=0x7f2897e30a7e &amp;quot;inMainThread()&amp;quot;, file=0x7f2897e30a48 &amp;quot;/home/shiwan/publish/engine/src/base/base_context.hpp&amp;quot;, line=57, 
+    function=0x7f2897e313c0 &amp;lt;pm::common::BaseContext::assertInThisThread() const::__PRETTY_FUNCTION__&amp;gt; &amp;quot;void pm::common::BaseContext::assertInThisThread() const&amp;quot;) at assert.c:101
+#4  0x00007f289777b26d in pm::common::BaseContext::assertInThisThread (this=0x7f28998d4250) at /home/shiwan/publish/engine/src/base/base_context.hpp:57
+...
+#27 0x00007f2896555970 in ?? () from /usr/lib/x86_64-linux-gnu/libstdc++.so.6
+#28 0x00007f2896bbe0a4 in start_thread (arg=0x7f2895bdc700) at pthread_create.c:309
+#29 0x00007f2895cc562d in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:111
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;从栈顶可以看出，是代码中调用了&lt;code&gt;assert&lt;/code&gt;失败了。因为我们的多线程模型属于&lt;code&gt;one loop per thread&lt;/code&gt;模式，跨线程调用必须通过&lt;code&gt;event loop&lt;/code&gt;来转发，这里的assert就是为了防止跨线程调用了别的线程中实例的方法。所以继续追踪栈看看调用来源。看到栈低&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;#28 0x00007f2896bbe0a4 in start_thread (arg=0x7f2895bdc700) at pthread_create.c:309
+#29 0x00007f2895cc562d in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:111
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;WTF?主线程调用不应该是从&lt;code&gt;main&lt;/code&gt;开始的么？难道别的线程是主线程？&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(gdb) thread apply all bt  -2                                                                                                                                                                                     
+
+Thread 5 (Thread 0x7f28943d9700 (LWP 11079)):
+#10 0x00007f2896bbe0a4 in start_thread (arg=0x7f28943d9700) at pthread_create.c:309
+#11 0x00007f2895cc562d in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:111
+
+Thread 4 (Thread 0x7f2895bdc700 (LWP 11076)):
+#56 0x00007f2896bbe0a4 in start_thread (arg=0x7f2895bdc700) at pthread_create.c:309
+#57 0x00007f2895cc562d in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:111
+
+Thread 3 (Thread 0x7f28953db700 (LWP 11077)):
+#10 0x00007f2896bbe0a4 in start_thread (arg=0x7f28953db700) at pthread_create.c:309
+#11 0x00007f2895cc562d in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:111
+
+Thread 2 (Thread 0x7f2894bda700 (LWP 11078)):
+#10 0x00007f2896bbe0a4 in start_thread (arg=0x7f2894bda700) at pthread_create.c:309
+#11 0x00007f2895cc562d in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:111
+
+Thread 1 (Thread 0x7f28983af780 (LWP 11036)):
+#28 0x00007f2896bbe0a4 in start_thread (arg=0x7f2895bdc700) at pthread_create.c:309
+#29 0x00007f2895cc562d in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:111
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;查看所有线程堆栈可以看到所有线程的启动函数都是&lt;code&gt;clone&lt;/code&gt;，这是不正常的。所以问题是主线程的堆栈被覆盖了，那是被哪个线程覆盖了呢？继续在主线程下查看&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(gdb) f 4
+#4  0x00007f289777b26d in pm::common::BaseContext::assertInThisThread (this=0x7f28998d4250) at /home/shiwan/publish/engine/src/base/base_context.hpp:57
+57          void assertInThisThread() const { assert(inMainThread()); }
+(gdb) p /x this-&amp;gt;dispatch_thread_id_
+$3 = {_M_thread = 0x7f2895bdc700}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;根据线程的ID可以看出这个堆栈本来是线程4(LWP 11076)的。查看线程4的堆栈如下&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;#0  0x00007f2895cbcaed in poll () at ../sysdeps/unix/syscall-template.S:81                                                                                                                               [38/1614]
+#1  0x00007f289339dcc0 in send_dg (ansp2_malloced=0x7f2895bdac08, resplen2=0x7f2895bdac04, anssizp2=0x7f2895bdac00, ansp2=0x7f2895bdac20, anscp=0x7f2895bdac10, gotsomewhere=&amp;lt;synthetic pointer&amp;gt;, 
+    v_circuit=&amp;lt;synthetic pointer&amp;gt;, ns=0, terrno=0x7f2895bd95c8, anssizp=0x7f2895bd9700, ansp=0x7f2895bd95b8, buflen2=47, buf2=0x7f2895bd9760 &amp;quot;\vd\001&amp;quot;, buflen=47, buf=0x7f2895bd9730 &amp;quot;\344A\001&amp;quot;, 
+    statp=0x7f2895bdcdb8) at res_send.c:1200
+#2  __libc_res_nsend (statp=statp@entry=0x7f2895bdcdb8, buf=buf@entry=0x7f2895bd9730 &amp;quot;\344A\001&amp;quot;, buflen=47, buf2=buf2@entry=0x7f2895bd9760 &amp;quot;\vd\001&amp;quot;, buflen2=buflen2@entry=47, 
+    ans=ans@entry=0x7f2895bda3d0 &amp;quot;\344A\201\200&amp;quot;, anssiz=anssiz@entry=2048, ansp=ansp@entry=0x7f2895bdac10, ansp2=ansp2@entry=0x7f2895bdac20, nansp2=0x7f2895bdac00, nansp2@entry=0x7f2897e5f1c0, 
+    resplen2=resplen2@entry=0x7f2895bdac04, ansp2_malloced=0x7f2895bdac08, ansp2_malloced@entry=0x7f2895bdb800) at res_send.c:545
+#3  0x00007f289339bc0c in __GI___libc_res_nquery (statp=statp@entry=0x7f2895bdcdb8, name=0x7f288002ef50 &amp;quot;x&amp;quot;, class=32552, class@entry=1, type=type@entry=62321, 
+    answer=answer@entry=0x7f2895bda3d0 &amp;quot;\344A\201\200&amp;quot;, anslen=2048, anslen@entry=3, answerp=answerp@entry=0x7f2895bdac10, answerp2=answerp2@entry=0x7f2895bdac20, nanswerp2=nanswerp2@entry=0x7f2895bdac00, 
+    resplen2=resplen2@entry=0x7f2895bdac04, answerp2_malloced=answerp2_malloced@entry=0x7f2895bdac08) at res_query.c:227
+#4  0x00007f289339c210 in __libc_res_nquerydomain (statp=0x7f2895bdcdb8, statp@entry=0x74007f2895bdcdb8, name=name@entry=0x7f288002ef50 &amp;quot;x&amp;quot;, domain=domain@entry=0x0, class=class@entry=1, 
+    type=type@entry=62321, answer=answer@entry=0x7f2895bda3d0 &amp;quot;\344A\201\200&amp;quot;, anslen=3, anslen@entry=-1751285904, answerp=0x0, answerp@entry=0x7f2895bdb4f0, answerp2=0x0, answerp2@entry=0x7f2895bdb4c0, 
+    nanswerp2=0x2d7, nanswerp2@entry=0x7f2895bdac00, resplen2=0x7f2895bdac04, resplen2@entry=0x7f2897e5f045, answerp2_malloced=answerp2_malloced@entry=0x7f2895bdac08) at res_query.c:594
+#5  0x00007f289339c7a9 in __GI___libc_res_nsearch (statp=0x74007f2895bdcdb8, name=name@entry=0x7f288002ef50 &amp;quot;x&amp;quot;, class=class@entry=1, type=type@entry=62321, answer=answer@entry=0x7f2895bda3d0 &amp;quot;\344A\201\200&amp;quot;, 
+    anslen=-1751285904, anslen@entry=2048, answerp=answerp@entry=0x7f2895bdac10, answerp2=answerp2@entry=0x7f2895bdac20, nanswerp2=nanswerp2@entry=0x7f2895bdac00, resplen2=resplen2@entry=0x7f2895bdac04, 
+    answerp2_malloced=answerp2_malloced@entry=0x7f2895bdac08) at res_query.c:381
+#6  0x00007f28935adacb in _nss_dns_gethostbyname4_r (name=0x7f288002ef50 &amp;quot;x&amp;quot;, name@entry=0x7f2895f83060 &amp;lt;_IO_2_1_stderr_&amp;gt; &amp;quot;\207(\255&amp;quot;, &amp;lt;incomplete sequence \373&amp;gt;, pat=0x7f2895bdb1f8, pat@entry=0xfbad2086, 
+    buffer=buffer@entry=0x7f2895bdaca0 &amp;quot;H\025&amp;quot;, &amp;lt;incomplete sequence \310&amp;gt;, buflen=buflen@entry=1064, errnop=0x7f2895bdb1e8, errnop@entry=0x7f2895bdb7b0, herrnop=0x7f2895bdb210, herrnop@entry=0x7f2895d42acf, 
+    ttlp=ttlp@entry=0x0) at nss_dns/dns-host.c:315
+#7  0x00007f2895cb113c in gaih_inet (name=&amp;lt;optimized out&amp;gt;, service=&amp;lt;optimized out&amp;gt;, req=&amp;lt;optimized out&amp;gt;, pai=&amp;lt;optimized out&amp;gt;, naddrs=&amp;lt;optimized out&amp;gt;) at ../sysdeps/posix/getaddrinfo.c:870
+#8  0x00007f2895bdb800 in ?? ()
+#9  0x00007f289994d1e0 in ?? ()
+#10 0x00007f2895bdb49f in ?? ()
+.....
+#29 0x00007f2897e30a48 in ?? ()
+#30 0x0000000000000039 in ?? ()
+#31 0x00007f2895c0b312 in __GI___assert_fail (assertion=0x7f2897e30a7e &amp;quot;inMainThread()&amp;quot;, 
+    file=0x7f2897e313c0 &amp;lt;pm::common::BaseContext::assertInThisThread() const::__PRETTY_FUNCTION__&amp;gt; &amp;quot;void pm::common::BaseContext::assertInThisThread() const&amp;quot;, line=2548241344, function=0x7f28998d6280 &amp;quot;&amp;quot;)
+    at assert.c:101
+#32 0x00007f289777b26d in pm::common::BaseContext::assertInThisThread (this=0x7f28998d4250) at /home/shiwan/publish/engine/src/base/base_context.hpp:57
+.....
+#54 0x00007f289790e56c in std::thread::_Impl&amp;lt;std::_Bind_simple&amp;lt;pm::common::ThreadBase::start()::&amp;lt;lambda()&amp;gt;()&amp;gt; &amp;gt;::_M_run(void) (this=0x7f28998d0e80) at /usr/include/c++/4.9/thread:115
+#55 0x00007f2896555970 in ?? () from /usr/lib/x86_64-linux-gnu/libstdc++.so.6
+#56 0x00007f2896bbe0a4 in start_thread (arg=0x7f2895bdc700) at pthread_create.c:309
+#57 0x00007f2895cc562d in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:111
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;堆栈下面的内容和刚刚在主线程中的堆栈一致，各种变量的值都是一样的。从31号frame往上就不正常了。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;#29 0x00007f2897e30a48 in ?? ()
+#30 0x0000000000000039 in ?? ()
+#31 0x00007f2895c0b312 in __GI___assert_fail (assertion=0x7f2897e30a7e &amp;quot;inMainThread()&amp;quot;, 
+    file=0x7f2897e313c0 &amp;lt;pm::common::BaseContext::assertInThisThread() const::__PRETTY_FUNCTION__&amp;gt; &amp;quot;void pm::common::BaseContext::assertInThisThread() const&amp;quot;, line=2548241344, function=0x7f28998d6280 &amp;quot;&amp;quot;)
+    at assert.c:101
+#32 0x00007f289777b26
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;所以出现的情景是子线程4运行过程中，主线程的栈指针&lt;code&gt;%rsp&lt;/code&gt;被修改到子线程4的栈空间了。由于&lt;code&gt;%rsp&lt;/code&gt;被破坏，函数返回时，保存的pc就不是原来的返回点，而是线程4的控制流，调用栈就被错误地设置了。在开始debug的时候，我错误的以为由于线程4的栈
+被破坏，加上其中一堆&amp;rdquo;???&amp;ldquo;，所以没什么参考价值。但是仔细看看栈顶&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;#0  0x00007f2895cbcaed in poll () at ../sysdeps/unix/syscall-template.S:81                                                                                                                               [38/1614]
+#1  0x00007f289339dcc0 in send_dg (ansp2_malloced=0x7f2895bdac08, resplen2=0x7f2895bdac04, anssizp2=0x7f2895bdac00, ansp2=0x7f2895bdac20, anscp=0x7f2895bdac10, gotsomewhere=&amp;lt;synthetic pointer&amp;gt;, 
+    v_circuit=&amp;lt;synthetic pointer&amp;gt;, ns=0, terrno=0x7f2895bd95c8, anssizp=0x7f2895bd9700, ansp=0x7f2895bd95b8, buflen2=47, buf2=0x7f2895bd9760 &amp;quot;\vd\001&amp;quot;, buflen=47, buf=0x7f2895bd9730 &amp;quot;\344A\001&amp;quot;, 
+    statp=0x7f2895bdcdb8) at res_send.c:1200
+#2  __libc_res_nsend (statp=statp@entry=0x7f2895bdcdb8, buf=buf@entry=0x7f2895bd9730 &amp;quot;\344A\001&amp;quot;, buflen=47, buf2=buf2@entry=0x7f2895bd9760 &amp;quot;\vd\001&amp;quot;, buflen2=buflen2@entry=47, 
+    ans=ans@entry=0x7f2895bda3d0 &amp;quot;\344A\201\200&amp;quot;, anssiz=anssiz@entry=2048, ansp=ansp@entry=0x7f2895bdac10, ansp2=ansp2@entry=0x7f2895bdac20, nansp2=0x7f2895bdac00, nansp2@entry=0x7f2897e5f1c0, 
+    resplen2=resplen2@entry=0x7f2895bdac04, ansp2_malloced=0x7f2895bdac08, ansp2_malloced@entry=0x7f2895bdb800) at res_send.c:545
+#3  0x00007f289339bc0c in __GI___libc_res_nquery (statp=statp@entry=0x7f2895bdcdb8, name=0x7f288002ef50 &amp;quot;x&amp;quot;, class=32552, class@entry=1, type=type@entry=62321, 
+    answer=answer@entry=0x7f2895bda3d0 &amp;quot;\344A\201\200&amp;quot;, anslen=2048, anslen@entry=3, answerp=answerp@entry=0x7f2895bdac10, answerp2=answerp2@entry=0x7f2895bdac20, nanswerp2=nanswerp2@entry=0x7f2895bdac00, 
+    resplen2=resplen2@entry=0x7f2895bdac04, answerp2_malloced=answerp2_malloced@entry=0x7f2895bdac08) at res_query.c:227
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;线程正在poll，从上一层的调用来看应该是在做DNS查询, gameapp的最后一行log是&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;I0223 15:06:34.988075 11076 http_manager.cpp:237] Adding curl task url: http://pm01.gmsdk.gameyw.netease.com/app/gen_token.json?game_server=20001&amp;amp;game_uid=4212937&amp;amp;lang=zh_cn&amp;amp;nickname=%E4%BA%8E%E5%AE%B6%E6%AD%8C&amp;amp;pid=pm01&amp;amp;platform=android&amp;amp;refer=%2Fsprite.html&amp;amp;sign=e17e1efcf43bfd036e4410e4b1b844b8&amp;amp;time=1487833594&amp;amp;type=1&amp;amp;uid=aebfpu46xuf3q3ag%40ad.netease.win.163.com&amp;amp;vip=1
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这行log是线程4打出来的，所以可以判定，此时线程4正在做DNS查询，而调用这个这个DNS的正是curl。那一个简单的DNS查询怎么会导致程序挂掉呢？我们来分析一下CURL的源码：&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;Curl_resolv_timeout&lt;/code&gt;是curl用于做dns解析的入口，从函数名可以看出这是个支持timeout的DNS解析函数，然而我们操作系统的如&lt;code&gt;getaddrinfo&lt;/code&gt;，&lt;code&gt;gethostbyname&lt;/code&gt;之类的函数都是同步阻塞调用，不支持超时参数的啊。仔细看&lt;code&gt;Curl_resolv_timeout&lt;/code&gt;
+的实现发现其使用&lt;code&gt;SIGALRM&lt;/code&gt;信号的机制来实现在线程阻塞等待时，依然能够在一定时间之后得到通知，从而放弃继续等待的目的。下面是一个简化后的代码&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;static RETSIGTYPE alarmfunc(int sig)
+{
+  siglongjmp(curl_jmpenv, 1);
+  return;
+}
+
+int Curl_resolv_timeout()
+{
+if(sigsetjmp(curl_jmpenv, 1)) {
+  failf(data, &amp;quot;name lookup timed out&amp;quot;);
+  rc = CURLRESOLV_ERROR;
+  goto clean_up;
+}
+
+keep_sigact = signal(SIGALRM, alarmfunc);
+alarm(curlx_sltoui(timeout/1000L));
+Curl_resolv(conn, hostname, port, entry);
+signal(SIGALRM, keep_sigact);
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;通过alarm触发超时，在调用&lt;code&gt;Curl_resolv&lt;/code&gt;之前设置好jumppoint，一旦alarm触发，调用&lt;code&gt;alarmfunc&lt;/code&gt;，再&lt;code&gt;longjump&lt;/code&gt;到jumppoint位置，间接实现了目的。&lt;/p&gt;
+
+&lt;p&gt;&lt;b&gt;然而这种做法在多线程情况下是灾难&lt;/b&gt;&lt;/p&gt;
+
+&lt;p&gt;在多线程情况下，当一个面向进程的信号事件发生时，系统会选择任意一个可以处理该信号的线程来处理。其中SIGALRM正是一个面向进程的信号事件，所以其可能会被其他线程处理。
+这个信号被主线程捕捉到了。现在来还原整个事件：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;子线程发起设置好alarm，发起DNS请求并等待&lt;/li&gt;
+&lt;li&gt;由于DNS查询速度比较慢，ALARM信号事件触发&lt;/li&gt;
+&lt;li&gt;主线程捕捉到这一信号，调用&lt;code&gt;alarmfunc&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;alarmfunc&lt;/code&gt;的作用是&lt;code&gt;longjump&lt;/code&gt;，所以主线程的执行环境被替换成子线程的执行环境，栈被破坏&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;解决方案：
+通过查看curl代码，发现其还有一种异步dns模式，但是需要使用&lt;a href=&#34;https://c-ares.haxx.se&#34;&gt;c-ares&lt;/a&gt;库，所以最终引进了这个库，替换掉了原来的使用系统DNS查询方案。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
       <title>嵌入 luajit 时同时使用 ffi 和 c api 的解决方案</title>
-      <link>http://sysfork.com/post/compatible-embed-luajit-ffi-load/</link>
+      <link>http://sysfork.com/post/2017/compatible-embed-luajit-ffi-load/</link>
       <pubDate>Tue, 09 May 2017 22:05:47 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/compatible-embed-luajit-ffi-load/</guid>
+      <guid>http://sysfork.com/post/2017/compatible-embed-luajit-ffi-load/</guid>
       <description>&lt;p&gt;我们都喜欢&lt;a href=&#34;http://luajit.org/ext_ffi.html&#34;&gt;ffi&lt;/a&gt;。&lt;/p&gt;
 
 &lt;p&gt;ffi 的接口简单易用，当使用第三方没有提供 lua 接口的库来说，使用 ffi 接入相当容易。
@@ -114,10 +303,10 @@ ffi.cdef[[...]]
     
     <item>
       <title>让disqus支持大陆访问</title>
-      <link>http://sysfork.com/post/use-disqus-in-china/</link>
+      <link>http://sysfork.com/post/2017/use-disqus-in-china/</link>
       <pubDate>Sun, 07 May 2017 18:11:51 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/use-disqus-in-china/</guid>
+      <guid>http://sysfork.com/post/2017/use-disqus-in-china/</guid>
       <description>
 
 &lt;p&gt;由于众所周知的原因，&lt;a href=&#34;https://disqus.com/&#34;&gt;disqus&lt;/a&gt; 在大陆难以访问，随着&lt;a href=&#34;https://duoshuo.com&#34;&gt;多说&lt;/a&gt;的关闭，无法正常地使用评论功能已经成为
@@ -188,10 +377,10 @@ Origin https://disqus.com;
     
     <item>
       <title>一种在elf中集成脚本文件的方案</title>
-      <link>http://sysfork.com/post/a-solution-for-elf-integrate-scripts/</link>
+      <link>http://sysfork.com/post/2017/a-solution-for-elf-integrate-scripts/</link>
       <pubDate>Mon, 01 May 2017 22:30:00 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/a-solution-for-elf-integrate-scripts/</guid>
+      <guid>http://sysfork.com/post/2017/a-solution-for-elf-integrate-scripts/</guid>
       <description>
 
 &lt;p&gt;进行游戏服务器开发时，我们将&lt;code&gt;C++&lt;/code&gt;的部分称之为引擎层，而&lt;code&gt;lua&lt;/code&gt;称之为脚本层。但是往往有些核心逻辑是各个游戏公用的，
@@ -400,10 +589,10 @@ subprocess.call(&amp;quot;objcopy %s --add-section .lua-data=%s %s&amp;quot;%(ar
     
     <item>
       <title>使用C&#43;&#43; map实现注册回调的功能</title>
-      <link>http://sysfork.com/post/cpp-function-container/</link>
+      <link>http://sysfork.com/post/2017/cpp-function-container/</link>
       <pubDate>Sat, 29 Apr 2017 15:38:38 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/cpp-function-container/</guid>
+      <guid>http://sysfork.com/post/2017/cpp-function-container/</guid>
       <description>
 
 &lt;p&gt;在&lt;code&gt;C++/lua&lt;/code&gt;混合编程中，往往存在需要回调的情况。比如在游戏中，逻辑进程中的脚本需要一个数据库访问操作，如下:&lt;/p&gt;
@@ -545,10 +734,10 @@ struct CallbackTypeHelper {
     
     <item>
       <title>lua与C交互中的死循环检测</title>
-      <link>http://sysfork.com/post/lua-c-detect-inifinite-loop/</link>
+      <link>http://sysfork.com/post/2017/lua-c-detect-inifinite-loop/</link>
       <pubDate>Fri, 21 Apr 2017 17:37:30 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/lua-c-detect-inifinite-loop/</guid>
+      <guid>http://sysfork.com/post/2017/lua-c-detect-inifinite-loop/</guid>
       <description>
 
 &lt;p&gt;现在很多游戏引擎都是&lt;code&gt;C++&lt;/code&gt; + &lt;code&gt;lua&lt;/code&gt;的结构，一旦某个服务器开发人员大意写出死循环代码，很容易导致服务无响应，影响服务器稳定。所以引擎中最好能提供一个死循环的检测机制，一旦出现死循环则执行一些行为打断当前流程。&lt;/p&gt;
@@ -667,10 +856,10 @@ signal(SIGALRM, SIG_DFL);
     
     <item>
       <title>浅谈C&#43;&#43;中的地址对齐</title>
-      <link>http://sysfork.com/post/about-cpp-alignment/</link>
+      <link>http://sysfork.com/post/2016/about-cpp-alignment/</link>
       <pubDate>Sun, 25 Sep 2016 09:13:27 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/about-cpp-alignment/</guid>
+      <guid>http://sysfork.com/post/2016/about-cpp-alignment/</guid>
       <description>
 
 &lt;h1 id=&#34;动机&#34;&gt;动机&lt;/h1&gt;
@@ -817,10 +1006,10 @@ layout的时候，pack能让我们更好地控制产出的代码。&lt;/p&gt;
     
     <item>
       <title>理解Linux下动态链接库延迟绑定</title>
-      <link>http://sysfork.com/post/linux-dynamic-lib-lazy-load/</link>
+      <link>http://sysfork.com/post/2016/linux-dynamic-lib-lazy-load/</link>
       <pubDate>Wed, 07 Sep 2016 22:08:20 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/linux-dynamic-lib-lazy-load/</guid>
+      <guid>http://sysfork.com/post/2016/linux-dynamic-lib-lazy-load/</guid>
       <description>&lt;script src=&#34;//cdn.bootcss.com/highlight.js/9.6.0/languages/x86asm.min.js&#34;&gt;&lt;/script&gt;
 
 &lt;p&gt;在编译动态链接库时，为了保证能被正常使用，一般我们会加上-fPIC参数。在使用的动态链接库中的函数时，Linux使用了一种
@@ -1099,10 +1288,10 @@ _dl_runtime_resolve in section .text of /lib64/ld-linux-x86-64.so.2
     
     <item>
       <title>Hugo 集成 Mathjax和graphviz</title>
-      <link>http://sysfork.com/post/integrate-mathjax-viz-with-hugo/</link>
+      <link>http://sysfork.com/post/2016/integrate-mathjax-viz-with-hugo/</link>
       <pubDate>Fri, 02 Sep 2016 09:41:17 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/integrate-mathjax-viz-with-hugo/</guid>
+      <guid>http://sysfork.com/post/2016/integrate-mathjax-viz-with-hugo/</guid>
       <description>&lt;p&gt;&lt;a href=&#34;https://gohugo.io/&#34;&gt;hugo&lt;/a&gt;是一个比&lt;a href=&#34;https://hexo.io&#34;&gt;hexo&lt;/a&gt;更简单易用的静态页面生成工具，其只有一个可执行文件，部署环境简单，本博客就是基于hugo构建的。&lt;/p&gt;
 
 &lt;p&gt;我们在写博客的时候经常应用到公式和图表，这分别可以使用&lt;a href=&#34;https://www.mathjax.org/&#34;&gt;mathjax&lt;/a&gt;和&lt;a href=&#34;https://github.com/mdaines/viz.js&#34;&gt;viz.js&lt;/a&gt;实现。hugo并没有提供
@@ -1198,10 +1387,10 @@ $$ [ \left [ &amp;#8211; \frac{\hbar^2}{2 m} \frac{\partial^2}{\partial x^2} + V
     
     <item>
       <title>Lua Table中HashMap介绍</title>
-      <link>http://sysfork.com/post/lua-hashtable-introduction/</link>
+      <link>http://sysfork.com/post/2016/lua-hashtable-introduction/</link>
       <pubDate>Thu, 01 Sep 2016 17:40:08 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/lua-hashtable-introduction/</guid>
+      <guid>http://sysfork.com/post/2016/lua-hashtable-introduction/</guid>
       <description>&lt;p&gt;&lt;a href=&#34;https://www.lua.org/pil/2.5.html&#34;&gt;Table&lt;/a&gt; 在Lua中有着极其重要的应用，从核心语言实现，如&lt;a href=&#34;https://en.wikipedia.org/wiki/String_interning&#34;&gt;short string intern&lt;/a&gt;，
 到利用&lt;a href=&#34;https://www.lua.org/pil/13.html&#34;&gt;metatable&lt;/a&gt;实现的&lt;a href=&#34;lua-users.org/wiki/LuaClassesWithMetatable&#34;&gt;class&lt;/a&gt;，table几乎无所不能。如此高频度地利用也就意味着lua必须要有一个高效的
 table实现。&lt;/p&gt;

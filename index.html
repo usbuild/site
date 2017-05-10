@@ -185,13 +185,13 @@
   
     <article>
   <header>
-    <h2><a href="http://sysfork.com/post/compatible-embed-luajit-ffi-load/">嵌入 luajit 时同时使用 ffi 和 c api 的解决方案</a></h2>
+    <h2><a href="http://sysfork.com/post/2017/a-core-cause-by-curl-sighandler/">一个由 libcurl 导致的 core 分析</a></h2>
 
     <div class="post-meta">
 
   <div>
     <i class="fa fa-calendar fa-fw"></i>
-    <time>09 May 2017, 22:05</time>
+    <time>10 May 2017, 15:31</time>
   </div>
 
   
@@ -211,12 +211,12 @@
   </header>
 
   <p>
-  我们都喜欢ffi。 ffi 的接口简单易用，当使用第三方没有提供 lua 接口的库来说，使用 ffi 接入相当容易。 而且效率比较高，通过 ffi 调用的接口是可以被 jit 编译的
+  最近我们的项目有多个core， 使用gdb查看如下： (gdb) info threads Id Target Id Frame 5 Thread 0x7f28943d9700 (LWP 11079) 0x00007f2895cc5c03 in epoll_wait () at ../sysdeps/unix/syscall-template.S:81 4 Thread 0x7f2895bdc700 (LWP 11076) 0x00007f2895cbcaed in poll () at ../sysdeps/unix/syscall-template.S:81 3 Thread 0x7f28953db700 (LWP 11077) 0x00007f2895cc5c03 in epoll_wait () at ../sysdeps/unix/syscall-template.S:81 2 Thread 0x7f2894bda700 (LWP 11078)
   </p>
 
   
   <footer>
-    <a href="http://sysfork.com/post/compatible-embed-luajit-ffi-load/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+    <a href="http://sysfork.com/post/2017/a-core-cause-by-curl-sighandler/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
   </footer>
   
 </article>
@@ -224,7 +224,55 @@
   
     <article>
   <header>
-    <h2><a href="http://sysfork.com/post/use-disqus-in-china/">让disqus支持大陆访问</a></h2>
+    <h2><a href="http://sysfork.com/post/2017/compatible-embed-luajit-ffi-load/">嵌入 luajit 时同时使用 ffi 和 c api 的解决方案</a></h2>
+
+    <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>09 May 2017, 22:05</time>
+  </div>
+
+  
+
+  
+  
+  
+  
+
+  
+  
+  
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="http://sysfork.com/tags/luajit">luajit</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://sysfork.com/tags/ffi">ffi</a>
+    
+  </div>
+  
+  
+
+</div>
+
+  </header>
+
+  <p>
+  我们都喜欢ffi。 ffi 的接口简单易用，当使用第三方没有提供 lua 接口的库来说，使用 ffi 接入相当容易。 而且效率比较高，通过 ffi 调用的接口是可以被 jit 编译的
+  </p>
+
+  
+  <footer>
+    <a href="http://sysfork.com/post/2017/compatible-embed-luajit-ffi-load/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+  </footer>
+  
+</article>
+
+  
+    <article>
+  <header>
+    <h2><a href="http://sysfork.com/post/2017/use-disqus-in-china/">让disqus支持大陆访问</a></h2>
 
     <div class="post-meta">
 
@@ -262,7 +310,7 @@
 
   
   <footer>
-    <a href="http://sysfork.com/post/use-disqus-in-china/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+    <a href="http://sysfork.com/post/2017/use-disqus-in-china/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
   </footer>
   
 </article>
@@ -270,7 +318,7 @@
   
     <article>
   <header>
-    <h2><a href="http://sysfork.com/post/a-solution-for-elf-integrate-scripts/">一种在elf中集成脚本文件的方案</a></h2>
+    <h2><a href="http://sysfork.com/post/2017/a-solution-for-elf-integrate-scripts/">一种在elf中集成脚本文件的方案</a></h2>
 
     <div class="post-meta">
 
@@ -310,7 +358,7 @@
 
   
   <footer>
-    <a href="http://sysfork.com/post/a-solution-for-elf-integrate-scripts/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+    <a href="http://sysfork.com/post/2017/a-solution-for-elf-integrate-scripts/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
   </footer>
   
 </article>
@@ -318,7 +366,7 @@
   
     <article>
   <header>
-    <h2><a href="http://sysfork.com/post/cpp-function-container/">使用C&#43;&#43; map实现注册回调的功能</a></h2>
+    <h2><a href="http://sysfork.com/post/2017/cpp-function-container/">使用C&#43;&#43; map实现注册回调的功能</a></h2>
 
     <div class="post-meta">
 
@@ -358,7 +406,7 @@
 
   
   <footer>
-    <a href="http://sysfork.com/post/cpp-function-container/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+    <a href="http://sysfork.com/post/2017/cpp-function-container/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
   </footer>
   
 </article>
@@ -366,7 +414,7 @@
   
     <article>
   <header>
-    <h2><a href="http://sysfork.com/post/lua-c-detect-inifinite-loop/">lua与C交互中的死循环检测</a></h2>
+    <h2><a href="http://sysfork.com/post/2017/lua-c-detect-inifinite-loop/">lua与C交互中的死循环检测</a></h2>
 
     <div class="post-meta">
 
@@ -406,7 +454,7 @@
 
   
   <footer>
-    <a href="http://sysfork.com/post/lua-c-detect-inifinite-loop/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+    <a href="http://sysfork.com/post/2017/lua-c-detect-inifinite-loop/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
   </footer>
   
 </article>
@@ -414,7 +462,7 @@
   
     <article>
   <header>
-    <h2><a href="http://sysfork.com/post/about-cpp-alignment/">浅谈C&#43;&#43;中的地址对齐</a></h2>
+    <h2><a href="http://sysfork.com/post/2016/about-cpp-alignment/">浅谈C&#43;&#43;中的地址对齐</a></h2>
 
     <div class="post-meta">
 
@@ -445,7 +493,7 @@
 
   
   <footer>
-    <a href="http://sysfork.com/post/about-cpp-alignment/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+    <a href="http://sysfork.com/post/2016/about-cpp-alignment/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
   </footer>
   
 </article>
@@ -453,7 +501,7 @@
   
     <article>
   <header>
-    <h2><a href="http://sysfork.com/post/linux-dynamic-lib-lazy-load/">理解Linux下动态链接库延迟绑定</a></h2>
+    <h2><a href="http://sysfork.com/post/2016/linux-dynamic-lib-lazy-load/">理解Linux下动态链接库延迟绑定</a></h2>
 
     <div class="post-meta">
 
@@ -490,7 +538,7 @@
 
   
   <footer>
-    <a href="http://sysfork.com/post/linux-dynamic-lib-lazy-load/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+    <a href="http://sysfork.com/post/2016/linux-dynamic-lib-lazy-load/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
   </footer>
   
 </article>
@@ -498,7 +546,7 @@
   
     <article>
   <header>
-    <h2><a href="http://sysfork.com/post/integrate-mathjax-viz-with-hugo/">Hugo 集成 Mathjax和graphviz</a></h2>
+    <h2><a href="http://sysfork.com/post/2016/integrate-mathjax-viz-with-hugo/">Hugo 集成 Mathjax和graphviz</a></h2>
 
     <div class="post-meta">
 
@@ -537,7 +585,7 @@
 
   
   <footer>
-    <a href="http://sysfork.com/post/integrate-mathjax-viz-with-hugo/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+    <a href="http://sysfork.com/post/2016/integrate-mathjax-viz-with-hugo/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
   </footer>
   
 </article>
@@ -545,7 +593,7 @@
   
     <article>
   <header>
-    <h2><a href="http://sysfork.com/post/lua-hashtable-introduction/">Lua Table中HashMap介绍</a></h2>
+    <h2><a href="http://sysfork.com/post/2016/lua-hashtable-introduction/">Lua Table中HashMap介绍</a></h2>
 
     <div class="post-meta">
 
@@ -582,7 +630,7 @@
 
   
   <footer>
-    <a href="http://sysfork.com/post/lua-hashtable-introduction/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+    <a href="http://sysfork.com/post/2016/lua-hashtable-introduction/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
   </footer>
   
 </article>

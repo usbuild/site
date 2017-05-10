@@ -12,10 +12,10 @@
     
     <item>
       <title>Hugo 集成 Mathjax和graphviz</title>
-      <link>http://sysfork.com/post/integrate-mathjax-viz-with-hugo/</link>
+      <link>http://sysfork.com/post/2016/integrate-mathjax-viz-with-hugo/</link>
       <pubDate>Fri, 02 Sep 2016 09:41:17 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/integrate-mathjax-viz-with-hugo/</guid>
+      <guid>http://sysfork.com/post/2016/integrate-mathjax-viz-with-hugo/</guid>
       <description>&lt;p&gt;&lt;a href=&#34;https://gohugo.io/&#34;&gt;hugo&lt;/a&gt;是一个比&lt;a href=&#34;https://hexo.io&#34;&gt;hexo&lt;/a&gt;更简单易用的静态页面生成工具，其只有一个可执行文件，部署环境简单，本博客就是基于hugo构建的。&lt;/p&gt;
 
 &lt;p&gt;我们在写博客的时候经常应用到公式和图表，这分别可以使用&lt;a href=&#34;https://www.mathjax.org/&#34;&gt;mathjax&lt;/a&gt;和&lt;a href=&#34;https://github.com/mdaines/viz.js&#34;&gt;viz.js&lt;/a&gt;实现。hugo并没有提供
