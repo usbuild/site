@@ -159,6 +159,7 @@ pre {
   margin-top: 0px;
   margin-bottom: 0px;
   line-height: 1em;
+  max-width: 920px;
 }
 
 pre.plain {
