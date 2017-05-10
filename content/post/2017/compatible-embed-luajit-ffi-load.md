@@ -2,7 +2,7 @@
 date = "2017-05-09T22:05:47+08:00"
 description = ""
 draft = false
-tags = []
+tags = ["luajit", "ffi"]
 title = "嵌入 luajit 时同时使用 ffi 和 c api 的解决方案"
 topics = []
 
