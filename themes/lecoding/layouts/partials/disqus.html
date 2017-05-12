@@ -1,11 +1,14 @@
-{{ with .Site.Params.disqus }}
+{{ if isset .Site.Params "disqus" }}
 <div id="disqus_thread"></div>
 <script src="//cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
 <script src="{{ $.Site.BaseURL }}js/disqus.js"></script>
 <script type="text/javascript" charset="utf-8">
 $(function(){
-  var href = /*"https://lecoding.com/post/a-solution-for-elf-integrate-scripts/" ||  */document.location.href;
-  RenderComment("{{ . }}", "https://lecoding.com/disqus/", "#disqus_thread", href);
+    var href = {{$.Date}};
+    {{ if isset .Params "disqus_id" }}
+    href = {{ .Params.disqus_id }};
+    {{ end }}
+    RenderComment("{{ .Site.Params.disqus }}", "https://lecoding.com/disqus/", "#disqus_thread", href);
 });
 </script>
 {{ end }}

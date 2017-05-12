@@ -248,7 +248,7 @@ var commentAPI = {
 
 
 
-function CommentAPI(forum, apiPath, selector, url) {
+function CommentAPI(forum, apiPath, selector, ident) {
   this.forum = forum;
   this.threadId = {}
   this.apiPath = apiPath;
@@ -261,12 +261,12 @@ function CommentAPI(forum, apiPath, selector, url) {
   $(selector).append(root);
 
   var self = this;
-  this.get("threads/listPosts", {forum: this.forum, thread: "link:" + url}, function(response){
+  this.get("threads/listPosts", {forum: this.forum, thread: "ident:" + ident}, function(response){
     if (response.response.length > 0) {
       self.threadId = response.response[0].thread;
       self.handlePostList(response.cursor, response.response);
     } else {
-      this.get("threads/details", {forum: this.forum, thread: "link:" + url}, function(resp){
+      this.get("threads/details", {forum: this.forum, thread: "ident:" + ident}, function(resp){
         self.threadId = resp.response.thread;
         self.handlePostList(response.cursor, response.response);
       });
@@ -276,10 +276,10 @@ function CommentAPI(forum, apiPath, selector, url) {
 
 CommentAPI.prototype = commentAPI;
 
-function RenderComment(forum, apiPath, selector, url) {
+function RenderComment(forum, apiPath, selector, ident) {
 
     disqus_config = function () {
-        this.page.url = url;
+        this.page.identifier = ident;
     };
 
   var done = false;
@@ -290,6 +290,6 @@ function RenderComment(forum, apiPath, selector, url) {
   };
   document.head.appendChild(dsq);
   setTimeout(function () { if (!done)
-    api = new CommentAPI(forum, apiPath, selector, url);
+    api = new CommentAPI(forum, apiPath, selector, ident);
   }, 2000);
 }
