@@ -279,6 +279,7 @@ CommentAPI.prototype = commentAPI;
 function RenderComment(forum, apiPath, selector, url) {
   var done = false;
   var dsq = document.createElement('script');
+  disqus_url = url;
   dsq.src = '//'+forum+'.disqus.com/embed.js';
   dsq.onload = function()  {
     done = true;
