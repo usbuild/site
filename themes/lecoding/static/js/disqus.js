@@ -266,7 +266,7 @@ function CommentAPI(forum, apiPath, selector, ident) {
       self.threadId = response.response[0].thread;
       self.handlePostList(response.cursor, response.response);
     } else {
-      this.get("threads/details", {forum: this.forum, thread: "ident:" + ident}, function(resp){
+      self.get("threads/details", {forum: this.forum, thread: "ident:" + ident}, function(resp){
         self.threadId = resp.response.thread;
         self.handlePostList(response.cursor, response.response);
       });
@@ -280,6 +280,7 @@ function RenderComment(forum, apiPath, selector, ident) {
 
     disqus_config = function () {
         this.page.identifier = ident;
+        this.page.url = document.location.href;
     };
 
   var done = false;
