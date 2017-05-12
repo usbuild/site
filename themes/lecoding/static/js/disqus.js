@@ -280,7 +280,7 @@ function RenderComment(forum, apiPath, selector, ident) {
 
     disqus_config = function () {
         this.page.identifier = ident;
-        this.page.url = document.location.href + "/";
+        this.page.url = document.location.href;
     };
 
   var done = false;
