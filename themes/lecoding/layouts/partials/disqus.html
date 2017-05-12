@@ -4,11 +4,12 @@
 <script src="{{ $.Site.BaseURL }}js/disqus.js"></script>
 <script type="text/javascript" charset="utf-8">
 $(function(){
-    var href = {{$.Date}};
+    var ident = {{$.Date}};
     {{ if isset .Params "disqus_id" }}
-    href = {{ .Params.disqus_id }};
+    ident = {{ .Params.disqus_id }};
     {{ end }}
-    RenderComment("{{ .Site.Params.disqus }}", "https://lecoding.com/disqus/", "#disqus_thread", href);
+    RenderComment("{{ .Site.Params.disqus }}",
+            "https://lecoding.com/disqus/", "#disqus_thread", ident, {{ .Permalink }} + "/");
 });
 </script>
 {{ end }}

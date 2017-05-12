@@ -276,11 +276,11 @@ function CommentAPI(forum, apiPath, selector, ident) {
 
 CommentAPI.prototype = commentAPI;
 
-function RenderComment(forum, apiPath, selector, ident) {
+function RenderComment(forum, apiPath, selector, ident, url) {
 
     disqus_config = function () {
         this.page.identifier = ident;
-        this.page.url = document.location.href;
+        this.page.url = url;
     };
 
   var done = false;
