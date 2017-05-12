@@ -277,9 +277,13 @@ function CommentAPI(forum, apiPath, selector, url) {
 CommentAPI.prototype = commentAPI;
 
 function RenderComment(forum, apiPath, selector, url) {
+
+    disqus_config = function () {
+        this.page.url = url;
+    };
+
   var done = false;
   var dsq = document.createElement('script');
-  disqus_url = url;
   dsq.src = '//'+forum+'.disqus.com/embed.js';
   dsq.onload = function()  {
     done = true;
