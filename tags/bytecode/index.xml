@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Bytecode on sys🔱fork</title>
+    <link>http://sysfork.com/tags/bytecode/</link>
+    <description>Recent content in Bytecode on sys🔱fork</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <copyright>&amp;copy; 2017. All rights reserved.</copyright>
+    <lastBuildDate>Sat, 20 May 2017 15:57:13 +0800</lastBuildDate>
+    <atom:link href="http://sysfork.com/tags/bytecode/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>lua 5.1 分支语句 bytecode 的生成（一）</title>
+      <link>http://sysfork.com/post/2017/lua-cond-statment-bytecode-generate-1/</link>
+      <pubDate>Sat, 20 May 2017 15:57:13 +0800</pubDate>
+      
+      <guid>http://sysfork.com/post/2017/lua-cond-statment-bytecode-generate-1/</guid>
+      <description>
+
+&lt;p&gt;本文只对 &lt;code&gt;IF cond THEN block {ELSEIF cond THEN block} [ELSE block] END&lt;/code&gt; 语法的字节码生成过程进行描述。&lt;/p&gt;
+
+&lt;h2 id=&#34;生成的结果&#34;&gt;生成的结果&lt;/h2&gt;
+
+&lt;p&gt;首先我们看下面的示例，仅为演示：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;local cond1 = true
+local cond2 = true
+if cond1 then
+    cond1 = false
+elseif cond2 then
+    cond2 = false
+else
+    cond1 = false
+end
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;使用&lt;code&gt;luac -l -l&lt;/code&gt;选项列出来的结果为&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;main &amp;lt;test.lua:0,0&amp;gt; (12 instructions, 48 bytes at 0x184e530)
+0+ params, 2 slots, 0 upvalues, 2 locals, 0 constants, 0 functions
+        1       [1]     LOADBOOL        0 1 0
+        2       [2]     LOADBOOL        1 1 0
+        3       [3]     TEST            0 0 0
+        4       [3]     JMP             2       ; to 7
+        5       [4]     LOADBOOL        0 0 0
+        6       [4]     JMP             5       ; to 12
+        7       [5]     TEST            1 0 0
+        8       [5]     JMP             2       ; to 11
+        9       [6]     LOADBOOL        1 0 0
+        10      [6]     JMP             1       ; to 12
+        11      [8]     LOADBOOL        0 0 0
+        12      [9]     RETURN          0 1
+constants (0) for 0x184e530:
+locals (2) for 0x184e530:
+        0       cond1   2       12
+        1       cond2   3       12
+upvalues (0) for 0x184e530:
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这里我们可以看到最终的生成结果。我们关注的是其中的&lt;code&gt;TEST&lt;/code&gt;和&lt;code&gt;JUMP&lt;/code&gt;。在第3行的&lt;code&gt;TEST&lt;/code&gt;，其意思是如果0号寄存器中的内容(cond1)
+为false(0)的话，那么就执行下面的&lt;code&gt;JMP&lt;/code&gt;语句，否则就调过&lt;code&gt;JMP&lt;/code&gt;直接到第5行。&lt;code&gt;LUA&lt;/code&gt;中的分支实现都是使用&lt;code&gt;TEST&lt;/code&gt;等后面紧跟&lt;code&gt;JMP&lt;/code&gt;实现的，
+从主 dispatch 代码中可以看到&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;    // ...
+      case OP_TEST: {
+        if (l_isfalse(ra) != GETARG_C(i))
+          dojump(L, pc, GETARG_sBx(*pc));
+        pc++;
+        continue;
+      }
+      case OP_TESTSET: {
+        TValue *rb = RB(i);
+        if (l_isfalse(rb) != GETARG_C(i)) {
+          setobjs2s(L, ra, rb);
+          dojump(L, pc, GETARG_sBx(*pc));
+        }
+        pc++;
+        continue;
+      }
+      // ...
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;code&gt;JMP&lt;/code&gt;跳转，永远都是分支不成立的情况，而&lt;code&gt;TEST&lt;/code&gt;成功后的跳转永远是跳过下一行，失败的话继续执行接下来的JMP。&lt;code&gt;if&lt;/code&gt;语句的字节码解析就到这里，后面的&lt;code&gt;elseif&lt;/code&gt;等都是比较简单的，再了解这个事实之后。
+那么这种字节码是怎么生成的呢？下面来分析下。&lt;/p&gt;
+
+&lt;h2 id=&#34;生成的过程&#34;&gt;生成的过程&lt;/h2&gt;
+
+&lt;p&gt;&lt;code&gt;if&lt;/code&gt;语句的代码在&lt;code&gt;lparser.c&lt;/code&gt;里面，最上层如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;static void ifstat (LexState *ls, int line) {
+  /* ifstat -&amp;gt; IF cond THEN block {ELSEIF cond THEN block} [ELSE block] END */
+  FuncState *fs = ls-&amp;gt;fs;
+  int flist;
+  int escapelist = NO_JUMP;
+  flist = test_then_block(ls);  /* IF cond THEN block */
+  while (ls-&amp;gt;t.token == TK_ELSEIF) {
+    luaK_concat(fs, &amp;amp;escapelist, luaK_jump(fs)); // 将 escapelist 串起来，这里的 luaK_jump 会跳转到 end
+    luaK_patchtohere(fs, flist); // 把上面那个`JMP(1/3)` 地址修改对
+    flist = test_then_block(ls);  /* ELSEIF cond THEN block */
+  }
+  if (ls-&amp;gt;t.token == TK_ELSE) {
+    luaK_concat(fs, &amp;amp;escapelist, luaK_jump(fs));
+    luaK_patchtohere(fs, flist);
+    luaX_next(ls);  /* skip ELSE (after patch, for correct line info) */
+    block(ls);  /* `else&#39; part */
+  }
+  else
+    luaK_concat(fs, &amp;amp;escapelist, flist); // 这里把 flist 串起来了，意思是没有 else 语句，此时 flist 指向就是 end
+  luaK_patchtohere(fs, escapelist); // 修改 escapelist 到 end 语句的结尾
+  check_match(ls, TK_END, TK_IF, line);
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在读取 token 的时候，遇到 &lt;code&gt;if ... then&lt;/code&gt; 会生成&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;TEST reg 0 predict
+JMP ??? (1)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;由于我们不知道后面代码的内容，所以无法确定&lt;code&gt;???&lt;/code&gt;该填写多少，但是我们还是要记住这个位置，将来我们要把值填写进去，这个值其实就存
+在&lt;code&gt;flist&lt;/code&gt;。然后我们读到&lt;code&gt;elseif cond then&lt;/code&gt;语句，这就意味着第一段代码的结束此时应该要跳转出这个&lt;code&gt;if&lt;/code&gt;
+语句，所以此时应该插入一个&lt;code&gt;JMP(2)&lt;/code&gt;到整个语句的结束，因为有多个 block 的存在，后面可能会有很多这种类似的
+&lt;code&gt;JMP&lt;/code&gt;，如上面示例中的各种&lt;code&gt;to 12&lt;/code&gt;，这些位置都无法确定，所以我们使用一个escapelist来指向这个地址，方便后面处理。
+现在回头看&lt;code&gt;JMP(1)&lt;/code&gt;位置就确定了，所以当前的PC就是&lt;code&gt;flist&lt;/code&gt;的指向由于&lt;code&gt;elseif&lt;/code&gt;又是一个分支语句，所以又可以生成一段 &lt;code&gt;TEST &amp;amp; JMP(3)&lt;/code&gt;代码了。同样&lt;code&gt;JMP(2)&lt;/code&gt;的位置是无法确定的。
+现在来谈谈&lt;code&gt;escapelist&lt;/code&gt;，定义&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;int escapelist = NO_JUMP;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这是个 int 啊，对于多个位置的&lt;code&gt;JMP(2)&lt;/code&gt;要怎么处理？lua 采用了一种巧妙的机制，由于此时的&lt;code&gt;JMP&lt;/code&gt;是无效的，还没有解析到正式地址的，
+所以其中的目标地址域是没有使用的。因此，可以采用串起来的方式，escapcelist指向第一个没有解析的&lt;code&gt;JMP&lt;/code&gt;，然后这个&lt;code&gt;JMP&lt;/code&gt;的指向地址
+是下一个没有解析的&lt;code&gt;JMP&lt;/code&gt;，这样一来就形成了链表的结构。后面可以一起修改目标地址通过&lt;code&gt;luaK_patchtohere&lt;/code&gt;来实现。&lt;/p&gt;
+
+&lt;h2 id=&#34;事情没那么简单&#34;&gt;事情没那么简单&lt;/h2&gt;
+
+&lt;p&gt;我们我们详细查看的话，&lt;code&gt;test_then_block&lt;/code&gt; -&amp;gt; &lt;code&gt;cond&lt;/code&gt; -&amp;gt; &lt;code&gt;luaK_goiftrue&lt;/code&gt;，看看&lt;code&gt;luaK_goiftrue&lt;/code&gt;函数的实现：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;void luaK_goiftrue (FuncState *fs, expdesc *e) {
+  int pc;  /* pc of last jump */
+  luaK_dischargevars(fs, e);
+  switch (e-&amp;gt;k) {
+    case VK: case VKNUM: case VTRUE: {
+      pc = NO_JUMP;  /* always true; do nothing */
+      break;
+    }
+    case VFALSE: {
+      pc = luaK_jump(fs);  /* always jump */
+      break;
+    }
+    case VJMP: {
+      invertjump(fs, e);
+      pc = e-&amp;gt;u.s.info;
+      break;
+    }
+    default: {
+      pc = jumponcond(fs, e, 0);
+      break;
+    }
+  }
+  luaK_concat(fs, &amp;amp;e-&amp;gt;f, pc);  /* insert last jump in `f&#39; list */
+  luaK_patchtohere(fs, e-&amp;gt;t);
+  e-&amp;gt;t = NO_JUMP;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;前面的几种，如VK、VKNUM、VTRUE都是始终成立的，所以其&lt;code&gt;e-&amp;gt;f&lt;/code&gt;是不存在的，因此为&lt;code&gt;NO_JUMP&lt;/code&gt;，而对于 VFALSE，其始终应该走错误分支，因此其&lt;code&gt;e-&amp;gt;f&lt;/code&gt;为一条JMP。&lt;code&gt;VJUMP&lt;/code&gt;是比较语句生成的, 所以其值就是代表了&lt;code&gt;e-&amp;gt;t&lt;/code&gt;和&lt;code&gt;e-&amp;gt;f&lt;/code&gt;，因此其&lt;code&gt;e-&amp;gt;f&lt;/code&gt;
+就是&lt;code&gt;invertjump&lt;/code&gt;了。在各种错误JMP都生成完之后，接下来就是正确分支了，所以直接就&lt;code&gt;luaK_patchtohere&lt;/code&gt;了，当前的就是正确的逻辑。&lt;/p&gt;
+
+&lt;p&gt;我们关注的重点其实是 &lt;code&gt;jumponcond&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;static int jumponcond (FuncState *fs, expdesc *e, int cond) {
+  if (e-&amp;gt;k == VRELOCABLE) {
+    Instruction ie = getcode(fs, e);
+    if (GET_OPCODE(ie) == OP_NOT) {
+      fs-&amp;gt;pc--;  /* remove previous OP_NOT */
+      return condjump(fs, OP_TEST, GETARG_B(ie), 0, !cond);
+    }
+    /* else go through */
+  }
+  discharge2anyreg(fs, e);
+  freeexp(fs, e);
+  return condjump(fs, OP_TESTSET, NO_REG, e-&amp;gt;u.s.info, cond);
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;对于 &lt;code&gt;if not xxxx then&lt;/code&gt;之类的语句，显然其判断结果值不会被引用（只是被判断语句使用而已）所以这里使用&lt;code&gt;OP_TEST&lt;/code&gt;，其他所有情况
+都是使用的&lt;code&gt;OP_TESTSET&lt;/code&gt;。我们可以看看&lt;code&gt;TESTSET&lt;/code&gt;的定义：&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;TESTSET A B C if (R(B) &amp;lt;=&amp;gt; C) then R(A) := R(B) else PC++&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Used to implement and and or logical operators, or for testing a single
+register in a conditional statement.&lt;/p&gt;
+
+&lt;p&gt;For TESTSET, register R(B) is coerced into a boolean and compared to
+the boolean field C. If R(B) matches C, the next instruction is skipped,
+otherwise R(B) is assigned to R(A) and the VM continues with the next
+instruction. The and operator uses a C of 0 (false) while or uses a C value
+of 1 (true).&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;如果 B转换为 boolean后 和 C相等，则跳过下一条指令；否则将B赋给A然后继续执行。这条指令的目的是为短路求值服务的。那么&lt;code&gt;TESTSET&lt;/code&gt;怎
+么到后面变成了&lt;code&gt;TEST&lt;/code&gt;呢？其过程就在&lt;code&gt;dischargejpc&lt;/code&gt;-&amp;gt;&lt;code&gt;patchlistaux&lt;/code&gt;-&amp;gt;&lt;code&gt;patchtestreg&lt;/code&gt;。&lt;/p&gt;
+
+&lt;p&gt;上面我们说到&lt;code&gt;luaK_patchtohere&lt;/code&gt;将待定&lt;code&gt;JMP&lt;/code&gt;改成当前pc的功能，其实并不是直接修改的，而是通过每次生成新的字节码的时候，调用&lt;code&gt;dischargejpc&lt;/code&gt;实现的，patch 的时候只是将这个位置串起来，然后 &lt;code&gt;dischargejpc&lt;/code&gt;会便利这个链表进行修改&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;patchlistaux(fs, fs-&amp;gt;jpc, fs-&amp;gt;pc, NO_REG, fs-&amp;gt;pc);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;除此之外，&lt;code&gt;patchlistaux&lt;/code&gt;还进行的一项操作就是&lt;code&gt;patchtestreg&lt;/code&gt;，它的作用就是处理&lt;code&gt;TESTSET&lt;/code&gt;，&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;131	static int patchtestreg (FuncState *fs, int node, int reg) {
+132	  Instruction *i = getjumpcontrol(fs, node);
+133	  if (GET_OPCODE(*i) != OP_TESTSET)
+134	    return 0;  /* cannot patch other instructions */
+135	  if (reg != NO_REG &amp;amp;&amp;amp; reg != GETARG_B(*i)) // 前者表示不需要寄存，后者两者相同的话也是不需要修改的
+136	    SETARG_A(*i, reg);
+137	  else  /* no register to put value or register already has the value */
+138	    *i = CREATE_ABC(OP_TEST, GETARG_B(*i), 0, GETARG_C(*i)); // 对于不需要返回值的情况，直接修改为 TEST
+139	
+140	  return 1;
+141	}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;上面的介绍只是 条件语句的一部分，后面的文章会对短路求值，compare 运算符等做解释。&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
