@@ -7,8 +7,153 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2017. All rights reserved.</copyright>
-    <lastBuildDate>Sat, 20 May 2017 15:57:13 +0800</lastBuildDate>
+    <lastBuildDate>Thu, 25 May 2017 14:26:47 +0800</lastBuildDate>
     <atom:link href="http://sysfork.com/tags/lua/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>lua 5.1 分支语句 bytecode 的生成（二）</title>
+      <link>http://sysfork.com/post/2017/lua-cond-statment-bytecode-generate-2/</link>
+      <pubDate>Thu, 25 May 2017 14:26:47 +0800</pubDate>
+      
+      <guid>http://sysfork.com/post/2017/lua-cond-statment-bytecode-generate-2/</guid>
+      <description>&lt;p&gt;上篇我们谈到了 IF 语句的 bytecode 生成，今天来谈谈布尔表达式与短路求值。&lt;/p&gt;
+
+&lt;p&gt;考虑到下面的表达式&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-lua&#34;&gt;a = a or 1024
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;其生成的字节码为&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;1       [1]     GETGLOBAL       0 -1    ; a
+2       [1]     TEST            0 0 1
+3       [1]     JMP             1       ; to 5
+4       [1]     LOADK           0 -2    ; 1024
+5       [1]     SETGLOBAL       0 -1    ; a
+6       [1]     RETURN          0 1
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;其实与&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-lua&#34;&gt;if not a then
+    a = 1024
+end
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;生成的代码几乎一致，只是少了像自己赋值的那部分。现在我们看看这条短路求值语句的字节码是怎么生成的。&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;a = a or 1024&lt;/code&gt; 这是一个赋值语句，所以调用使用的是&lt;code&gt;assignment&lt;/code&gt;函数，其中我们关注的调用链是
+&lt;code&gt;assignment -&amp;gt; luaK_storeevar -&amp;gt; luaK_exp2anyreg -&amp;gt; luaK_exp2nextreg -&amp;gt; exp2reg&lt;/code&gt; 由于 &lt;code&gt;a or 1024&lt;/code&gt;是个二元运算符，
+在代码中可以看到，在读到&lt;code&gt;or&lt;/code&gt;之前是&lt;code&gt;luaK_infix&lt;/code&gt;，读到&lt;code&gt;or&lt;/code&gt;之后是&lt;code&gt;luaK_postfix&lt;/code&gt;，我们看看两者的做法：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;-- luaK_infix
+716	    case OPR_OR: {
+717	      luaK_goiffalse(fs, v);
+718	      break;
+719	    }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;-- luaK_postfix
+746	    case OPR_OR: {
+747	      lua_assert(e1-&amp;gt;f == NO_JUMP);  /* list must be closed */
+748	      luaK_dischargevars(fs, e2);
+749	      luaK_concat(fs, &amp;amp;e2-&amp;gt;t, e1-&amp;gt;t);
+750	      *e1 = *e2;
+751	      break;
+752	    }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;关键还是上文说到的&lt;code&gt;luaK_goiffalse&lt;/code&gt;，&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;580	  luaK_concat(fs, &amp;amp;e-&amp;gt;t, pc);  /* insert last jump in `t&#39; list */
+581	  luaK_patchtohere(fs, e-&amp;gt;f);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;如果返回 true 的话，那么跳转到某个“未知”的地方，false 的话直接执行下一句。那么这个“未知”的地方是怎么确定的呢？
+答案在&lt;code&gt;exp2reg&lt;/code&gt;里面。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;394	  if (hasjumps(e)) {
+395	    int final;  /* position after whole expression */
+396	    int p_f = NO_JUMP;  /* position of an eventual LOAD false */
+397	    int p_t = NO_JUMP;  /* position of an eventual LOAD true */
+398	    if (need_value(fs, e-&amp;gt;t) || need_value(fs, e-&amp;gt;f)) {
+399	      int fj = (e-&amp;gt;k == VJMP) ? NO_JUMP : luaK_jump(fs);
+400	      p_f = code_label(fs, reg, 0, 1);
+401	      p_t = code_label(fs, reg, 1, 0);
+402	      luaK_patchtohere(fs, fj);
+403	    }
+404	    final = luaK_getlabel(fs);
+405	    patchlistaux(fs, e-&amp;gt;f, final, reg, p_f);
+406	    patchlistaux(fs, e-&amp;gt;t, final, reg, p_t);
+407	  }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;由于我们设置了&lt;code&gt;e-&amp;gt;t&lt;/code&gt;或&lt;code&gt;e-&amp;gt;f&lt;/code&gt;，所以&lt;code&gt;hasjumps&lt;/code&gt;判断成立。由于&lt;code&gt;TESTSET&lt;/code&gt;已经提供了赋值的寄存器，因此是不需要额外记录判断结果的。而对于其他的入&lt;code&gt;LT&lt;/code&gt;、&lt;code&gt;JMP&lt;/code&gt;等，其本身是不记录任何判断结果的，为了记录只能在 JMP 完成之后，设置到寄存器中，
+这也就是此处&lt;code&gt;code_label&lt;/code&gt;存在的原因。接下来是&lt;code&gt;patchlistaux&lt;/code&gt;，其定义如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;150	static void patchlistaux (FuncState *fs, int list, int vtarget, int reg,
+151	                          int dtarget) {
+152	  while (list != NO_JUMP) {
+153	    int next = getjump(fs, list);
+154	    if (patchtestreg(fs, list, reg))
+155	      fixjump(fs, list, vtarget);
+156	    else
+157	      fixjump(fs, list, dtarget);  /* jump to default target */
+158	    list = next;
+159	  }
+160	}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;其中 &lt;code&gt;patchtestreg&lt;/code&gt;定义如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;131	static int patchtestreg (FuncState *fs, int node, int reg) {
+132	  Instruction *i = getjumpcontrol(fs, node);
+133	  if (GET_OPCODE(*i) != OP_TESTSET)
+134	    return 0;  /* cannot patch other instructions */
+135	  if (reg != NO_REG &amp;amp;&amp;amp; reg != GETARG_B(*i))
+136	    SETARG_A(*i, reg);
+137	  else  /* no register to put value or register already has the value */
+138	    *i = CREATE_ABC(OP_TEST, GETARG_B(*i), 0, GETARG_C(*i));
+139	
+140	  return 1;
+141	}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;其中&lt;code&gt;vtarget&lt;/code&gt;是我们当前的位置&lt;code&gt;final&lt;/code&gt;，而&lt;code&gt;dtarget&lt;/code&gt;是&lt;code&gt;p_f&lt;/code&gt;或&lt;code&gt;p_t&lt;/code&gt;。这两条语句的作用其实是将最终&lt;code&gt;TESTSET&lt;/code&gt;指令的结果传送到&lt;code&gt;reg&lt;/code&gt;，
+如果不是&lt;code&gt;TESTSET&lt;/code&gt;的话那么说明不产生值，那&lt;code&gt;reg&lt;/code&gt;就需要上面的&lt;code&gt;codelabel&lt;/code&gt;来产生了。至此这部分代码分析完成。&lt;/p&gt;
+
+&lt;p&gt;下面是一些函数的简单解释，可以稍微看看：&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;luaK_nil&lt;/code&gt;函数，生成的是&lt;code&gt;LOADNIL&lt;/code&gt;字节码，其作用是将from ~ from + n之间的寄存器设置成nil，这里做了一些优化如：如果合并相邻的&lt;code&gt;LOADNIL&lt;/code&gt;，函数初始化时可以不需要重复初始化等。
+注意优化的前提是&lt;code&gt;fs-&amp;gt;pc &amp;gt; fs-&amp;gt;lasttarget&lt;/code&gt;，即这条指令必须可以省略。&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;luaK_jump&lt;/code&gt;函数，其目的是生成一个&lt;code&gt;JMP&lt;/code&gt;指令。这是个无条件跳转指令。那么其目标呢？其实就是 &lt;code&gt;fs-&amp;gt;jps&lt;/code&gt;。注意后面的&lt;code&gt;luaK_contat&lt;/code&gt;，其目的是将l2链接到l1的后面，这是为了连续跳转
+考虑的。&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;condjump&lt;/code&gt; 生成条件跳转语句，lua为了生成字节码的便利性，每个条件调转语句如&lt;code&gt;LT&lt;/code&gt;, &lt;code&gt;TEST&lt;/code&gt;等后面都跟着一个&lt;code&gt;JMP&lt;/code&gt;，当条件不满足时直接指向&lt;code&gt;JMP&lt;/code&gt;语句，否则就跳到&lt;code&gt;JMP&lt;/code&gt;的下一条，
+减少了编码的复杂度啊&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;fixjump&lt;/code&gt;把&lt;code&gt;PC&lt;/code&gt;处的指令（当然是JMP指令）改成目标为&lt;code&gt;dest&lt;/code&gt;，当然是相对地址了&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;luaK_getlabel&lt;/code&gt;，标记一下，把当前的lasttarget改成pc，这个lasttarget就是和上面的&lt;code&gt;luaK_nil&lt;/code&gt;结合起来的，防止上面的误优化。&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;getjump&lt;/code&gt;和上面的fixjump相对应，返回PC所在那条指令的跳转目标。&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;getjumpcontrol&lt;/code&gt; 由于&lt;code&gt;JMP&lt;/code&gt;上一条很多情况下都是跟着条件跳转指令的，那么这条指令就是获取这条条件跳转指令的。如果是那么返回上一条，否则返回当前pc。除了&lt;code&gt;jmp&lt;/code&gt;之外，其他如&lt;code&gt;FORLOOP&lt;/code&gt;, &lt;code&gt;FORPREP&lt;/code&gt;等指令也会产生跳转&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;patchtestreg&lt;/code&gt; 修改&lt;code&gt;TESTSET&lt;/code&gt;指令，这个指令一般用于短路求值，&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;patchlistaux&lt;/code&gt; 对于一个jump list，如果是&lt;code&gt;TESTSET&lt;/code&gt;，那么将赋值寄存器修改为reg并将jump目的地修改为vtarget, 否则修改为dtarget。&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;dischargejpc&lt;/code&gt; 对jpc进行&lt;code&gt;patchlistaux&lt;/code&gt;，其中vtarget和dtarget都是pc&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;patchlist&lt;/code&gt; 如果target为pc，那么调用patchtohere；否则调用patchlistaux&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;patchtohere&lt;/code&gt;先getlabel标记一下，然后将当前的list放到jpc后面&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;jpc&lt;/code&gt;那些将要跳到当前位置的链表，由于所有code的增加的欧式&lt;code&gt;luaK_code&lt;/code&gt;，所以会在这个函数中调用&lt;code&gt;dischargejpc&lt;/code&gt;&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>lua 5.1 分支语句 bytecode 的生成（一）</title>

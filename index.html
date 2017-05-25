@@ -185,6 +185,54 @@
   
     <article>
   <header>
+    <h2><a href="http://sysfork.com/post/2017/lua-cond-statment-bytecode-generate-2/">lua 5.1 分支语句 bytecode 的生成（二）</a></h2>
+
+    <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>25 May 2017, 14:26</time>
+  </div>
+
+  
+
+  
+  
+  
+  
+
+  
+  
+  
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="http://sysfork.com/tags/lua">lua</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://sysfork.com/tags/bytecode">bytecode</a>
+    
+  </div>
+  
+  
+
+</div>
+
+  </header>
+
+  <p>
+  上篇我们谈到了 IF 语句的 bytecode 生成，今天来谈谈布尔表达式与短路求值。 考虑到下面的表达式 a = a or 1024 其生成的字节码为 1 [1] GETGLOBAL 0 -1 ; a 2 [1] TEST 0 0 1 3 [1] JMP 1
+  </p>
+
+  
+  <footer>
+    <a href="http://sysfork.com/post/2017/lua-cond-statment-bytecode-generate-2/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+  </footer>
+  
+</article>
+
+  
+    <article>
+  <header>
     <h2><a href="http://sysfork.com/post/2017/lua-cond-statment-bytecode-generate-1/">lua 5.1 分支语句 bytecode 的生成（一）</a></h2>
 
     <div class="post-meta">
@@ -590,51 +638,6 @@
   
   <footer>
     <a href="http://sysfork.com/post/2016/about-cpp-alignment/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
-  </footer>
-  
-</article>
-
-  
-    <article>
-  <header>
-    <h2><a href="http://sysfork.com/post/2016/linux-dynamic-lib-lazy-load/">理解Linux下动态链接库延迟绑定</a></h2>
-
-    <div class="post-meta">
-
-  <div>
-    <i class="fa fa-calendar fa-fw"></i>
-    <time>07 Sep 2016, 22:08</time>
-  </div>
-
-  
-
-  
-
-  
-  
-  
-  <div>
-    <i class="fa fa-tags fa-fw"></i>
-    
-      <a class="post-taxonomy-tag" href="http://sysfork.com/tags/linux">Linux</a>&nbsp;&#47;
-    
-      <a class="post-taxonomy-tag" href="http://sysfork.com/tags/elf">ELF</a>
-    
-  </div>
-  
-  
-
-</div>
-
-  </header>
-
-  <p>
-  在编译动态链接库时，为了保证能被正常使用，一般我们会加上-fPIC参数。在使用的动态链接库中的函数时，Linux使用了一种 叫延迟绑定的技术实
-  </p>
-
-  
-  <footer>
-    <a href="http://sysfork.com/post/2016/linux-dynamic-lib-lazy-load/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
   </footer>
   
 </article>

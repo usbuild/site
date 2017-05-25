@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="generator" content="Hugo 0.16" />
+
+  <title>lua 5.1 分支语句 bytecode 的生成（二） &middot; sys🔱fork</title>
+
+  
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/pure-min.css">
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/grids-responsive-old-ie-min.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/grids-responsive-min.css">
+  <!--<![endif]-->
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="http://sysfork.com/css/side-menu-old-ie.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="http://sysfork.com/css/side-menu.css">
+  <!--<![endif]-->
+
+  <link rel="stylesheet" href="http://sysfork.com/css/blackburn.css">
+
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css">
+
+  
+  
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.4.0/styles/gruvbox-light.min.css">
+  <script src="//cdn.bootcss.com/highlight.js/9.4.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  
+
+  <link rel="shortcut icon" href="http://sysfork.com/img/favicon.ico" type="image/x-icon" />
+
+</head>
+
+
+<body>
+<div id="layout">
+
+  
+<a href="#menu" id="menuLink" class="menu-link">
+  
+  <span></span>
+</a>
+<div id="menu">
+
+  
+
+  <div class="pure-menu">
+    <ul class="pure-menu-list">
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/"><i class='fa fa-home fa-fw'></i>Home</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/post/"><i class='fa fa-list fa-fw'></i>Posts</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/about/"><i class='fa fa-user fa-fw'></i>About</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/contact/"><i class='fa fa-phone fa-fw'></i>Contact</a>
+      
+        </li>
+      
+    </ul>
+  </div>
+
+  <div class="pure-menu social">
+  <ul class="pure-menu-list">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <li class="pure-menu-item">
+      <a class="pure-menu-link" href="https://linkedin.com/in/usbuild" target="_blank"><i class="fa fa-linkedin-square fa-fw"></i>LinkedIn</a>
+    </li>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <li class="pure-menu-item">
+      <a class="pure-menu-link" href="https://github.com/usbuild" target="_blank"><i class="fa fa-github-square fa-fw"></i>GitHub</a>
+    </li>
+    
+
+    
+
+    
+
+  </ul>
+</div>
+
+
+  <div>
+  <div class="small-print">
+    <small>&copy; 2017. All rights reserved.</small>
+  </div>
+  <div class="small-print">
+    <small>Built with&nbsp;<a href="https://gohugo.io/" target="_blank">Hugo</a></small>
+    <small>Theme&nbsp;<a href="https://github.com/yoshiharuyamashita/blackburn" target="_blank">Blackburn</a></small>
+  </div>
+</div>
+
+</div>
+
+
+  <div id="main">
+
+
+<div class="header">
+  <h1>lua 5.1 分支语句 bytecode 的生成（二）</h1>
+  <h2></h2>
+</div>
+<div class="content">
+
+  <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>25 May 2017, 14:26</time>
+  </div>
+
+  
+
+  
+  
+  
+  
+
+  
+  
+  
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="http://sysfork.com/tags/lua">lua</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://sysfork.com/tags/bytecode">bytecode</a>
+    
+  </div>
+  
+  
+
+</div>
+
+  <p>上篇我们谈到了 IF 语句的 bytecode 生成，今天来谈谈布尔表达式与短路求值。</p>
+
+<p>考虑到下面的表达式</p>
+
+<pre><code class="language-lua">a = a or 1024
+</code></pre>
+
+<p>其生成的字节码为</p>
+
+<pre><code>1       [1]     GETGLOBAL       0 -1    ; a
+2       [1]     TEST            0 0 1
+3       [1]     JMP             1       ; to 5
+4       [1]     LOADK           0 -2    ; 1024
+5       [1]     SETGLOBAL       0 -1    ; a
+6       [1]     RETURN          0 1
+</code></pre>
+
+<p>其实与</p>
+
+<pre><code class="language-lua">if not a then
+    a = 1024
+end
+</code></pre>
+
+<p>生成的代码几乎一致，只是少了像自己赋值的那部分。现在我们看看这条短路求值语句的字节码是怎么生成的。</p>
+
+<p><code>a = a or 1024</code> 这是一个赋值语句，所以调用使用的是<code>assignment</code>函数，其中我们关注的调用链是
+<code>assignment -&gt; luaK_storeevar -&gt; luaK_exp2anyreg -&gt; luaK_exp2nextreg -&gt; exp2reg</code> 由于 <code>a or 1024</code>是个二元运算符，
+在代码中可以看到，在读到<code>or</code>之前是<code>luaK_infix</code>，读到<code>or</code>之后是<code>luaK_postfix</code>，我们看看两者的做法：</p>
+
+<pre><code>-- luaK_infix
+716	    case OPR_OR: {
+717	      luaK_goiffalse(fs, v);
+718	      break;
+719	    }
+</code></pre>
+
+<pre><code>-- luaK_postfix
+746	    case OPR_OR: {
+747	      lua_assert(e1-&gt;f == NO_JUMP);  /* list must be closed */
+748	      luaK_dischargevars(fs, e2);
+749	      luaK_concat(fs, &amp;e2-&gt;t, e1-&gt;t);
+750	      *e1 = *e2;
+751	      break;
+752	    }
+</code></pre>
+
+<p>关键还是上文说到的<code>luaK_goiffalse</code>，</p>
+
+<pre><code>580	  luaK_concat(fs, &amp;e-&gt;t, pc);  /* insert last jump in `t' list */
+581	  luaK_patchtohere(fs, e-&gt;f);
+</code></pre>
+
+<p>如果返回 true 的话，那么跳转到某个“未知”的地方，false 的话直接执行下一句。那么这个“未知”的地方是怎么确定的呢？
+答案在<code>exp2reg</code>里面。</p>
+
+<pre><code>394	  if (hasjumps(e)) {
+395	    int final;  /* position after whole expression */
+396	    int p_f = NO_JUMP;  /* position of an eventual LOAD false */
+397	    int p_t = NO_JUMP;  /* position of an eventual LOAD true */
+398	    if (need_value(fs, e-&gt;t) || need_value(fs, e-&gt;f)) {
+399	      int fj = (e-&gt;k == VJMP) ? NO_JUMP : luaK_jump(fs);
+400	      p_f = code_label(fs, reg, 0, 1);
+401	      p_t = code_label(fs, reg, 1, 0);
+402	      luaK_patchtohere(fs, fj);
+403	    }
+404	    final = luaK_getlabel(fs);
+405	    patchlistaux(fs, e-&gt;f, final, reg, p_f);
+406	    patchlistaux(fs, e-&gt;t, final, reg, p_t);
+407	  }
+</code></pre>
+
+<p>由于我们设置了<code>e-&gt;t</code>或<code>e-&gt;f</code>，所以<code>hasjumps</code>判断成立。由于<code>TESTSET</code>已经提供了赋值的寄存器，因此是不需要额外记录判断结果的。而对于其他的入<code>LT</code>、<code>JMP</code>等，其本身是不记录任何判断结果的，为了记录只能在 JMP 完成之后，设置到寄存器中，
+这也就是此处<code>code_label</code>存在的原因。接下来是<code>patchlistaux</code>，其定义如下：</p>
+
+<pre><code>150	static void patchlistaux (FuncState *fs, int list, int vtarget, int reg,
+151	                          int dtarget) {
+152	  while (list != NO_JUMP) {
+153	    int next = getjump(fs, list);
+154	    if (patchtestreg(fs, list, reg))
+155	      fixjump(fs, list, vtarget);
+156	    else
+157	      fixjump(fs, list, dtarget);  /* jump to default target */
+158	    list = next;
+159	  }
+160	}
+</code></pre>
+
+<p>其中 <code>patchtestreg</code>定义如下：</p>
+
+<pre><code>131	static int patchtestreg (FuncState *fs, int node, int reg) {
+132	  Instruction *i = getjumpcontrol(fs, node);
+133	  if (GET_OPCODE(*i) != OP_TESTSET)
+134	    return 0;  /* cannot patch other instructions */
+135	  if (reg != NO_REG &amp;&amp; reg != GETARG_B(*i))
+136	    SETARG_A(*i, reg);
+137	  else  /* no register to put value or register already has the value */
+138	    *i = CREATE_ABC(OP_TEST, GETARG_B(*i), 0, GETARG_C(*i));
+139	
+140	  return 1;
+141	}
+</code></pre>
+
+<p>其中<code>vtarget</code>是我们当前的位置<code>final</code>，而<code>dtarget</code>是<code>p_f</code>或<code>p_t</code>。这两条语句的作用其实是将最终<code>TESTSET</code>指令的结果传送到<code>reg</code>，
+如果不是<code>TESTSET</code>的话那么说明不产生值，那<code>reg</code>就需要上面的<code>codelabel</code>来产生了。至此这部分代码分析完成。</p>
+
+<p>下面是一些函数的简单解释，可以稍微看看：</p>
+
+<p><code>luaK_nil</code>函数，生成的是<code>LOADNIL</code>字节码，其作用是将from ~ from + n之间的寄存器设置成nil，这里做了一些优化如：如果合并相邻的<code>LOADNIL</code>，函数初始化时可以不需要重复初始化等。
+注意优化的前提是<code>fs-&gt;pc &gt; fs-&gt;lasttarget</code>，即这条指令必须可以省略。</p>
+
+<p><code>luaK_jump</code>函数，其目的是生成一个<code>JMP</code>指令。这是个无条件跳转指令。那么其目标呢？其实就是 <code>fs-&gt;jps</code>。注意后面的<code>luaK_contat</code>，其目的是将l2链接到l1的后面，这是为了连续跳转
+考虑的。</p>
+
+<p><code>condjump</code> 生成条件跳转语句，lua为了生成字节码的便利性，每个条件调转语句如<code>LT</code>, <code>TEST</code>等后面都跟着一个<code>JMP</code>，当条件不满足时直接指向<code>JMP</code>语句，否则就跳到<code>JMP</code>的下一条，
+减少了编码的复杂度啊</p>
+
+<p><code>fixjump</code>把<code>PC</code>处的指令（当然是JMP指令）改成目标为<code>dest</code>，当然是相对地址了</p>
+
+<p><code>luaK_getlabel</code>，标记一下，把当前的lasttarget改成pc，这个lasttarget就是和上面的<code>luaK_nil</code>结合起来的，防止上面的误优化。</p>
+
+<p><code>getjump</code>和上面的fixjump相对应，返回PC所在那条指令的跳转目标。</p>
+
+<p><code>getjumpcontrol</code> 由于<code>JMP</code>上一条很多情况下都是跟着条件跳转指令的，那么这条指令就是获取这条条件跳转指令的。如果是那么返回上一条，否则返回当前pc。除了<code>jmp</code>之外，其他如<code>FORLOOP</code>, <code>FORPREP</code>等指令也会产生跳转</p>
+
+<p><code>patchtestreg</code> 修改<code>TESTSET</code>指令，这个指令一般用于短路求值，</p>
+
+<p><code>patchlistaux</code> 对于一个jump list，如果是<code>TESTSET</code>，那么将赋值寄存器修改为reg并将jump目的地修改为vtarget, 否则修改为dtarget。</p>
+
+<p><code>dischargejpc</code> 对jpc进行<code>patchlistaux</code>，其中vtarget和dtarget都是pc</p>
+
+<p><code>patchlist</code> 如果target为pc，那么调用patchtohere；否则调用patchlistaux</p>
+
+<p><code>patchtohere</code>先getlabel标记一下，然后将当前的list放到jpc后面</p>
+
+<p><code>jpc</code>那些将要跳到当前位置的链表，由于所有code的增加的欧式<code>luaK_code</code>，所以会在这个函数中调用<code>dischargejpc</code></p>
+
+
+  
+<div class="prev-next-post pure-g">
+  <div class="pure-u-1-24" style="text-align: left;">
+    
+    <a href="http://sysfork.com/post/2017/lua-cond-statment-bytecode-generate-1/"><i class="fa fa-chevron-left"></i></a>
+    
+  </div>
+  <div class="pure-u-10-24">
+    
+    <nav class="prev">
+      <a href="http://sysfork.com/post/2017/lua-cond-statment-bytecode-generate-1/">lua 5.1 分支语句 bytecode 的生成（一）</a>
+    </nav>
+    
+  </div>
+  <div class="pure-u-2-24">
+    &nbsp;
+  </div>
+  <div class="pure-u-10-24">
+    
+  </div>
+  <div class="pure-u-1-24" style="text-align: right;">
+    
+  </div>
+</div>
+
+
+
+  
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'lecoding';
+    dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+  
+  
+</div>
+
+</div>
+</div>
+<script src="http://sysfork.com/js/ui.js"></script>
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-19710645-12', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+</script>
+</body>
+</html>
+
