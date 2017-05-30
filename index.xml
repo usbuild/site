@@ -7,8 +7,65 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2017. All rights reserved.</copyright>
-    <lastBuildDate>Thu, 25 May 2017 14:26:47 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 30 May 2017 17:03:21 +0800</lastBuildDate>
     <atom:link href="http://sysfork.com/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>在 vue 中使用 semantic-ui</title>
+      <link>http://sysfork.com/post/2017/use-semantic-ui-with-vue/</link>
+      <pubDate>Tue, 30 May 2017 17:03:21 +0800</pubDate>
+      
+      <guid>http://sysfork.com/post/2017/use-semantic-ui-with-vue/</guid>
+      <description>&lt;p&gt;&lt;a href=&#34;https://cn.vuejs.org/&#34;&gt;Vue&lt;/a&gt; 是一个很好呀的 MVVM 框架，我最近在一个内部使用的管理后台初次使用。而 &lt;a href=&#34;https://semantic-ui.com/&#34;&gt;semantic-ui&lt;/a&gt; 则是
+一个比较美观全面的 css 框架，也是我比较偏好使用的。所以，在这次重构管理后台时，这两者就被我选择使用。PS： 服务器端用的是 &lt;a href=&#34;https://www.djangoproject.com/&#34;&gt;Django&lt;/a&gt;，
+也是第一次使用。&lt;/p&gt;
+
+&lt;p&gt;semantic-ui 大部分情况下使用其 css 部分是没问题的，如 &lt;a href=&#34;https://semantic-ui.com/elements/button.html&#34;&gt;button&lt;/a&gt;, &lt;a href=&#34;https://semantic-ui.com/collections/table.html&#34;&gt;table&lt;/a&gt;
+等，直接套用对应的 css 样式即可。但是对于某些需要 js 初始化的控件，如 &lt;a href=&#34;https://semantic-ui.com/modules/dropdown.html&#34;&gt;dropdown&lt;/a&gt;, &lt;a href=&#34;https://semantic-ui.com/modules/popup.html&#34;&gt;popup&lt;/a&gt;
+等，都需要调用对应的函数，如&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$(&#39;.ui.dropdown&#39;)
+  .dropdown()
+;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;那么对于 Vue 中动态生成的控件要怎么处理呢？ 我们希望在控件加入到 dom 后能够调用对应的 semnatic-ui 初始化函数，但是由于 Vue 的插入是自动完成的，我们不好判断时机，好在 Vue 提供了
+&lt;a href=&#34;https://cn.vuejs.org/v2/guide/custom-directive.html&#34;&gt;自定义指令&lt;/a&gt;，我们可以按照下面的方法来做：&lt;/p&gt;
+
+&lt;p&gt;首先假设我们的 html 是：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-html&#34;&gt;&amp;lt;div id=&amp;quot;main&amp;quot;&amp;gt;&amp;lt;/div&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后 Vue 实例为：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;let data = {
+    data: [&amp;quot;Male&amp;quot;, &amp;quot;Female&amp;quot;]
+}
+new Vue({
+    el: &amp;quot;#main&amp;quot;,
+    data,
+    template: `
+    &amp;lt;select class=&amp;quot;ui dropdown&amp;quot;&amp;gt;
+        &amp;lt;option value=&amp;quot;&amp;quot;&amp;gt;Gender&amp;lt;/option&amp;gt;
+        &amp;lt;option v-for=&amp;quot;(v, k) in data&amp;quot; :value=&amp;quot;k&amp;quot;&amp;gt;{{ v }}&amp;lt;/option&amp;gt;
+    &amp;lt;/select&amp;gt;
+    `
+})
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这里我们以 dropdown 控件为例，按照以往的做法，我们此时可以调用&lt;code&gt;$(&amp;quot;.ui.dropdown&amp;quot;).dropdown()&lt;/code&gt;来处理，但是对于 Vue 则可以使用自定义指令。假设我们定义一个指令名为&lt;code&gt;v-sudropdown&lt;/code&gt;，
+然后将其加到 &lt;code&gt;select&lt;/code&gt; 中，于是变为&lt;code&gt;&amp;lt;select class=&amp;quot;ui dropdown&amp;quot; v-sudropdown&amp;gt;&lt;/code&gt;，那这个 directive 该怎么写呢：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-js&#34;&gt;Vue.directive (&amp;quot;sudropdown&amp;quot;, {
+        inserted: el =&amp;gt; $(el).dropdown({})
+    })
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;其中，&lt;code&gt;inserted&lt;/code&gt; 是一个钩子函数，一旦带有这个 &lt;code&gt;directive&lt;/code&gt; 的元素被插入到 dom 时，这个钩子函数会被调用，从而完成我们的初始化操作。这样 vue 和 semantic-ui 就能完美共存了。&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>lua 5.1 分支语句 bytecode 的生成（二）</title>
