@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="generator" content="Hugo 0.16" />
+
+  <title>使用 git bisect 进行debug &middot; sys🔱fork</title>
+
+  
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/pure-min.css">
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/grids-responsive-old-ie-min.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/grids-responsive-min.css">
+  <!--<![endif]-->
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="http://sysfork.com/css/side-menu-old-ie.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="http://sysfork.com/css/side-menu.css">
+  <!--<![endif]-->
+
+  <link rel="stylesheet" href="http://sysfork.com/css/blackburn.css">
+
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css">
+
+  
+  
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.4.0/styles/gruvbox-light.min.css">
+  <script src="//cdn.bootcss.com/highlight.js/9.4.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  
+
+  <link rel="shortcut icon" href="http://sysfork.com/img/favicon.ico" type="image/x-icon" />
+
+</head>
+
+
+<body>
+<div id="layout">
+
+  
+<a href="#menu" id="menuLink" class="menu-link">
+  
+  <span></span>
+</a>
+<div id="menu">
+
+  
+
+  <div class="pure-menu">
+    <ul class="pure-menu-list">
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/"><i class='fa fa-home fa-fw'></i>Home</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/post/"><i class='fa fa-list fa-fw'></i>Posts</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/about/"><i class='fa fa-user fa-fw'></i>About</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="http://sysfork.com/contact/"><i class='fa fa-phone fa-fw'></i>Contact</a>
+      
+        </li>
+      
+    </ul>
+  </div>
+
+  <div class="pure-menu social">
+  <ul class="pure-menu-list">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <li class="pure-menu-item">
+      <a class="pure-menu-link" href="https://linkedin.com/in/usbuild" target="_blank"><i class="fa fa-linkedin-square fa-fw"></i>LinkedIn</a>
+    </li>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <li class="pure-menu-item">
+      <a class="pure-menu-link" href="https://github.com/usbuild" target="_blank"><i class="fa fa-github-square fa-fw"></i>GitHub</a>
+    </li>
+    
+
+    
+
+    
+
+  </ul>
+</div>
+
+
+  <div>
+  <div class="small-print">
+    <small>&copy; 2017. All rights reserved.</small>
+  </div>
+  <div class="small-print">
+    <small>Built with&nbsp;<a href="https://gohugo.io/" target="_blank">Hugo</a></small>
+    <small>Theme&nbsp;<a href="https://github.com/yoshiharuyamashita/blackburn" target="_blank">Blackburn</a></small>
+  </div>
+</div>
+
+</div>
+
+
+  <div id="main">
+
+
+<div class="header">
+  <h1>使用 git bisect 进行debug</h1>
+  <h2></h2>
+</div>
+<div class="content">
+
+  <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>11 Jul 2017, 16:11</time>
+  </div>
+
+  
+
+  
+  
+  
+  
+
+  
+  
+  
+  
+
+</div>
+
+  <p>最近在学习<code>git</code>的时候发现了一个有趣的命令，<code>git bisect</code>。这个命令是 debug 用的。我们往往在开发过程中引入一些bug，但是由于没能立即测试导致这些bug在很多次提交
+之后才能被发现，但是这时候距离上次引入的bug可能过去了很长时间，难以复现了。如果我们使用svn的话，往往会不断地<code>svn update</code>到某个版本然后测试，为了提高搜寻
+得效率往往会使用二分查找：在已知的功能正常的版本A和当前版本B找一个中间点C判断，如果C版本也是存在bug的话继续搜索AC区间，否则的话搜索CB区间。在 git 中，
+这个操作可以被自动化，<code>bisect</code>指令就是专门用作这个的。</p>
+
+<p>下面我来简单介绍一下这个用法。</p>
+
+<p>假设有一个 git 库，使用如下的方式构建：</p>
+
+<pre><code>➜  test git init
+Initialized empty Git repository in /home/zqc/workspace/test/.git/
+➜  test git:(master) for i in {1..10}; do echo $i &gt;&gt; test.log; git add -A; git commit -m &quot;commit $i&quot;; done
+[master (root-commit) cc9d416] commit 1
+ 1 file changed, 1 insertion(+)
+ create mode 100644 test.log
+[master 09576a2] commit 2
+ 1 file changed, 1 insertion(+)
+[master 9cfabe6] commit 3
+ 1 file changed, 1 insertion(+)
+[master f65497a] commit 4
+ 1 file changed, 1 insertion(+)
+[master 6292639] commit 5
+ 1 file changed, 1 insertion(+)
+[master 301e6fd] commit 6
+ 1 file changed, 1 insertion(+)
+[master b440342] commit 7
+ 1 file changed, 1 insertion(+)
+[master a4f2dea] commit 8
+ 1 file changed, 1 insertion(+)
+[master 8d8ec0a] commit 9
+ 1 file changed, 1 insertion(+)
+[master 474b493] commit 10
+ 1 file changed, 1 insertion(+)
+</code></pre>
+
+<p>其作用是初始化了一个git仓库，并提交了10次，每次豆香<code>test.log</code>文件末尾增加了一个数字。
+所以<code>test.log</code>最终的内容是：</p>
+
+<pre><code>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+</code></pre>
+
+<p>我们假设如果这个文件中所有数字的和超过<code>30</code>，那么这个程序就是有bug的，现在我们想判断是哪次提交导致和超过了<code>30</code>。</p>
+
+<p>先要开始二分查找<code>git bisect start</code>。</p>
+
+<p>现在我们处于HEAD处。此时和为<code>1 + 2 + ... + 10 = 55 &gt; 30</code>，所以当前是有bug的，因此设置当前的这次提交为<code>bad</code>, <code>git bisect bad</code>
+显然在第一次提交中，和为1，所以其应该是正常的<code>good</code>，因此设置第一次提交<code>git bisect good cc9d416</code>。</p>
+
+<p>当我们敲下这条指令是，git会将当前的HEAD指针设置为：</p>
+
+<pre><code>➜  test git:(6292639) git rev-parse HEAD
+6292639374ed862233630d2803031f9624e1fa0c
+➜  test git:(6292639) git log -1
+commit 6292639374ed862233630d2803031f9624e1fa0c
+Author: usbuild &lt;xxx@gmail.com&gt;
+Date:   Tue Jul 11 17:11:08 2017 +0800
+
+    commit 5
+</code></pre>
+
+<p>可以看出是第5次提交，此时我们计算<code>test.log</code>和为<code>1 + 2 + .. + 5 = 15 &lt; 30</code>，所以此次提交时好的，那么标识<code>git bisect good</code>。然后同上，git
+将HEAD带到了第7次提交。同样<code>1 + 2 + ... + 7 = 28 &lt; 30</code>，也是合法的，继续设置为<code>good</code>。然后到<code>9</code>，这时和已经超过<code>30</code>了，所以为<code>bad</code>。到<code>8</code>，也是<code>bad</code>。
+这时，git会弹出搜索的结果：</p>
+
+<pre><code>a4f2deaa73f28dffe4cdfb72258d14815cacf185 is the first bad commit
+commit a4f2deaa73f28dffe4cdfb72258d14815cacf185
+Author: usbuild &lt;xxx@gmail.com&gt;
+Date:   Tue Jul 11 17:11:08 2017 +0800
+
+    commit 8
+
+:100644 100644 06e567b11dfdafeaf7d3edcc89864149383aeab6 535d2b01d3397c2228490875defc92370602ca46 M      test.log
+</code></pre>
+
+<p>它标识处第8次提交引入了这个问题，这也正是符合实际的。</p>
+
+<p>当找到这次提交之后，我们需要调用<code>git bisect reset</code>来恢复当前的工作区。至此查找工作完成。</p>
+
+<p>虽然说在上述过程中我们不需要手动计算中间版本了，但是对于验证工作还是需要手动计算，稍显麻烦。其实如果有自动化测试脚本的话，<code>bisect</code>能自动帮我们找到问题的提交。
+过程如下：</p>
+
+<pre><code>➜  test git:(master) git bisect start
+➜  test git:(master) git bisect good cc9d416                                                                                      
+➜  test git:(master) git bisect bad
+</code></pre>
+
+<p>指定范围后，我们可以使用<code>git bisect run &lt;cmd&gt;</code>来实现自动查找。当<code>&lt;cmd&gt;</code>返回值为<code>0</code>时，标识为<code>good</code>；否则为<code>bad</code>。这里我们写一个简单的判断脚本</p>
+
+<pre><code>➜  test git:(6292639) git bisect run python -c &quot;assert(sum(int(x) for x in open('test.log', 'r').read().strip().split('\n')) &lt;= 30)&quot;
+running python -c assert(sum(int(x) for x in open('test.log', 'r').read().strip().split('\n')) &lt;= 30)
+Bisecting: 2 revisions left to test after this (roughly 1 step)
+[b4403425313b8e4a65c7278d2b51ecfcb5a767a3] commit 7
+running python -c assert(sum(int(x) for x in open('test.log', 'r').read().strip().split('\n')) &lt;= 30)
+Bisecting: 0 revisions left to test after this (roughly 1 step)
+[8d8ec0a7976a74d184602070fbe1c148cee49612] commit 9
+running python -c assert(sum(int(x) for x in open('test.log', 'r').read().strip().split('\n')) &lt;= 30)
+Traceback (most recent call last):
+  File &quot;&lt;string&gt;&quot;, line 1, in &lt;module&gt;
+AssertionError
+Bisecting: 0 revisions left to test after this (roughly 0 steps)
+[a4f2deaa73f28dffe4cdfb72258d14815cacf185] commit 8
+running python -c assert(sum(int(x) for x in open('test.log', 'r').read().strip().split('\n')) &lt;= 30)
+Traceback (most recent call last):
+  File &quot;&lt;string&gt;&quot;, line 1, in &lt;module&gt;
+AssertionError
+a4f2deaa73f28dffe4cdfb72258d14815cacf185 is the first bad commit
+commit a4f2deaa73f28dffe4cdfb72258d14815cacf185
+Author: usbuild &lt;xxx@gmail.com&gt;
+Date:   Tue Jul 11 17:11:08 2017 +0800
+
+    commit 8
+
+:100644 100644 06e567b11dfdafeaf7d3edcc89864149383aeab6 535d2b01d3397c2228490875defc92370602ca46 M      test.log
+bisect run success
+</code></pre>
+
+<p>最终出来的结果和我们之前的判断是一样的，只不过减少了人工操作的麻烦。</p>
+
+
+  
+<div class="prev-next-post pure-g">
+  <div class="pure-u-1-24" style="text-align: left;">
+    
+    <a href="http://sysfork.com/post/2017/use-semantic-ui-with-vue/"><i class="fa fa-chevron-left"></i></a>
+    
+  </div>
+  <div class="pure-u-10-24">
+    
+    <nav class="prev">
+      <a href="http://sysfork.com/post/2017/use-semantic-ui-with-vue/">在 vue 中使用 semantic-ui</a>
+    </nav>
+    
+  </div>
+  <div class="pure-u-2-24">
+    &nbsp;
+  </div>
+  <div class="pure-u-10-24">
+    
+  </div>
+  <div class="pure-u-1-24" style="text-align: right;">
+    
+  </div>
+</div>
+
+
+
+  
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'lecoding';
+    dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+  
+  
+</div>
+
+</div>
+</div>
+<script src="http://sysfork.com/js/ui.js"></script>
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-19710645-12', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+</script>
+</body>
+</html>
+
