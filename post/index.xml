@@ -7,8 +7,159 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2017. All rights reserved.</copyright>
-    <lastBuildDate>Tue, 11 Jul 2017 16:11:23 +0800</lastBuildDate>
+    <lastBuildDate>Mon, 21 Aug 2017 20:14:01 +0800</lastBuildDate>
     <atom:link href="http://sysfork.com/post/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>入手 NodeMCU 及初步体验</title>
+      <link>http://sysfork.com/post/2017/starting-playwith-nodemcu/</link>
+      <pubDate>Mon, 21 Aug 2017 20:14:01 +0800</pubDate>
+      
+      <guid>http://sysfork.com/post/2017/starting-playwith-nodemcu/</guid>
+      <description>&lt;p&gt;最近刷微博看到有人提到 &lt;a href=&#34;http://www.nodemcu.com/&#34;&gt;NodeMCU&lt;/a&gt;， 网上一查才发现其实是类似于 &lt;a href=&#34;https://www.arduino.cc/&#34;&gt;Arduino&lt;/a&gt;的开发板，不过
+它使用 lua 作为开发语言，相对于 micropython 其占用内存更小，语言的核心库也很简单。 同时，NodeMCU 集成了 &lt;a href=&#34;http://espressif.com/zh-hans/products/hardware/esp8266ex/overview&#34;&gt;ESP8266&lt;/a&gt;
+这种廉价的 WIFI 芯片，使得其支持一定的网络功能。去淘宝搜索一下&lt;/p&gt;
+
+&lt;p&gt;&lt;center&gt;&lt;img src=&#34;http://sysfork.com/img/2017/nodemcu/taobao-search-nodemcu.png&#34; width=&#34;450px&#34;&gt;&lt;/center&gt;&lt;/p&gt;
+
+&lt;p&gt;价格也是非常便宜。我随便找了一家店铺买了两个，总共不到 40 块钱。&lt;/p&gt;
+
+&lt;p&gt;最终到手就是这个啦：
+&lt;center&gt;&lt;img src=&#34;http://sysfork.com/img/2017/nodemcu/nodemc-board.png&#34; width=&#34;450px&#34;&gt;&lt;/center&gt;&lt;/p&gt;
+
+&lt;p&gt;这块板子直接支持 microUSB 接口，不用自己使用 USB-TTL 来连了，省了不少麻烦。连接电脑后（注意有些USB线只支持充电，我找了两条线都用不了，换了第三根数据线才脸上），会自动安装
+驱动，系统会显示多了一个 COM 口。&lt;/p&gt;
+
+&lt;p&gt;&lt;center&gt;&lt;img src=&#34;http://sysfork.com/img/2017/nodemcu/devicemanager.png&#34; width=&#34;450px&#34;&gt;&lt;/center&gt;&lt;/p&gt;
+
+&lt;p&gt;连接上电脑后第一件事就是刷机，这里是固件的地址 &lt;a href=&#34;https://github.com/nodemcu/nodemcu-firmware&#34;&gt;https://github.com/nodemcu/nodemcu-firmware&lt;/a&gt;， 当然你也可以刷
+&lt;a href=&#34;https://docs.micropython.org/en/latest/esp8266/esp8266/tutorial/intro.html&#34;&gt;MicroPython&lt;/a&gt;。由于固件编译环境比较麻烦，所以有爱好者做了一个在线编译的网站
+&lt;a href=&#34;https://nodemcu-build.com/&#34;&gt;https://nodemcu-build.com/&lt;/a&gt;，你可以选择分支和模块，实现定制。提交任务后，当它开始编译和结束编译的时候会发送邮件给你留下的邮箱。同时，会推荐一个
+ flash 工具，其实就是 pyflasher 的 GUI 版，你可以下载下来使用。接下来启动这个工具：&lt;/p&gt;
+
+&lt;p&gt;&lt;center&gt;&lt;img src=&#34;http://sysfork.com/img/2017/nodemcu/pyflash.png&#34; width=&#34;450px&#34;&gt;&lt;/center&gt;&lt;/p&gt;
+
+&lt;p&gt;由于我买的这个板存储超过4M，所以选择的是 DIO 模式，同时由于是第一次使用，所以直接选择清除所有数据。刷机很快，不到1min。之后就可以使用啦。&lt;/p&gt;
+
+&lt;p&gt;IDE 我选择的是&lt;a href=&#34;https://esp8266.ru/esplorer&#34;&gt;ESPlorer&lt;/a&gt;，它同时支持 lua 和 MicroPython 编程。打开主界面后直接点击右上角的 Connect 就可以了，然后按一下板子上的
+ RST 按钮就能进入 lua 的 REPL 环境了。可以在下面输入 lua 代码执行，就跟普通的 lua 交互式环境一样。下面是如何连接 wifi 的代码&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-lua&#34;&gt;wifi.setmode(wifi.STATION)
+wifi.sta.config({ssid=&amp;quot;SSID_NAME&amp;quot;, pwd=&amp;quot;PASSWORD&amp;quot;})
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;其中 wifi 是一个内置模块，所有的内置模块都可以在编译的时候选中，模块的使用文档：&lt;a href=&#34;https://nodemcu.readthedocs.io&#34;&gt;https://nodemcu.readthedocs.io&lt;/a&gt;。 比如说想获取某个网址的内容：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-lua&#34;&gt;http.get(&amp;quot;http://baidu.com&amp;quot;, nil, function(code, data)
+    print(code, data)
+end)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;NodeMCU 采用了一种事件触发模型，所以很多这种回调函数，类似于 Node.js。&lt;/p&gt;
+
+&lt;p&gt;NodeMCU 提供了很多 GPIO 口，使得它成为 IoT 开发的首选方案，可以连接各种传感器。我尝试了一下温度传感器 DHT11 模块，商家直接封装好了，不用自己再接上拉电阻了。如果直接通过编程来读取
+温度和湿度是比较麻烦的，好在内置模块提供了 DHT 模块，只要在编译的时候包含进去就可以。最后代码如下(从文档摘取的)，其中 5 是信号输入源：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-lua&#34;&gt;pin = 5
+status, temp, humi, temp_dec, humi_dec = dht.read(pin)
+if status == dht.OK then
+    -- Integer firmware using this example
+    print(string.format(&amp;quot;DHT Temperature:%d.%03d;Humidity:%d.%03d\r\n&amp;quot;,
+          math.floor(temp),
+          temp_dec,
+          math.floor(humi),
+          humi_dec
+    ))
+
+    -- Float firmware using this example
+    print(&amp;quot;DHT Temperature:&amp;quot;..temp..&amp;quot;;&amp;quot;..&amp;quot;Humidity:&amp;quot;..humi)
+
+elseif status == dht.ERROR_CHECKSUM then
+    print( &amp;quot;DHT Checksum error.&amp;quot; )
+elseif status == dht.ERROR_TIMEOUT then
+    print( &amp;quot;DHT timed out.&amp;quot; )
+end
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;除了尝试 DHT11 模块外，还试了一下超声波模块 HC-SR04， 这个是通过向 Trig 端输出一段高电平信号，然后通过 Echo 端来检测高电平，高电平的持续时间就是超声波传输的时间，然后根据
+空气中的声速就能计算出来了。好在也有人提供了一个开源代码 &lt;a href=&#34;https://github.com/sza2/node_hcsr04/&#34;&gt;https://github.com/sza2/node_hcsr04/&lt;/a&gt;。但是实际使用并没有那么简单。
+我们来看看他的代码：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-lua&#34;&gt;function self.echo_cb(level)
+    if level == 1 then
+        self.time_start = tmr.now()
+        gpio.trig(self.echo, &amp;quot;down&amp;quot;)
+    else
+        self.time_end = tmr.now()
+    end
+end
+
+function self.measure()
+    gpio.trig(self.echo, &amp;quot;up&amp;quot;, self.echo_cb)
+    gpio.write(self.trig, gpio.HIGH)
+    tmr.delay(100)
+    gpio.write(self.trig, gpio.LOW)
+    tmr.delay(100000)
+    if (self.time_end - self.time_start) &amp;lt; 0 then
+        return -1
+    end
+    return (self.time_end - self.time_start) / 5800
+end
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;逻辑很简单，先是通过监听低到高转换的信号，记录时间同时监听高到地的信号，记录时间，这个时间差值就是超声波的传输时间。但是由于超声波的速度很快，很有可能你在设置 down
+事件之前已经触发了，导致迟迟无法获取结束信号。所以可以稍作改动&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-lua&#34;&gt;function self.echo_cb(level)
+    if level == 1 then
+        self.time_start = tmr.now()
+    else
+        self.time_end = tmr.now()
+    end
+end
+function self.measure()
+    gpio.trig(self.echo, &amp;quot;both&amp;quot;, self.echo_cb)
+    gpio.write(self.trig, gpio.HIGH)
+    tmr.delay(100)
+    gpio.write(self.trig, gpio.LOW)
+    tmr.delay(100000)
+    if (self.time_end - self.time_start) &amp;lt; 0 then
+        return -1
+    end
+    return (self.time_end - self.time_start) / 5800
+end
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后发现部分能正常使用了，但是对于短距离的测量还是会丢失结束信号，猜想可能是在代码执行过程中事件到来，结果没能来得及处理，所以只能采取比较老土的方案了，不使用事件驱动，直接读&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-lua&#34;&gt;function self.measure()
+    gpio.write(self.trig, gpio.HIGH)
+    tmr.delay(100)
+    gpio.write(self.trig, gpio.LOW)
+    gpio.mode(self.echo, gpio.INPUT)
+    gpio.write(self.echo, gpio.LOW)
+    local start_time, end_time
+    local gread = gpio.read
+    local tnow = tmr.now
+    local echo = self.echo
+    local wdclr = tmr.wdclr
+    while gread(echo) == 1 do
+        start_time = tnow()
+        wdclr()
+    end
+    while gread(echo) == 0 do
+        end_time = tnow()
+        wdclr()
+    end
+    return (end_time - start_time) / 5800
+end
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;最终的效果还不错，对于几厘米的距离也能有很好的分辨率。&lt;/p&gt;
+
+&lt;p&gt;总的来说， NodeMCU 的可玩性非常强，比如说可以通过网络和继电器实现家庭电器开关的控制啦，简直就是硬件版的 IFTTT，相比于树莓派，价格够便宜，简直就是折腾智能家庭的神器。&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>使用 git bisect 进行debug</title>
@@ -2090,44 +2241,6 @@ $$ [ \left [ &amp;#8211; \frac{\hbar^2}{2 m} \frac{\partial^2}{\partial x^2} + V
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;同理，对于其他需要特殊支持的格式或表现，都可以通过添加post_plugins来实现。以上代码都在本网站的&lt;a href=&#34;https://github.com/usbuild/site.git&#34;&gt;github&lt;/a&gt;上。&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>Lua Table中HashMap介绍</title>
-      <link>http://sysfork.com/post/2016/lua-hashtable-introduction/</link>
-      <pubDate>Thu, 01 Sep 2016 17:40:08 +0800</pubDate>
-      
-      <guid>http://sysfork.com/post/2016/lua-hashtable-introduction/</guid>
-      <description>&lt;p&gt;&lt;a href=&#34;https://www.lua.org/pil/2.5.html&#34;&gt;Table&lt;/a&gt; 在Lua中有着极其重要的应用，从核心语言实现，如&lt;a href=&#34;https://en.wikipedia.org/wiki/String_interning&#34;&gt;short string intern&lt;/a&gt;，
-到利用&lt;a href=&#34;https://www.lua.org/pil/13.html&#34;&gt;metatable&lt;/a&gt;实现的&lt;a href=&#34;lua-users.org/wiki/LuaClassesWithMetatable&#34;&gt;class&lt;/a&gt;，table几乎无所不能。如此高频度地利用也就意味着lua必须要有一个高效的
-table实现。&lt;/p&gt;
-
-&lt;p&gt;很多语言提供了array和associative array两种数据结构。array是指以某个指定的最小整数下标(一般是0)开始的连续存储的数据结构，它有vector、list、array、ArrayList等多种名称；associative array，中文
-也叫关联数组，即将一对key/pair之间关联起来，它一般也被称为map、dict等。Lua并不提供array，因为数组本身也是一种特殊的关联数组。但是从内部表示上，array和map有着极大的不同，array只需要一块连续的
-内存即可实现，而map则有多种实现。Lua为了效率，将一部分整数下标的元素存储在array part中，而将其他元素存储在hashmap中，实现在外部接口不变的情况下实现了效率的最大化。array部分没有什么特别需要
-优化的，其就是一整块连续的内存，存储和读取的时间复杂度都是O(1)，而hashmap的实现称为了lua table设计的重点。&lt;/p&gt;
-
-&lt;p&gt;map有多种实现手段，在stl中，默认的map使用的是红黑树，存储和读取的时间复杂度都是O(logn)；虽然红黑树的表现十分稳定，但是实现比较复杂而且无法满足极端性能要求，
-C++11中添加新的&lt;a href=&#34;http://en.cppreference.com/w/cpp/container/unordered_map&#34;&gt;unordered_map&lt;/a&gt;，其实现就是使用了一个hashmap。hashmap的基本流程是使用一个hash函数来将
-一个key映射到一块连续内存中，实现在理想情况下访问和删除接近O(1)的时间复杂度。&lt;/p&gt;
-
-&lt;p&gt;由于一般key的取值范围大于hashmap slot数目，所以不可避免地出现冲突的状况。在教科书中，解决这种冲突一般有两种方法：&lt;a href=&#34;https://en.wikipedia.org/wiki/Hash_table#Separate_chaining&#34;&gt;链表法&lt;/a&gt;
-和&lt;a href=&#34;https://en.wikipedia.org/wiki/Open_addressing&#34;&gt;开放寻址法&lt;/a&gt;。链表法的实现比较简单，将冲突的元素使用链表链接起来即可；而开放寻址法则需要多次计算，直至找到一个没有冲突的slot为止。
-这两者都有自己的优缺点，链表法由于使用了链表，无法充分利用CPU缓存，并且实现深拷贝难度较大；而开放寻址法无法实现删除元素的功能，并且当元素密度比较大时，效率非常低。&lt;/p&gt;
-
-&lt;p&gt;Lua table使用了一个折中的方案，叫做&lt;a href=&#34;https://en.wikipedia.org/wiki/Coalesced_hashing&#34;&gt;Coalesced_hashing&lt;/a&gt;，结合使用了链表法和开放寻址法。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&#34;https://upload.wikimedia.org/wikipedia/commons/4/4c/CoalescedHash.jpg&#34; alt=&#34;Coalesced_hashing&#34; /&gt;&lt;/p&gt;
-
-&lt;p&gt;当插入一个元素时，定义其原本应该在的位置为mainposition，如果mainpoisition对应的slot是空的，则直接插入；如果非空，看看在那个位置上的元素的mainposition是不是当前的slot，如果不是的
-话，则将其移动到任意一个空的slot(位置A)，然后将当前的元素插入到mainposition位置，并将当前的next字段设置成位置A，形成链表。如果占用元素mainposition就是当前位置，则将待插入的
-元素插入到任意一个空的位置上，并链接到占用元素的后面。&lt;/p&gt;
-
-&lt;p&gt;通过上面的过程，实现了所有的元素都尽量保存在mainposition上，当查找的时候也能使用更少的次数来找到元素位置。这对元素本来就在hashmap中，效率是比较高的。但是，当元素不在hashmap中，查找的代价
-比较高。&lt;/p&gt;
-
-&lt;p&gt;lua table的代码实现在&lt;a href=&#34;https://www.lua.org/source/5.3/ltable.c.html&#34;&gt;这里&lt;/a&gt;，实现非常简洁明了，也不是很难懂，但是对于平时经常使用lua的同学来说读一读还是很有必要的。&lt;/p&gt;
 </description>
     </item>
     
