@@ -21,7 +21,7 @@ paginate = 10
     name = "Archives"
     weight = 2
     identifier = "post"
-    url = "/post/"
+    url = "/archives/"
   [[menu.main]]
     name = "Tags"
     weight = 3

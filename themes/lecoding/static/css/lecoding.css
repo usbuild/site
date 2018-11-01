@@ -449,3 +449,21 @@ tr:hover {background-color: #f5f5f5}
 img {
     border: dotted 1px #ccc !important;
 }
+
+.archive {
+    margin-left: 100px;
+    margin-right: 100px;
+}
+.archive ul{
+    list-style:none;
+}
+.archive ul time {
+    float: right;
+}
+.archive ul li {
+    padding: .5em 1em;
+}
+
+.archive ul li:nth-child(even) {
+    background-color: #fafafa;
+}
