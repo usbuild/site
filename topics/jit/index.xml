@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Jit on 乐Coding</title>
+    <link>https://lecoding.com/topics/jit/</link>
+    <description>Recent content in Jit on 乐Coding</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <copyright>&amp;copy; 2018. All rights reserved.</copyright>
+    
+	<atom:link href="https://lecoding.com/topics/jit/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>实现一个带 JIT 的计算器</title>
+      <link>https://lecoding.com/post/2018/implement-naive-jit-calc/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://lecoding.com/post/2018/implement-naive-jit-calc/</guid>
+      <description>所谓的 JIT，全称为Just In Time，一般搜索出来的结果会是“精益生产”，但是在软件行业，这个词一般是指，在程序运行过程中，动态生成代码来</description>
+    </item>
+    
+  </channel>
+</rss>
