@@ -156,5 +156,14 @@
       <description>Table 在Lua中有着极其重要的应用，从核心语言实现，如short string intern， 到利用metatable实现的class，table几乎无所不能</description>
     </item>
     
+    <item>
+      <title></title>
+      <link>http://lecoding.com/archives/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://lecoding.com/archives/</guid>
+      <description>归档</description>
+    </item>
+    
   </channel>
 </rss>

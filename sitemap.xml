@@ -83,6 +83,10 @@
   </url>
   
   <url>
+    <loc>http://lecoding.com/archives/</loc>
+  </url>
+  
+  <url>
     <loc>http://lecoding.com/tags/bytecode/</loc>
     <lastmod>2017-05-25T14:26:47+08:00</lastmod>
     <priority>0</priority>
