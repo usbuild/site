@@ -9,39 +9,19 @@
 
   <title>在 vue 中使用 semantic-ui &middot; 乐Coding</title>
 
-  
-  
-  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/pure-min.css">
 
-  <!--[if lte IE 8]>
-  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/grids-responsive-old-ie-min.css">
-  <![endif]-->
-  <!--[if gt IE 8]><!-->
-  <link rel="stylesheet" href="//cdn.bootcss.com/pure/0.6.0/grids-responsive-min.css">
-  <!--<![endif]-->
-
-  <!--[if lte IE 8]>
-  <link rel="stylesheet" href="http://lecoding.com/css/side-menu-old-ie.css">
-  <![endif]-->
-  <!--[if gt IE 8]><!-->
-  <link rel="stylesheet" href="http://lecoding.com/css/side-menu.css">
-  <!--<![endif]-->
-
-  <link rel="stylesheet" href="http://lecoding.com/css/blackburn.css">
-
-  
-  <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css">
-
+  <link rel="stylesheet" href="http://lecoding.com/css/lecoding.css">
   
   
 
-  
-  
 
+  
   
   <link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.4.0/styles/gruvbox-light.min.css">
   <script src="//cdn.bootcss.com/highlight.js/9.4.0/highlight.min.js"></script>
+  <link href="//cdn.bootcss.com/normalize/7.0.0/normalize.min.css" rel="stylesheet">
   <script>hljs.initHighlightingOnLoad();</script>
+  
   
 
   <link rel="shortcut icon" href="http://lecoding.com/img/favicon.ico" type="image/x-icon" />
@@ -49,151 +29,35 @@
 </head>
 
 
-<body>
+<body data-url="http://lecoding.com/">
 <div id="layout">
-
-  
-<a href="#menu" id="menuLink" class="menu-link">
-  
-  <span></span>
-</a>
-<div id="menu">
-
-  
-
-  <div class="pure-menu">
-    <ul class="pure-menu-list">
-      
-      
-        <li class="pure-menu-item">
-          <a class="pure-menu-link" href="http://lecoding.com/about/"><i class='fa fa-user fa-fw'></i>About</a>
-      
-        </li>
-      
-      
-        <li class="pure-menu-item">
-          <a class="pure-menu-link" href="http://lecoding.com/"><i class='fa fa-home fa-fw'></i>Home</a>
-      
-        </li>
-      
-    </ul>
-  </div>
-
-  <div class="pure-menu social">
-  <ul class="pure-menu-list">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <li class="pure-menu-item">
-      <a class="pure-menu-link" href="https://linkedin.com/in/usbuild" target="_blank"><i class="fa fa-linkedin-square fa-fw"></i>LinkedIn</a>
-    </li>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <li class="pure-menu-item">
-      <a class="pure-menu-link" href="https://github.com/usbuild" target="_blank"><i class="fa fa-github-square fa-fw"></i>GitHub</a>
-    </li>
-    
-
-    
-
-    
-
-  </ul>
-</div>
-
-
-  <div>
-  <div class="small-print">
-    <small>&copy; 2018. All rights reserved.</small>
-  </div>
-  <div class="small-print">
-    <small>Built with&nbsp;<a href="https://gohugo.io/" target="_blank">Hugo</a></small>
-    <small>Theme&nbsp;<a href="https://github.com/yoshiharuyamashita/blackburn" target="_blank">Blackburn</a></small>
-  </div>
-</div>
-
-</div>
-
-
   <div id="main">
+  
+<div class="nav">
+
+  <div class="side-menu">
+      
+        <a class="side-menu-link" href="http://lecoding.com/">Home</a>
+      
+        <a class="side-menu-link" href="http://lecoding.com/post/">Archives</a>
+      
+        <a class="side-menu-link" href="http://lecoding.com/tags/">Tags</a>
+      
+        <a class="side-menu-link" href="http://lecoding.com/about/">About</a>
+      
+  </div>
+
+</div>
 
 
+
+<div class="content">
 <div class="header">
   <h1>在 vue 中使用 semantic-ui</h1>
-  <h2></h2>
-</div>
-<div class="content">
-
-  <div class="post-meta">
-
-  <div>
-    <i class="fa fa-calendar fa-fw"></i>
-    <time>30 May 2017, 17:03</time>
-  </div>
-
-  
-
-  
-  
-  
-  
-
-  
-  
-  
-  <div>
-    <i class="fa fa-tags fa-fw"></i>
-    
-      <a class="post-taxonomy-tag" href="http://lecoding.com/tags/vue">vue</a>&nbsp;&#47;
-    
-      <a class="post-taxonomy-tag" href="http://lecoding.com/tags/semantic-ui">semantic-ui</a>
-    
-  </div>
-  
-  
-
 </div>
 
+
+<div class="single-content">
   <p><a href="https://cn.vuejs.org/">Vue</a> 是一个很好呀的 MVVM 框架，我最近在一个内部使用的管理后台初次使用。而 <a href="https://semantic-ui.com/">semantic-ui</a> 则是
 一个比较美观全面的 css 框架，也是我比较偏好使用的。所以，在这次重构管理后台时，这两者就被我选择使用。PS： 服务器端用的是 <a href="https://www.djangoproject.com/">Django</a>，
 也是第一次使用。</p>
@@ -243,67 +107,57 @@ new Vue({
 
 <p>其中，<code>inserted</code> 是一个钩子函数，一旦带有这个 <code>directive</code> 的元素被插入到 dom 时，这个钩子函数会被调用，从而完成我们的初始化操作。这样 vue 和 semantic-ui 就能完美共存了。</p>
 
+</div>
+
+  <div class="eof">--EOF--</div>
+
+  <div class="post-meta">
+    发表于 <time>30 May 2017, 17:03</time>
+  
+  
+  
+  
+  , 标签: 「
+    
+      <a class="post-taxonomy-tag" href="http://lecoding.com/tags/vue">vue</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://lecoding.com/tags/semantic-ui">semantic-ui</a>
+    
+」
+  
+  
+
+</div>
+
 
   
-<div class="prev-next-post pure-g">
-  <div class="pure-u-1-24" style="text-align: left;">
-    
-    <a href="http://lecoding.com/post/2017/lua-cond-statment-bytecode-generate-2/"><i class="fa fa-chevron-left"></i></a>
-    
-  </div>
-  <div class="pure-u-10-24">
+<div class="prev-next-post">
+  <div class="prev-link" style="text-align: left;">
     
     <nav class="prev">
-      <a href="http://lecoding.com/post/2017/lua-cond-statment-bytecode-generate-2/">lua 5.1 分支语句 bytecode 的生成（二）</a>
+      <a href="http://lecoding.com/post/2017/lua-cond-statment-bytecode-generate-2/">« lua 5.1 分支语句 bytecode 的生成（二）</a>
     </nav>
     
   </div>
-  <div class="pure-u-2-24">
-    &nbsp;
-  </div>
-  <div class="pure-u-10-24">
+  <div class="next-link">
     
     <nav class="next">
-      <a href="http://lecoding.com/post/2017/use-git-bisect-to-debug/">使用 git bisect 进行debug</a>
+      <a href="http://lecoding.com/post/2017/use-git-bisect-to-debug/">使用 git bisect 进行debug »</a>
     </nav>
     
   </div>
-  <div class="pure-u-1-24" style="text-align: right;">
-    
-    <a href="http://lecoding.com/post/2017/use-git-bisect-to-debug/"><i class="fa fa-chevron-right"></i></a>
-    
-  </div>
 </div>
 
 
 
   
-<div id="disqus_thread"></div>
-<script type="text/javascript">
 
-(function() {
-    
-    
-    if (window.location.hostname == "localhost")
-        return;
-
-    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-    var disqus_shortname = 'lecoding';
-    dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
-    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-})();
-</script>
-<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
 
   
-  
 </div>
 
 </div>
 </div>
-<script src="http://lecoding.com/js/ui.js"></script>
-
 
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
