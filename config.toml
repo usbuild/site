@@ -1,6 +1,6 @@
-baseurl = "http://sysfork.com/"
+baseurl = "http://lecoding.com/"
 languageCode = "zh-cn"
-title = "sys🔱fork"
+title = "乐Coding"
 theme = "blackburn"
 hasCJKLanguage = true
 
@@ -33,7 +33,7 @@ paginate = 10
   # CSS name for highlight.js
   highlightjs = "gruvbox-light"
   dateFormat = "02 Jan 2006, 15:04" 
-  disqus = "sysfork"
+  disqus = "lecoding"
   googleAnalytics = "UA-19710645-12"
 
 [social]
