@@ -2,31 +2,31 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Bytecode on 乐Coding</title>
-    <link>http://lecoding.com/tags/bytecode/</link>
+    <link>https://lecoding.com/tags/bytecode/</link>
     <description>Recent content in Bytecode on 乐Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2018. All rights reserved.</copyright>
     <lastBuildDate>Thu, 25 May 2017 14:26:47 +0800</lastBuildDate>
     
-	<atom:link href="http://lecoding.com/tags/bytecode/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://lecoding.com/tags/bytecode/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>lua 5.1 分支语句 bytecode 的生成（二）</title>
-      <link>http://lecoding.com/post/2017/lua-cond-statment-bytecode-generate-2/</link>
+      <link>https://lecoding.com/post/2017/lua-cond-statment-bytecode-generate-2/</link>
       <pubDate>Thu, 25 May 2017 14:26:47 +0800</pubDate>
       
-      <guid>http://lecoding.com/post/2017/lua-cond-statment-bytecode-generate-2/</guid>
+      <guid>https://lecoding.com/post/2017/lua-cond-statment-bytecode-generate-2/</guid>
       <description>上篇我们谈到了 IF 语句的 bytecode 生成，今天来谈谈布尔表达式与短路求值。 考虑到下面的表达式 a = a or 1024 其生成的字节码为 1 [1] GETGLOBAL 0 -1 ; a 2 [1] TEST 0 0 1 3 [1] JMP 1</description>
     </item>
     
     <item>
       <title>lua 5.1 分支语句 bytecode 的生成（一）</title>
-      <link>http://lecoding.com/post/2017/lua-cond-statment-bytecode-generate-1/</link>
+      <link>https://lecoding.com/post/2017/lua-cond-statment-bytecode-generate-1/</link>
       <pubDate>Sat, 20 May 2017 15:57:13 +0800</pubDate>
       
-      <guid>http://lecoding.com/post/2017/lua-cond-statment-bytecode-generate-1/</guid>
+      <guid>https://lecoding.com/post/2017/lua-cond-statment-bytecode-generate-1/</guid>
       <description>本文只对 IF cond THEN block {ELSEIF cond THEN block} [ELSE block] END 语法的字节码生成过程进行描述。 生成的结果 首先我们看下面的示例，仅为演示： local cond1 = true local cond2 = true if cond1 then cond1 = false elseif cond2 then cond2 =</description>
     </item>
     

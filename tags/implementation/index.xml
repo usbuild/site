@@ -2,22 +2,22 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Implementation on 乐Coding</title>
-    <link>http://lecoding.com/tags/implementation/</link>
+    <link>https://lecoding.com/tags/implementation/</link>
     <description>Recent content in Implementation on 乐Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2018. All rights reserved.</copyright>
     <lastBuildDate>Thu, 01 Sep 2016 17:40:08 +0800</lastBuildDate>
     
-	<atom:link href="http://lecoding.com/tags/implementation/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://lecoding.com/tags/implementation/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Lua Table中HashMap介绍</title>
-      <link>http://lecoding.com/post/2016/lua-hashtable-introduction/</link>
+      <link>https://lecoding.com/post/2016/lua-hashtable-introduction/</link>
       <pubDate>Thu, 01 Sep 2016 17:40:08 +0800</pubDate>
       
-      <guid>http://lecoding.com/post/2016/lua-hashtable-introduction/</guid>
+      <guid>https://lecoding.com/post/2016/lua-hashtable-introduction/</guid>
       <description>Table 在Lua中有着极其重要的应用，从核心语言实现，如short string intern， 到利用metatable实现的class，table几乎无所不能</description>
     </item>
     

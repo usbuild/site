@@ -2,13 +2,13 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Topics on 乐Coding</title>
-    <link>http://lecoding.com/topics/</link>
+    <link>https://lecoding.com/topics/</link>
     <description>Recent content in Topics on 乐Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2018. All rights reserved.</copyright>
     
-	<atom:link href="http://lecoding.com/topics/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://lecoding.com/topics/index.xml" rel="self" type="application/rss+xml" />
     
     
   </channel>

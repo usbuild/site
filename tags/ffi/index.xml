@@ -2,22 +2,22 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Ffi on 乐Coding</title>
-    <link>http://lecoding.com/tags/ffi/</link>
+    <link>https://lecoding.com/tags/ffi/</link>
     <description>Recent content in Ffi on 乐Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2018. All rights reserved.</copyright>
     <lastBuildDate>Tue, 09 May 2017 22:05:47 +0800</lastBuildDate>
     
-	<atom:link href="http://lecoding.com/tags/ffi/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://lecoding.com/tags/ffi/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>嵌入 luajit 时同时使用 ffi 和 c api 的解决方案</title>
-      <link>http://lecoding.com/post/2017/compatible-embed-luajit-ffi-load/</link>
+      <link>https://lecoding.com/post/2017/compatible-embed-luajit-ffi-load/</link>
       <pubDate>Tue, 09 May 2017 22:05:47 +0800</pubDate>
       
-      <guid>http://lecoding.com/post/2017/compatible-embed-luajit-ffi-load/</guid>
+      <guid>https://lecoding.com/post/2017/compatible-embed-luajit-ffi-load/</guid>
       <description>我们都喜欢ffi。 ffi 的接口简单易用，当使用第三方没有提供 lua 接口的库来说，使用 ffi 接入相当容易。 而且效率比较高，通过 ffi 调用的接口是可以被 jit 编译的</description>
     </item>
     
