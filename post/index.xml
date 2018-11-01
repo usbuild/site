@@ -7,10 +7,19 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2018. All rights reserved.</copyright>
-    <lastBuildDate>Mon, 21 Aug 2017 20:14:01 +0800</lastBuildDate>
+    <lastBuildDate>Thu, 01 Nov 2018 20:10:38 +0800</lastBuildDate>
     
 	<atom:link href="https://lecoding.com/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>实现一个带 JIT 的计算器</title>
+      <link>https://lecoding.com/post/2018/implement-naive-jit-calc/</link>
+      <pubDate>Thu, 01 Nov 2018 20:10:38 +0800</pubDate>
+      
+      <guid>https://lecoding.com/post/2018/implement-naive-jit-calc/</guid>
+      <description>所谓的 JIT，全称为Just In Time，一般搜索出来的结果会是“精益生产”，但是在软件行业，这个词一般是指，在程序运行过程中，动态生成代码来</description>
+    </item>
     
     <item>
       <title>入手 NodeMCU 及初步体验</title>
@@ -145,15 +154,6 @@
       
       <guid>https://lecoding.com/post/2016/lua-hashtable-introduction/</guid>
       <description>Table 在Lua中有着极其重要的应用，从核心语言实现，如short string intern， 到利用metatable实现的class，table几乎无所不能</description>
-    </item>
-    
-    <item>
-      <title>实现一个带 JIT 的计算器</title>
-      <link>https://lecoding.com/post/2018/implement-naive-jit-calc/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://lecoding.com/post/2018/implement-naive-jit-calc/</guid>
-      <description>所谓的 JIT，全称为Just In Time，一般搜索出来的结果会是“精益生产”，但是在软件行业，这个词一般是指，在程序运行过程中，动态生成代码来</description>
     </item>
     
   </channel>
