@@ -1,149 +1,149 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Posts on sys🔱fork</title>
-    <link>http://sysfork.com/post/</link>
-    <description>Recent content in Posts on sys🔱fork</description>
+    <title>Posts on 乐Coding</title>
+    <link>http://lecoding.com/post/</link>
+    <description>Recent content in Posts on 乐Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2018. All rights reserved.</copyright>
     <lastBuildDate>Mon, 21 Aug 2017 20:14:01 +0800</lastBuildDate>
     
-	<atom:link href="http://sysfork.com/post/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="http://lecoding.com/post/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>入手 NodeMCU 及初步体验</title>
-      <link>http://sysfork.com/post/2017/starting-playwith-nodemcu/</link>
+      <link>http://lecoding.com/post/2017/starting-playwith-nodemcu/</link>
       <pubDate>Mon, 21 Aug 2017 20:14:01 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/2017/starting-playwith-nodemcu/</guid>
+      <guid>http://lecoding.com/post/2017/starting-playwith-nodemcu/</guid>
       <description>最近刷微博看到有人提到 NodeMCU， 网上一查才发现其实是类似于 Arduino的开发板，不过 它使用 lua 作为开发语言，相对于 micropython 其占用内存更小，语</description>
     </item>
     
     <item>
       <title>使用 git bisect 进行debug</title>
-      <link>http://sysfork.com/post/2017/use-git-bisect-to-debug/</link>
+      <link>http://lecoding.com/post/2017/use-git-bisect-to-debug/</link>
       <pubDate>Tue, 11 Jul 2017 16:11:23 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/2017/use-git-bisect-to-debug/</guid>
+      <guid>http://lecoding.com/post/2017/use-git-bisect-to-debug/</guid>
       <description>最近在学习git的时候发现了一个有趣的命令，git bisect。这个命令是 debug 用的。我们往往在开发过程中引入一些bug，但是由于没能立即测试导</description>
     </item>
     
     <item>
       <title>在 vue 中使用 semantic-ui</title>
-      <link>http://sysfork.com/post/2017/use-semantic-ui-with-vue/</link>
+      <link>http://lecoding.com/post/2017/use-semantic-ui-with-vue/</link>
       <pubDate>Tue, 30 May 2017 17:03:21 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/2017/use-semantic-ui-with-vue/</guid>
+      <guid>http://lecoding.com/post/2017/use-semantic-ui-with-vue/</guid>
       <description>Vue 是一个很好呀的 MVVM 框架，我最近在一个内部使用的管理后台初次使用。而 semantic-ui 则是 一个比较美观全面的 css 框架，也是我比较偏好使用的。所以，在这次重构管理</description>
     </item>
     
     <item>
       <title>lua 5.1 分支语句 bytecode 的生成（二）</title>
-      <link>http://sysfork.com/post/2017/lua-cond-statment-bytecode-generate-2/</link>
+      <link>http://lecoding.com/post/2017/lua-cond-statment-bytecode-generate-2/</link>
       <pubDate>Thu, 25 May 2017 14:26:47 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/2017/lua-cond-statment-bytecode-generate-2/</guid>
+      <guid>http://lecoding.com/post/2017/lua-cond-statment-bytecode-generate-2/</guid>
       <description>上篇我们谈到了 IF 语句的 bytecode 生成，今天来谈谈布尔表达式与短路求值。 考虑到下面的表达式 a = a or 1024 其生成的字节码为 1 [1] GETGLOBAL 0 -1 ; a 2 [1] TEST 0 0 1 3 [1] JMP 1</description>
     </item>
     
     <item>
       <title>lua 5.1 分支语句 bytecode 的生成（一）</title>
-      <link>http://sysfork.com/post/2017/lua-cond-statment-bytecode-generate-1/</link>
+      <link>http://lecoding.com/post/2017/lua-cond-statment-bytecode-generate-1/</link>
       <pubDate>Sat, 20 May 2017 15:57:13 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/2017/lua-cond-statment-bytecode-generate-1/</guid>
+      <guid>http://lecoding.com/post/2017/lua-cond-statment-bytecode-generate-1/</guid>
       <description>本文只对 IF cond THEN block {ELSEIF cond THEN block} [ELSE block] END 语法的字节码生成过程进行描述。 生成的结果 首先我们看下面的示例，仅为演示： local cond1 = true local cond2 = true if cond1 then cond1 = false elseif cond2 then cond2 =</description>
     </item>
     
     <item>
       <title>解析lua gc 中的参数控制</title>
-      <link>http://sysfork.com/post/2017/lua-gc-paramter-internal/</link>
+      <link>http://lecoding.com/post/2017/lua-gc-paramter-internal/</link>
       <pubDate>Wed, 10 May 2017 20:05:41 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/2017/lua-gc-paramter-internal/</guid>
+      <guid>http://lecoding.com/post/2017/lua-gc-paramter-internal/</guid>
       <description>lua gc 调优主要涉及到两个两个参数setpause和setstepmul，使用方法如下： collectgarbage(&amp;quot;setpause&amp;quot;, 200) collectgarbage(&amp;quot;setstepmul&amp;quot;, 200) 这两个值的默认值都是200，那么这代表着什么意思</description>
     </item>
     
     <item>
       <title>一个由 libcurl 导致的 core 分析</title>
-      <link>http://sysfork.com/post/2017/a-core-cause-by-curl-sighandler/</link>
+      <link>http://lecoding.com/post/2017/a-core-cause-by-curl-sighandler/</link>
       <pubDate>Wed, 10 May 2017 15:31:06 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/2017/a-core-cause-by-curl-sighandler/</guid>
+      <guid>http://lecoding.com/post/2017/a-core-cause-by-curl-sighandler/</guid>
       <description>最近我们的项目有多个core， 使用gdb查看如下： (gdb) info threads Id Target Id Frame 5 Thread 0x7f28943d9700 (LWP 11079) 0x00007f2895cc5c03 in epoll_wait () at ../sysdeps/unix/syscall-template.S:81 4 Thread 0x7f2895bdc700 (LWP 11076) 0x00007f2895cbcaed in poll () at ../sysdeps/unix/syscall-template.S:81 3 Thread 0x7f28953db700 (LWP 11077) 0x00007f2895cc5c03 in epoll_wait () at ../sysdeps/unix/syscall-template.S:81 2 Thread 0x7f2894bda700 (LWP 11078)</description>
     </item>
     
     <item>
       <title>嵌入 luajit 时同时使用 ffi 和 c api 的解决方案</title>
-      <link>http://sysfork.com/post/2017/compatible-embed-luajit-ffi-load/</link>
+      <link>http://lecoding.com/post/2017/compatible-embed-luajit-ffi-load/</link>
       <pubDate>Tue, 09 May 2017 22:05:47 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/2017/compatible-embed-luajit-ffi-load/</guid>
+      <guid>http://lecoding.com/post/2017/compatible-embed-luajit-ffi-load/</guid>
       <description>我们都喜欢ffi。 ffi 的接口简单易用，当使用第三方没有提供 lua 接口的库来说，使用 ffi 接入相当容易。 而且效率比较高，通过 ffi 调用的接口是可以被 jit 编译的</description>
     </item>
     
     <item>
       <title>一种在elf中集成脚本文件的方案</title>
-      <link>http://sysfork.com/post/2017/a-solution-for-elf-integrate-scripts/</link>
+      <link>http://lecoding.com/post/2017/a-solution-for-elf-integrate-scripts/</link>
       <pubDate>Mon, 01 May 2017 22:30:00 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/2017/a-solution-for-elf-integrate-scripts/</guid>
+      <guid>http://lecoding.com/post/2017/a-solution-for-elf-integrate-scripts/</guid>
       <description>进行游戏服务器开发时，我们将C++的部分称之为引擎层，而lua称之为脚本层。但是往往有些核心逻辑是各个游戏公用的， 或者说有些引擎层的代码用C</description>
     </item>
     
     <item>
       <title>使用C&#43;&#43; map实现注册回调的功能</title>
-      <link>http://sysfork.com/post/2017/cpp-function-container/</link>
+      <link>http://lecoding.com/post/2017/cpp-function-container/</link>
       <pubDate>Sat, 29 Apr 2017 15:38:38 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/2017/cpp-function-container/</guid>
+      <guid>http://lecoding.com/post/2017/cpp-function-container/</guid>
       <description>在C++/lua混合编程中，往往存在需要回调的情况。比如在游戏中，逻辑进程中的脚本需要一个数据库访问操作，如下: dbmgr.query({name=&amp;quot;hello&amp;quot;}, function(ret) -- do something end) 由于dbmgr.</description>
     </item>
     
     <item>
       <title>lua与C交互中的死循环检测</title>
-      <link>http://sysfork.com/post/2017/lua-c-detect-inifinite-loop/</link>
+      <link>http://lecoding.com/post/2017/lua-c-detect-inifinite-loop/</link>
       <pubDate>Fri, 21 Apr 2017 17:37:30 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/2017/lua-c-detect-inifinite-loop/</guid>
+      <guid>http://lecoding.com/post/2017/lua-c-detect-inifinite-loop/</guid>
       <description>现在很多游戏引擎都是C++ + lua的结构，一旦某个服务器开发人员大意写出死循环代码，很容易导致服务无响应，影响服务器稳定。所以引擎中最好能提</description>
     </item>
     
     <item>
       <title>浅谈C&#43;&#43;中的地址对齐</title>
-      <link>http://sysfork.com/post/2016/about-cpp-alignment/</link>
+      <link>http://lecoding.com/post/2016/about-cpp-alignment/</link>
       <pubDate>Sun, 25 Sep 2016 09:13:27 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/2016/about-cpp-alignment/</guid>
+      <guid>http://lecoding.com/post/2016/about-cpp-alignment/</guid>
       <description>动机 最近在整理C++11中的新增特性，其中有一个alignas关键字。在学习这个的时候顺便研究了 下C/C++中的字节对齐问题，发现有很多可以</description>
     </item>
     
     <item>
       <title>理解Linux下动态链接库延迟绑定</title>
-      <link>http://sysfork.com/post/2016/linux-dynamic-lib-lazy-load/</link>
+      <link>http://lecoding.com/post/2016/linux-dynamic-lib-lazy-load/</link>
       <pubDate>Wed, 07 Sep 2016 22:08:20 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/2016/linux-dynamic-lib-lazy-load/</guid>
+      <guid>http://lecoding.com/post/2016/linux-dynamic-lib-lazy-load/</guid>
       <description>在编译动态链接库时，为了保证能被正常使用，一般我们会加上-fPIC参数。在使用的动态链接库中的函数时，Linux使用了一种 叫延迟绑定的技术实</description>
     </item>
     
     <item>
       <title>Hugo 集成 Mathjax和graphviz</title>
-      <link>http://sysfork.com/post/2016/integrate-mathjax-viz-with-hugo/</link>
+      <link>http://lecoding.com/post/2016/integrate-mathjax-viz-with-hugo/</link>
       <pubDate>Fri, 02 Sep 2016 09:41:17 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/2016/integrate-mathjax-viz-with-hugo/</guid>
+      <guid>http://lecoding.com/post/2016/integrate-mathjax-viz-with-hugo/</guid>
       <description>hugo是一个比hexo更简单易用的静态页面生成工具，其只有一个可执行文件，部署环境简单，本博客就是基于hugo构建的。 我们在写博客的时候经</description>
     </item>
     
     <item>
       <title>Lua Table中HashMap介绍</title>
-      <link>http://sysfork.com/post/2016/lua-hashtable-introduction/</link>
+      <link>http://lecoding.com/post/2016/lua-hashtable-introduction/</link>
       <pubDate>Thu, 01 Sep 2016 17:40:08 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/2016/lua-hashtable-introduction/</guid>
+      <guid>http://lecoding.com/post/2016/lua-hashtable-introduction/</guid>
       <description>Table 在Lua中有着极其重要的应用，从核心语言实现，如short string intern， 到利用metatable实现的class，table几乎无所不能</description>
     </item>
     

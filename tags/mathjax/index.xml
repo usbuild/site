@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Mathjax on sys🔱fork</title>
-    <link>http://sysfork.com/tags/mathjax/</link>
-    <description>Recent content in Mathjax on sys🔱fork</description>
+    <title>Mathjax on 乐Coding</title>
+    <link>http://lecoding.com/tags/mathjax/</link>
+    <description>Recent content in Mathjax on 乐Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2018. All rights reserved.</copyright>
     <lastBuildDate>Fri, 02 Sep 2016 09:41:17 +0800</lastBuildDate>
     
-	<atom:link href="http://sysfork.com/tags/mathjax/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="http://lecoding.com/tags/mathjax/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Hugo 集成 Mathjax和graphviz</title>
-      <link>http://sysfork.com/post/2016/integrate-mathjax-viz-with-hugo/</link>
+      <link>http://lecoding.com/post/2016/integrate-mathjax-viz-with-hugo/</link>
       <pubDate>Fri, 02 Sep 2016 09:41:17 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/2016/integrate-mathjax-viz-with-hugo/</guid>
+      <guid>http://lecoding.com/post/2016/integrate-mathjax-viz-with-hugo/</guid>
       <description>hugo是一个比hexo更简单易用的静态页面生成工具，其只有一个可执行文件，部署环境简单，本博客就是基于hugo构建的。 我们在写博客的时候经</description>
     </item>
     

@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Linux on sys🔱fork</title>
-    <link>http://sysfork.com/tags/linux/</link>
-    <description>Recent content in Linux on sys🔱fork</description>
+    <title>Linux on 乐Coding</title>
+    <link>http://lecoding.com/tags/linux/</link>
+    <description>Recent content in Linux on 乐Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2018. All rights reserved.</copyright>
     <lastBuildDate>Wed, 07 Sep 2016 22:08:20 +0800</lastBuildDate>
     
-	<atom:link href="http://sysfork.com/tags/linux/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="http://lecoding.com/tags/linux/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>理解Linux下动态链接库延迟绑定</title>
-      <link>http://sysfork.com/post/2016/linux-dynamic-lib-lazy-load/</link>
+      <link>http://lecoding.com/post/2016/linux-dynamic-lib-lazy-load/</link>
       <pubDate>Wed, 07 Sep 2016 22:08:20 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/2016/linux-dynamic-lib-lazy-load/</guid>
+      <guid>http://lecoding.com/post/2016/linux-dynamic-lib-lazy-load/</guid>
       <description>在编译动态链接库时，为了保证能被正常使用，一般我们会加上-fPIC参数。在使用的动态链接库中的函数时，Linux使用了一种 叫延迟绑定的技术实</description>
     </item>
     

@@ -7,7 +7,7 @@
   <meta name="description" content="">
   <meta name="generator" content="Hugo 0.42.1" />
 
-  <title>入手 NodeMCU 及初步体验 &middot; sys🔱fork</title>
+  <title>入手 NodeMCU 及初步体验 &middot; 乐Coding</title>
 
   
   
@@ -21,13 +21,13 @@
   <!--<![endif]-->
 
   <!--[if lte IE 8]>
-  <link rel="stylesheet" href="http://sysfork.com/css/side-menu-old-ie.css">
+  <link rel="stylesheet" href="http://lecoding.com/css/side-menu-old-ie.css">
   <![endif]-->
   <!--[if gt IE 8]><!-->
-  <link rel="stylesheet" href="http://sysfork.com/css/side-menu.css">
+  <link rel="stylesheet" href="http://lecoding.com/css/side-menu.css">
   <!--<![endif]-->
 
-  <link rel="stylesheet" href="http://sysfork.com/css/blackburn.css">
+  <link rel="stylesheet" href="http://lecoding.com/css/blackburn.css">
 
   
   <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css">
@@ -44,7 +44,7 @@
   <script>hljs.initHighlightingOnLoad();</script>
   
 
-  <link rel="shortcut icon" href="http://sysfork.com/img/favicon.ico" type="image/x-icon" />
+  <link rel="shortcut icon" href="http://lecoding.com/img/favicon.ico" type="image/x-icon" />
 
 </head>
 
@@ -66,13 +66,13 @@
       
       
         <li class="pure-menu-item">
-          <a class="pure-menu-link" href="http://sysfork.com/about/"><i class='fa fa-user fa-fw'></i>About</a>
+          <a class="pure-menu-link" href="http://lecoding.com/about/"><i class='fa fa-user fa-fw'></i>About</a>
       
         </li>
       
       
         <li class="pure-menu-item">
-          <a class="pure-menu-link" href="http://sysfork.com/"><i class='fa fa-home fa-fw'></i>Home</a>
+          <a class="pure-menu-link" href="http://lecoding.com/"><i class='fa fa-home fa-fw'></i>Home</a>
       
         </li>
       
@@ -184,7 +184,7 @@
   <div>
     <i class="fa fa-tags fa-fw"></i>
     
-      <a class="post-taxonomy-tag" href="http://sysfork.com/tags/nodemcu">nodemcu</a>
+      <a class="post-taxonomy-tag" href="http://lecoding.com/tags/nodemcu">nodemcu</a>
     
   </div>
   
@@ -196,24 +196,24 @@
 它使用 lua 作为开发语言，相对于 micropython 其占用内存更小，语言的核心库也很简单。 同时，NodeMCU 集成了 <a href="http://espressif.com/zh-hans/products/hardware/esp8266ex/overview">ESP8266</a>
 这种廉价的 WIFI 芯片，使得其支持一定的网络功能。去淘宝搜索一下</p>
 
-<p><center><img src="http://sysfork.com/img/2017/nodemcu/taobao-search-nodemcu.png" width="450px"></center></p>
+<p><center><img src="http://lecoding.com/img/2017/nodemcu/taobao-search-nodemcu.png" width="450px"></center></p>
 
 <p>价格也是非常便宜。我随便找了一家店铺买了两个，总共不到 40 块钱。</p>
 
 <p>最终到手就是这个啦：
-<center><img src="http://sysfork.com/img/2017/nodemcu/nodemc-board.png" width="450px"></center></p>
+<center><img src="http://lecoding.com/img/2017/nodemcu/nodemc-board.png" width="450px"></center></p>
 
 <p>这块板子直接支持 microUSB 接口，不用自己使用 USB-TTL 来连了，省了不少麻烦。连接电脑后（注意有些USB线只支持充电，我找了两条线都用不了，换了第三根数据线才脸上），会自动安装
 驱动，系统会显示多了一个 COM 口。</p>
 
-<p><center><img src="http://sysfork.com/img/2017/nodemcu/devicemanager.png" width="450px"></center></p>
+<p><center><img src="http://lecoding.com/img/2017/nodemcu/devicemanager.png" width="450px"></center></p>
 
 <p>连接上电脑后第一件事就是刷机，这里是固件的地址 <a href="https://github.com/nodemcu/nodemcu-firmware">https://github.com/nodemcu/nodemcu-firmware</a>， 当然你也可以刷
 <a href="https://docs.micropython.org/en/latest/esp8266/esp8266/tutorial/intro.html">MicroPython</a>。由于固件编译环境比较麻烦，所以有爱好者做了一个在线编译的网站
 <a href="https://nodemcu-build.com/">https://nodemcu-build.com/</a>，你可以选择分支和模块，实现定制。提交任务后，当它开始编译和结束编译的时候会发送邮件给你留下的邮箱。同时，会推荐一个
  flash 工具，其实就是 pyflasher 的 GUI 版，你可以下载下来使用。接下来启动这个工具：</p>
 
-<p><center><img src="http://sysfork.com/img/2017/nodemcu/pyflash.png" width="450px"></center></p>
+<p><center><img src="http://lecoding.com/img/2017/nodemcu/pyflash.png" width="450px"></center></p>
 
 <p>由于我买的这个板存储超过4M，所以选择的是 DIO 模式，同时由于是第一次使用，所以直接选择清除所有数据。刷机很快，不到1min。之后就可以使用啦。</p>
 
@@ -340,13 +340,13 @@ end
 <div class="prev-next-post pure-g">
   <div class="pure-u-1-24" style="text-align: left;">
     
-    <a href="http://sysfork.com/post/2017/use-git-bisect-to-debug/"><i class="fa fa-chevron-left"></i></a>
+    <a href="http://lecoding.com/post/2017/use-git-bisect-to-debug/"><i class="fa fa-chevron-left"></i></a>
     
   </div>
   <div class="pure-u-10-24">
     
     <nav class="prev">
-      <a href="http://sysfork.com/post/2017/use-git-bisect-to-debug/">使用 git bisect 进行debug</a>
+      <a href="http://lecoding.com/post/2017/use-git-bisect-to-debug/">使用 git bisect 进行debug</a>
     </nav>
     
   </div>
@@ -374,7 +374,7 @@ end
         return;
 
     var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-    var disqus_shortname = 'sysfork';
+    var disqus_shortname = 'lecoding';
     dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
     (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
 })();
@@ -388,7 +388,7 @@ end
 
 </div>
 </div>
-<script src="http://sysfork.com/js/ui.js"></script>
+<script src="http://lecoding.com/js/ui.js"></script>
 
 
 <script>

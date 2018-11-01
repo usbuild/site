@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Meta Programming on sys🔱fork</title>
-    <link>http://sysfork.com/tags/meta-programming/</link>
-    <description>Recent content in Meta Programming on sys🔱fork</description>
+    <title>Meta Programming on 乐Coding</title>
+    <link>http://lecoding.com/tags/meta-programming/</link>
+    <description>Recent content in Meta Programming on 乐Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2018. All rights reserved.</copyright>
     <lastBuildDate>Sat, 29 Apr 2017 15:38:38 +0800</lastBuildDate>
     
-	<atom:link href="http://sysfork.com/tags/meta-programming/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="http://lecoding.com/tags/meta-programming/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>使用C&#43;&#43; map实现注册回调的功能</title>
-      <link>http://sysfork.com/post/2017/cpp-function-container/</link>
+      <link>http://lecoding.com/post/2017/cpp-function-container/</link>
       <pubDate>Sat, 29 Apr 2017 15:38:38 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/2017/cpp-function-container/</guid>
+      <guid>http://lecoding.com/post/2017/cpp-function-container/</guid>
       <description>在C++/lua混合编程中，往往存在需要回调的情况。比如在游戏中，逻辑进程中的脚本需要一个数据库访问操作，如下: dbmgr.query({name=&amp;quot;hello&amp;quot;}, function(ret) -- do something end) 由于dbmgr.</description>
     </item>
     

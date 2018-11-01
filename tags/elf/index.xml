@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Elf on sys🔱fork</title>
-    <link>http://sysfork.com/tags/elf/</link>
-    <description>Recent content in Elf on sys🔱fork</description>
+    <title>Elf on 乐Coding</title>
+    <link>http://lecoding.com/tags/elf/</link>
+    <description>Recent content in Elf on 乐Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2018. All rights reserved.</copyright>
     <lastBuildDate>Mon, 01 May 2017 22:30:00 +0800</lastBuildDate>
     
-	<atom:link href="http://sysfork.com/tags/elf/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="http://lecoding.com/tags/elf/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>一种在elf中集成脚本文件的方案</title>
-      <link>http://sysfork.com/post/2017/a-solution-for-elf-integrate-scripts/</link>
+      <link>http://lecoding.com/post/2017/a-solution-for-elf-integrate-scripts/</link>
       <pubDate>Mon, 01 May 2017 22:30:00 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/2017/a-solution-for-elf-integrate-scripts/</guid>
+      <guid>http://lecoding.com/post/2017/a-solution-for-elf-integrate-scripts/</guid>
       <description>进行游戏服务器开发时，我们将C++的部分称之为引擎层，而lua称之为脚本层。但是往往有些核心逻辑是各个游戏公用的， 或者说有些引擎层的代码用C</description>
     </item>
     
     <item>
       <title>理解Linux下动态链接库延迟绑定</title>
-      <link>http://sysfork.com/post/2016/linux-dynamic-lib-lazy-load/</link>
+      <link>http://lecoding.com/post/2016/linux-dynamic-lib-lazy-load/</link>
       <pubDate>Wed, 07 Sep 2016 22:08:20 +0800</pubDate>
       
-      <guid>http://sysfork.com/post/2016/linux-dynamic-lib-lazy-load/</guid>
+      <guid>http://lecoding.com/post/2016/linux-dynamic-lib-lazy-load/</guid>
       <description>在编译动态链接库时，为了保证能被正常使用，一般我们会加上-fPIC参数。在使用的动态链接库中的函数时，Linux使用了一种 叫延迟绑定的技术实</description>
     </item>
     
