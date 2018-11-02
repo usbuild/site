@@ -2,22 +2,22 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Vue on 乐Coding</title>
-    <link>https://lecoding.com/tags/vue/</link>
+    <link>/tags/vue/</link>
     <description>Recent content in Vue on 乐Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2018. All rights reserved.</copyright>
     <lastBuildDate>Tue, 30 May 2017 17:03:21 +0800</lastBuildDate>
     
-	<atom:link href="https://lecoding.com/tags/vue/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/tags/vue/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>在 vue 中使用 semantic-ui</title>
-      <link>https://lecoding.com/post/2017/use-semantic-ui-with-vue/</link>
+      <link>/post/2017/use-semantic-ui-with-vue/</link>
       <pubDate>Tue, 30 May 2017 17:03:21 +0800</pubDate>
       
-      <guid>https://lecoding.com/post/2017/use-semantic-ui-with-vue/</guid>
+      <guid>/post/2017/use-semantic-ui-with-vue/</guid>
       <description>Vue 是一个很好呀的 MVVM 框架，我最近在一个内部使用的管理后台初次使用。而 semantic-ui 则是 一个比较美观全面的 css 框架，也是我比较偏好使用的。所以，在这次重构管理</description>
     </item>
     

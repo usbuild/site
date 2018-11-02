@@ -2,31 +2,31 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Luajit on 乐Coding</title>
-    <link>https://lecoding.com/tags/luajit/</link>
+    <link>/tags/luajit/</link>
     <description>Recent content in Luajit on 乐Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2018. All rights reserved.</copyright>
     <lastBuildDate>Thu, 01 Nov 2018 20:10:38 +0800</lastBuildDate>
     
-	<atom:link href="https://lecoding.com/tags/luajit/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/tags/luajit/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>实现一个带 JIT 的计算器</title>
-      <link>https://lecoding.com/post/2018/implement-naive-jit-calc/</link>
+      <link>/post/2018/implement-naive-jit-calc/</link>
       <pubDate>Thu, 01 Nov 2018 20:10:38 +0800</pubDate>
       
-      <guid>https://lecoding.com/post/2018/implement-naive-jit-calc/</guid>
+      <guid>/post/2018/implement-naive-jit-calc/</guid>
       <description>所谓的 JIT，全称为Just In Time，一般搜索出来的结果会是“精益生产”，但是在软件行业，这个词一般是指，在程序运行过程中，动态生成代码来</description>
     </item>
     
     <item>
       <title>嵌入 luajit 时同时使用 ffi 和 c api 的解决方案</title>
-      <link>https://lecoding.com/post/2017/compatible-embed-luajit-ffi-load/</link>
+      <link>/post/2017/compatible-embed-luajit-ffi-load/</link>
       <pubDate>Tue, 09 May 2017 22:05:47 +0800</pubDate>
       
-      <guid>https://lecoding.com/post/2017/compatible-embed-luajit-ffi-load/</guid>
+      <guid>/post/2017/compatible-embed-luajit-ffi-load/</guid>
       <description>我们都喜欢ffi。 ffi 的接口简单易用，当使用第三方没有提供 lua 接口的库来说，使用 ffi 接入相当容易。 而且效率比较高，通过 ffi 调用的接口是可以被 jit 编译的</description>
     </item>
     

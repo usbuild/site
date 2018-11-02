@@ -2,22 +2,22 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Viz on 乐Coding</title>
-    <link>https://lecoding.com/tags/viz/</link>
+    <link>/tags/viz/</link>
     <description>Recent content in Viz on 乐Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2018. All rights reserved.</copyright>
     <lastBuildDate>Fri, 02 Sep 2016 09:41:17 +0800</lastBuildDate>
     
-	<atom:link href="https://lecoding.com/tags/viz/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/tags/viz/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Hugo 集成 Mathjax和graphviz</title>
-      <link>https://lecoding.com/post/2016/integrate-mathjax-viz-with-hugo/</link>
+      <link>/post/2016/integrate-mathjax-viz-with-hugo/</link>
       <pubDate>Fri, 02 Sep 2016 09:41:17 +0800</pubDate>
       
-      <guid>https://lecoding.com/post/2016/integrate-mathjax-viz-with-hugo/</guid>
+      <guid>/post/2016/integrate-mathjax-viz-with-hugo/</guid>
       <description>hugo是一个比hexo更简单易用的静态页面生成工具，其只有一个可执行文件，部署环境简单，本博客就是基于hugo构建的。 我们在写博客的时候经</description>
     </item>
     

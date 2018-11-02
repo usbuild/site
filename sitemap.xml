@@ -3,228 +3,228 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://lecoding.com/post/2018/implement-naive-jit-calc/</loc>
+    <loc>/post/2018/implement-naive-jit-calc/</loc>
     <lastmod>2018-11-01T20:10:38+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://lecoding.com/post/2017/starting-playwith-nodemcu/</loc>
+    <loc>/post/2017/starting-playwith-nodemcu/</loc>
     <lastmod>2017-08-21T20:14:01+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://lecoding.com/post/2017/use-git-bisect-to-debug/</loc>
+    <loc>/post/2017/use-git-bisect-to-debug/</loc>
     <lastmod>2017-07-11T16:11:23+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://lecoding.com/post/2017/use-semantic-ui-with-vue/</loc>
+    <loc>/post/2017/use-semantic-ui-with-vue/</loc>
     <lastmod>2017-05-30T17:03:21+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://lecoding.com/post/2017/lua-cond-statment-bytecode-generate-2/</loc>
+    <loc>/post/2017/lua-cond-statment-bytecode-generate-2/</loc>
     <lastmod>2017-05-25T14:26:47+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://lecoding.com/post/2017/lua-cond-statment-bytecode-generate-1/</loc>
+    <loc>/post/2017/lua-cond-statment-bytecode-generate-1/</loc>
     <lastmod>2017-05-20T15:57:13+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://lecoding.com/post/2017/lua-gc-paramter-internal/</loc>
+    <loc>/post/2017/lua-gc-paramter-internal/</loc>
     <lastmod>2017-05-10T20:05:41+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://lecoding.com/post/2017/a-core-cause-by-curl-sighandler/</loc>
+    <loc>/post/2017/a-core-cause-by-curl-sighandler/</loc>
     <lastmod>2017-05-10T15:31:06+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://lecoding.com/post/2017/compatible-embed-luajit-ffi-load/</loc>
+    <loc>/post/2017/compatible-embed-luajit-ffi-load/</loc>
     <lastmod>2017-05-09T22:05:47+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://lecoding.com/post/2017/a-solution-for-elf-integrate-scripts/</loc>
+    <loc>/post/2017/a-solution-for-elf-integrate-scripts/</loc>
     <lastmod>2017-05-01T22:30:00+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://lecoding.com/post/2017/cpp-function-container/</loc>
+    <loc>/post/2017/cpp-function-container/</loc>
     <lastmod>2017-04-29T15:38:38+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://lecoding.com/post/2017/lua-c-detect-inifinite-loop/</loc>
+    <loc>/post/2017/lua-c-detect-inifinite-loop/</loc>
     <lastmod>2017-04-21T17:37:30+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://lecoding.com/post/2016/about-cpp-alignment/</loc>
+    <loc>/post/2016/about-cpp-alignment/</loc>
     <lastmod>2016-09-25T09:13:27+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://lecoding.com/about/</loc>
+    <loc>/about/</loc>
     <lastmod>2016-09-08T22:57:34+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://lecoding.com/post/2016/linux-dynamic-lib-lazy-load/</loc>
+    <loc>/post/2016/linux-dynamic-lib-lazy-load/</loc>
     <lastmod>2016-09-07T22:08:20+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://lecoding.com/post/2016/integrate-mathjax-viz-with-hugo/</loc>
+    <loc>/post/2016/integrate-mathjax-viz-with-hugo/</loc>
     <lastmod>2016-09-02T09:41:17+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://lecoding.com/post/2016/lua-hashtable-introduction/</loc>
+    <loc>/post/2016/lua-hashtable-introduction/</loc>
     <lastmod>2016-09-01T17:40:08+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://lecoding.com/archives/</loc>
+    <loc>/archives/</loc>
   </url>
   
   <url>
-    <loc>https://lecoding.com/tags/bytecode/</loc>
+    <loc>/tags/bytecode/</loc>
     <lastmod>2017-05-25T14:26:47+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://lecoding.com/tags/c&#43;&#43;/</loc>
+    <loc>/tags/c&#43;&#43;/</loc>
     <lastmod>2017-04-29T15:38:38+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://lecoding.com/tags/elf/</loc>
+    <loc>/tags/elf/</loc>
     <lastmod>2017-05-01T22:30:00+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://lecoding.com/tags/ffi/</loc>
+    <loc>/tags/ffi/</loc>
     <lastmod>2017-05-09T22:05:47+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://lecoding.com/tags/game/</loc>
+    <loc>/tags/game/</loc>
     <lastmod>2017-04-21T17:37:30+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://lecoding.com/tags/gc/</loc>
+    <loc>/tags/gc/</loc>
     <lastmod>2017-05-10T20:05:41+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://lecoding.com/tags/hugo/</loc>
+    <loc>/tags/hugo/</loc>
     <lastmod>2016-09-02T09:41:17+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://lecoding.com/tags/implementation/</loc>
+    <loc>/tags/implementation/</loc>
     <lastmod>2016-09-01T17:40:08+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://lecoding.com/tags/jit/</loc>
+    <loc>/tags/jit/</loc>
     <lastmod>2018-11-01T20:10:38+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://lecoding.com/topics/jit/</loc>
+    <loc>/topics/jit/</loc>
     <lastmod>2018-11-01T20:10:38+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://lecoding.com/tags/linux/</loc>
+    <loc>/tags/linux/</loc>
     <lastmod>2016-09-07T22:08:20+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://lecoding.com/tags/lua/</loc>
+    <loc>/tags/lua/</loc>
     <lastmod>2017-05-25T14:26:47+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://lecoding.com/tags/luajit/</loc>
+    <loc>/tags/luajit/</loc>
     <lastmod>2018-11-01T20:10:38+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://lecoding.com/tags/mathjax/</loc>
+    <loc>/tags/mathjax/</loc>
     <lastmod>2016-09-02T09:41:17+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://lecoding.com/tags/meta-programming/</loc>
+    <loc>/tags/meta-programming/</loc>
     <lastmod>2017-04-29T15:38:38+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://lecoding.com/tags/nodemcu/</loc>
+    <loc>/tags/nodemcu/</loc>
     <lastmod>2017-08-21T20:14:01+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://lecoding.com/post/</loc>
+    <loc>/post/</loc>
     <lastmod>2018-11-01T20:10:38+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://lecoding.com/tags/semantic-ui/</loc>
+    <loc>/tags/semantic-ui/</loc>
     <lastmod>2017-05-30T17:03:21+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://lecoding.com/tags/</loc>
+    <loc>/tags/</loc>
     <lastmod>2017-05-25T14:26:47+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://lecoding.com/topics/</loc>
+    <loc>/topics/</loc>
     <lastmod>2018-11-01T20:10:38+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://lecoding.com/tags/viz/</loc>
+    <loc>/tags/viz/</loc>
     <lastmod>2016-09-02T09:41:17+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://lecoding.com/tags/vue/</loc>
+    <loc>/tags/vue/</loc>
     <lastmod>2017-05-30T17:03:21+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://lecoding.com/</loc>
+    <loc>/</loc>
     <lastmod>2018-11-01T20:10:38+08:00</lastmod>
     <priority>0</priority>
   </url>

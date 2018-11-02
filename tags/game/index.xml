@@ -2,22 +2,22 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Game on 乐Coding</title>
-    <link>https://lecoding.com/tags/game/</link>
+    <link>/tags/game/</link>
     <description>Recent content in Game on 乐Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2018. All rights reserved.</copyright>
     <lastBuildDate>Fri, 21 Apr 2017 17:37:30 +0800</lastBuildDate>
     
-	<atom:link href="https://lecoding.com/tags/game/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/tags/game/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>lua与C交互中的死循环检测</title>
-      <link>https://lecoding.com/post/2017/lua-c-detect-inifinite-loop/</link>
+      <link>/post/2017/lua-c-detect-inifinite-loop/</link>
       <pubDate>Fri, 21 Apr 2017 17:37:30 +0800</pubDate>
       
-      <guid>https://lecoding.com/post/2017/lua-c-detect-inifinite-loop/</guid>
+      <guid>/post/2017/lua-c-detect-inifinite-loop/</guid>
       <description>现在很多游戏引擎都是C++ + lua的结构，一旦某个服务器开发人员大意写出死循环代码，很容易导致服务无响应，影响服务器稳定。所以引擎中最好能提</description>
     </item>
     

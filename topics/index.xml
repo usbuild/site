@@ -2,22 +2,22 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Topics on 乐Coding</title>
-    <link>https://lecoding.com/topics/</link>
+    <link>/topics/</link>
     <description>Recent content in Topics on 乐Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2018. All rights reserved.</copyright>
     <lastBuildDate>Thu, 01 Nov 2018 20:10:38 +0800</lastBuildDate>
     
-	<atom:link href="https://lecoding.com/topics/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/topics/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Jit</title>
-      <link>https://lecoding.com/topics/jit/</link>
+      <link>/topics/jit/</link>
       <pubDate>Thu, 01 Nov 2018 20:10:38 +0800</pubDate>
       
-      <guid>https://lecoding.com/topics/jit/</guid>
+      <guid>/topics/jit/</guid>
       <description></description>
     </item>
     

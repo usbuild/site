@@ -2,67 +2,67 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Lua on 乐Coding</title>
-    <link>https://lecoding.com/tags/lua/</link>
+    <link>/tags/lua/</link>
     <description>Recent content in Lua on 乐Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2018. All rights reserved.</copyright>
     <lastBuildDate>Thu, 25 May 2017 14:26:47 +0800</lastBuildDate>
     
-	<atom:link href="https://lecoding.com/tags/lua/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/tags/lua/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>lua 5.1 分支语句 bytecode 的生成（二）</title>
-      <link>https://lecoding.com/post/2017/lua-cond-statment-bytecode-generate-2/</link>
+      <link>/post/2017/lua-cond-statment-bytecode-generate-2/</link>
       <pubDate>Thu, 25 May 2017 14:26:47 +0800</pubDate>
       
-      <guid>https://lecoding.com/post/2017/lua-cond-statment-bytecode-generate-2/</guid>
+      <guid>/post/2017/lua-cond-statment-bytecode-generate-2/</guid>
       <description>上篇我们谈到了 IF 语句的 bytecode 生成，今天来谈谈布尔表达式与短路求值。 考虑到下面的表达式 a = a or 1024 其生成的字节码为 1 [1] GETGLOBAL 0 -1 ; a 2 [1] TEST 0 0 1 3 [1] JMP 1</description>
     </item>
     
     <item>
       <title>lua 5.1 分支语句 bytecode 的生成（一）</title>
-      <link>https://lecoding.com/post/2017/lua-cond-statment-bytecode-generate-1/</link>
+      <link>/post/2017/lua-cond-statment-bytecode-generate-1/</link>
       <pubDate>Sat, 20 May 2017 15:57:13 +0800</pubDate>
       
-      <guid>https://lecoding.com/post/2017/lua-cond-statment-bytecode-generate-1/</guid>
+      <guid>/post/2017/lua-cond-statment-bytecode-generate-1/</guid>
       <description>本文只对 IF cond THEN block {ELSEIF cond THEN block} [ELSE block] END 语法的字节码生成过程进行描述。 生成的结果 首先我们看下面的示例，仅为演示： local cond1 = true local cond2 = true if cond1 then cond1 = false elseif cond2 then cond2 =</description>
     </item>
     
     <item>
       <title>解析lua gc 中的参数控制</title>
-      <link>https://lecoding.com/post/2017/lua-gc-paramter-internal/</link>
+      <link>/post/2017/lua-gc-paramter-internal/</link>
       <pubDate>Wed, 10 May 2017 20:05:41 +0800</pubDate>
       
-      <guid>https://lecoding.com/post/2017/lua-gc-paramter-internal/</guid>
+      <guid>/post/2017/lua-gc-paramter-internal/</guid>
       <description>lua gc 调优主要涉及到两个两个参数setpause和setstepmul，使用方法如下： collectgarbage(&amp;quot;setpause&amp;quot;, 200) collectgarbage(&amp;quot;setstepmul&amp;quot;, 200) 这两个值的默认值都是200，那么这代表着什么意思</description>
     </item>
     
     <item>
       <title>一种在elf中集成脚本文件的方案</title>
-      <link>https://lecoding.com/post/2017/a-solution-for-elf-integrate-scripts/</link>
+      <link>/post/2017/a-solution-for-elf-integrate-scripts/</link>
       <pubDate>Mon, 01 May 2017 22:30:00 +0800</pubDate>
       
-      <guid>https://lecoding.com/post/2017/a-solution-for-elf-integrate-scripts/</guid>
+      <guid>/post/2017/a-solution-for-elf-integrate-scripts/</guid>
       <description>进行游戏服务器开发时，我们将C++的部分称之为引擎层，而lua称之为脚本层。但是往往有些核心逻辑是各个游戏公用的， 或者说有些引擎层的代码用C</description>
     </item>
     
     <item>
       <title>lua与C交互中的死循环检测</title>
-      <link>https://lecoding.com/post/2017/lua-c-detect-inifinite-loop/</link>
+      <link>/post/2017/lua-c-detect-inifinite-loop/</link>
       <pubDate>Fri, 21 Apr 2017 17:37:30 +0800</pubDate>
       
-      <guid>https://lecoding.com/post/2017/lua-c-detect-inifinite-loop/</guid>
+      <guid>/post/2017/lua-c-detect-inifinite-loop/</guid>
       <description>现在很多游戏引擎都是C++ + lua的结构，一旦某个服务器开发人员大意写出死循环代码，很容易导致服务无响应，影响服务器稳定。所以引擎中最好能提</description>
     </item>
     
     <item>
       <title>Lua Table中HashMap介绍</title>
-      <link>https://lecoding.com/post/2016/lua-hashtable-introduction/</link>
+      <link>/post/2016/lua-hashtable-introduction/</link>
       <pubDate>Thu, 01 Sep 2016 17:40:08 +0800</pubDate>
       
-      <guid>https://lecoding.com/post/2016/lua-hashtable-introduction/</guid>
+      <guid>/post/2016/lua-hashtable-introduction/</guid>
       <description>Table 在Lua中有着极其重要的应用，从核心语言实现，如short string intern， 到利用metatable实现的class，table几乎无所不能</description>
     </item>
     
