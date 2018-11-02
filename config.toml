@@ -1,4 +1,4 @@
-baseurl = "https://lecoding.com/"
+#baseurl = "https://lecoding.com/"
 languageCode = "zh-cn"
 title = "乐Coding"
 theme = "lecoding"
