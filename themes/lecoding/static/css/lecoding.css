@@ -465,3 +465,13 @@ img {
 .archive ul li:nth-child(even) {
     background-color: #fafafa;
 }
+
+a.gist:before {
+    content: "\f09b";
+    font-family: "Font Awesome 5 Free";
+}
+
+a.gist {
+    margin-left: 10px;
+    margin-right: 10px;
+}
