@@ -466,12 +466,20 @@ img {
     background-color: #fafafa;
 }
 
-a.gist:before {
-    content: "\f09b";
-    font-family: "Font Awesome 5 Free";
-}
-
 a.gist {
-    margin-left: 10px;
-    margin-right: 10px;
+    display: inline-block;
+    border-radius: 3px;
+    background-color: #fbf1c7;
+    padding-left: 5px;
+    padding-right: 5px;
+    transition: color,background-color 0.5s;
+    font-size: 10px;
+    font-style: bold;
+    letter-spacing: 0.1em;
+    color: #444444;
+}
+a.gist:hover {
+  text-decoration: none;
+  color: #fbf1c7;
+  background-color: #444444;
 }
