@@ -7,10 +7,19 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2018. All rights reserved.</copyright>
-    <lastBuildDate>Thu, 01 Nov 2018 20:10:38 +0800</lastBuildDate>
+    <lastBuildDate>Sat, 03 Nov 2018 17:17:17 +0800</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>process_vm_readv: 一种新的IPC解决方案</title>
+      <link>/post/2018/introduce-process-vm-readv/</link>
+      <pubDate>Sat, 03 Nov 2018 17:17:17 +0800</pubDate>
+      
+      <guid>/post/2018/introduce-process-vm-readv/</guid>
+      <description>Linux 3.2 引入了两个新的接口 process_vm_ready 和 process_vm_writev。这两个函数的功能非常直观。 接口介绍 下面是这两个接口的原型定义，其并不是 POSIX 标准，</description>
+    </item>
     
     <item>
       <title>实现一个带 JIT 的计算器</title>
