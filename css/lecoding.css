@@ -144,7 +144,8 @@ li.recent {
 
 code {
   font-family: Consolas, Courier, "Courier New", mono !important;
-  font-size: 0.8em !important ;
+  line-height: 140%;
+  /* font-size: 0.8em !important ; */
 }
 
 pre {
@@ -481,4 +482,11 @@ a.gist:hover {
   text-decoration: none;
   color: #fbf1c7;
   background-color: #444444;
+}
+
+.content .single-content h1, .content .single-content h2, .content .single-content h3 {
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: normal;
+  color: #159957;
 }
