@@ -26,9 +26,9 @@ void *memfrob(void *s, size_t n);
 
 然而不是。下面来看看这两个函数的功能
 
-```
-strfry:  The strfry() function randomizes the contents of string by using rand(3) to randomly swap characters in the string.  The result is an anagram of string.
-```
+
+> strfry:  The strfry() function randomizes the contents of string by using rand(3) to randomly swap characters in the string.  The result is an anagram of string.
+
 
 功能和和shuffle类似，并且使用了 [Fisher-Yates algorithm](https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle) , 但是当你使用的时候，就会发现虽然生成的内容是随机的，但是
 并不是公平的。当我们使用`abc`这三个字母进行 `strfry` 时，输出的结果是
@@ -87,11 +87,11 @@ char * strfry (char *string)
 下面来谈谈`memfrob`。
 
 这个函数更加奇葩，根据描述
-```
-The memfrob() function encrypts the first n bytes of the memory area s by exclusive-ORing each character with the number 42.  The effect can be reversed by using memfrob() on the encrypted memory area.
 
-Note that this function is not a proper encryption routine as the XOR constant is fixed, and is suitable only for hiding strings.
-```
+> The memfrob() function encrypts the first n bytes of the memory area s by exclusive-ORing each character with the number 42.  The effect can be reversed by using memfrob() on the encrypted memory area.
+> 
+> Note that this function is not a proper encryption routine as the XOR constant is fixed, and is suitable only for hiding strings.
+
 
 这玩意儿就是对一块内存中的每个字节取一个对`42`的`XOR`操作。异或操作常用于加密领域，因为其是可以恢复的，一个数两次异或之后还是自身。那么问题来了，`memfrob`为什么要
 异或`42` ？ 显然这个`42`就是拍脑袋想出来的，因为它是[生命、宇宙以及一切的终极答案](https://zh.wikipedia.org/wiki/%E7%94%9F%E5%91%BD%E3%80%81%E5%AE%87%E5%AE%99%E4%BB%A5%E5%8F%8A%E4%BB%BB%E4%BD%95%E4%BA%8B%E6%83%85%E7%9A%84%E7%B5%82%E6%A5%B5%E7%AD%94%E6%A1%88)，

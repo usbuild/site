@@ -22,7 +22,11 @@
   {{ with .Site.Params.highlightjs }}
   <link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.4.0/styles/{{ . }}.min.css">
   <script src="//cdn.bootcss.com/highlight.js/9.4.0/highlight.min.js"></script>
-  <script>hljs.initHighlightingOnLoad();</script>
+  <script>
+  
+  hljs.initHighlightingOnLoad();
+
+  </script>
   {{ end }}
   {{ end }}
   <script src="{{ $.Site.BaseURL }}/js/main.js"></script>
