@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Glibc on 乐Coding</title>
+    <link>/tags/glibc/</link>
+    <description>Recent content in Glibc on 乐Coding</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <copyright>&amp;copy; 2018. All rights reserved.</copyright>
+    <lastBuildDate>Tue, 06 Nov 2018 09:54:10 +0800</lastBuildDate>
+    
+	<atom:link href="/tags/glibc/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>glibc中两个另类的函数</title>
+      <link>/post/2018/wierd-function-strfry-memfrob/</link>
+      <pubDate>Tue, 06 Nov 2018 09:54:10 +0800</pubDate>
+      
+      <guid>/post/2018/wierd-function-strfry-memfrob/</guid>
+      <description>glibc 作为使用最广泛的 libc 库，其接口设计必然也是十分精良的。出去 ANSI C 所规定的必须要拥有的接口外， glibc 也有大量自己的私有函数。 比如各种平台私有函数等。</description>
+    </item>
+    
+  </channel>
+</rss>

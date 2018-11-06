@@ -31,6 +31,15 @@
     </item>
     
     <item>
+      <title>Design</title>
+      <link>/tags/design/</link>
+      <pubDate>Tue, 06 Nov 2018 09:54:10 +0800</pubDate>
+      
+      <guid>/tags/design/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Elf</title>
       <link>/tags/elf/</link>
       <pubDate>Mon, 01 May 2017 22:30:00 +0800</pubDate>
@@ -63,6 +72,15 @@
       <pubDate>Wed, 10 May 2017 20:05:41 +0800</pubDate>
       
       <guid>/tags/gc/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Glibc</title>
+      <link>/tags/glibc/</link>
+      <pubDate>Tue, 06 Nov 2018 09:54:10 +0800</pubDate>
+      
+      <guid>/tags/glibc/</guid>
       <description></description>
     </item>
     
