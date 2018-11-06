@@ -491,3 +491,15 @@ a.gist:hover {
   font-weight: normal;
   color: #159957;
 }
+
+.wxqrbox {
+  text-align: center;
+  color: #777;
+}
+.wxqrbox .qrintro {
+  display: block;
+
+}
+.wxqrbox .qrimg {
+  max-width: 140px;
+}
