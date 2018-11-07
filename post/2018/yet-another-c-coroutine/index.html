@@ -7,7 +7,7 @@
   <meta name="description" content="">
   <meta name="generator" content="Hugo 0.42.1" />
 
-  <title>[造轮子] 一个 c&#43;&#43; coroutine 的实现 &middot; 乐Coding</title>
+  <title>[造轮子] 又一个 c&#43;&#43; coroutine 的实现 &middot; 乐Coding</title>
 
 
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css" integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
@@ -71,7 +71,7 @@
 
 <div class="content">
 <div class="header">
-  <h1>[造轮子] 一个 c&#43;&#43; coroutine 的实现</h1>
+  <h1>[造轮子] 又一个 c&#43;&#43; coroutine 的实现</h1>
 </div>
 
 
@@ -256,6 +256,8 @@ void *Coroutine::yield(void *ret) {
 </code></pre>
 
 <p>上面的实现会有一个问题，即如果用户使用<code>try{}catch(...){}</code>之类的包住了<code>yield</code>，那么<code>ForceUnwind</code>异常就没法被最外层的程序捕获，会导致出现问题。目前并没有良好的解决方案。</p>
+
+<p>以上代码可以查看 <a href="https://gist.github.com/usbuild/ba21ff0079264260a222085e45615a71">https://gist.github.com/usbuild/ba21ff0079264260a222085e45615a71</a></p>
 
 <h2 id="其他选择">其他选择</h2>
 
