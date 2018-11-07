@@ -43,6 +43,7 @@ paginate = 10
   dateFormat = "02 Jan 2006, 15:04" 
   googleAnalytics = "UA-19710645-12"
   wxqrpath = "https://open.weixin.qq.com/qr/code?username=gh_950f5a94ae02"
+  pangu = true
 
 [social]
   github = "usbuild"

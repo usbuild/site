@@ -1,9 +1,9 @@
 +++
 draft = false
 tags = ["glibc", "design"]
-topics = ["desinn"]
+topics = ["design"]
 description = ""
-title = "glibc中两个另类的函数"
+title = "glibc 中两个另类的函数"
 date = "2018-11-06T09:54:10+08:00"
 +++
 
