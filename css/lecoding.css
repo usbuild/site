@@ -511,3 +511,11 @@ div.psnote {
   border: 1px solid silver;
   padding: 5px;
 }
+
+div.gists {
+  font-size: 0.8em;
+  border: solid 1px #ddd;
+  padding: 5px 10px;
+  color: #777;
+  margin: 20px 0px;
+}

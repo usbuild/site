@@ -257,8 +257,6 @@ void *Coroutine::yield(void *ret) {
 
 <p>上面的实现会有一个问题，即如果用户使用<code>try{}catch(...){}</code>之类的包住了<code>yield</code>，那么<code>ForceUnwind</code>异常就没法被最外层的程序捕获，会导致出现问题。目前并没有良好的解决方案。</p>
 
-<p>以上代码可以查看 <a href="https://gist.github.com/usbuild/ba21ff0079264260a222085e45615a71">https://gist.github.com/usbuild/ba21ff0079264260a222085e45615a71</a></p>
-
 <h2 id="其他选择">其他选择</h2>
 
 <p>当然，这里实现的协程库并不能作为生产环境使用，现在已经有很多相关的第三方库可供使用，很多基于<a href="http://pubs.opengroup.org/onlinepubs/7908799/xsh/ucontext.h.html">ucontext</a>。
@@ -268,6 +266,20 @@ void *Coroutine::yield(void *ret) {
 </div>
 
   <div class="eof">--EOF--</div>
+  
+<div class="gists">
+    <span class="title">本文所使用的代码链接如下</span>
+    <div class="gists-links">
+        
+    
+    <div class="gists-link">
+        <a href="https://gist.github.com/usbuild/ba21ff0079264260a222085e45615a71" target="_blank">https://gist.github.com/usbuild/ba21ff0079264260a222085e45615a71</a>
+    </div>
+    
+    
+</div>
+</div>
+
   
 <div class="wxqrbox">
     <span class="qrintro">欢迎关注我的微信公众号</span>
