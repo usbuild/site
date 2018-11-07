@@ -8,5 +8,8 @@
   {{ .Content }}
 </div>
 </div>
+{{ if isset .Params "wxqrcode" }}
+{{ partial "wxqrcode.html" . }}
+{{ end }}
 
 {{ partial "footer.html" . }}

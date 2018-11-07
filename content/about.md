@@ -5,7 +5,7 @@ draft = false
 tags = []
 title = "关于"
 topics = []
-
+wxqrcode = true
 +++
 
 联系我： [github](https://github.com/usbuild), [linkedin](https://www.linkedin.com/in/usbuild/), [njuzhangqichao@gmail.com](mailto:njuzhangqichao@gmail.com)
