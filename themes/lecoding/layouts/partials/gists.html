@@ -1,0 +1,14 @@
+{{ if isset .Params "gists" }}
+<div class="gists">
+    <span class="title">本文所使用的代码链接如下</span>
+    <div class="gists-links">
+        
+    {{ range .Params.gists }}
+    <div class="gists-link">
+        <a href="{{.}}" target="_blank">{{.}}</a>
+    </div>
+    {{ end }}
+    
+</div>
+</div>
+{{ end }}

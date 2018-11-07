@@ -5,6 +5,7 @@ topics = ["IPC"]
 description = ""
 title = "process_vm_readv: 一种新的IPC解决方案"
 date = "2018-11-03T17:17:17+08:00"
+gists = ["https://gist.github.com/usbuild/5af20dcd9bb954b7deda987ed79eda4a"]
 +++
 
 Linux 3.2 引入了两个新的接口 [process_vm_ready](http://man7.org/linux/man-pages/man2/process_vm_readv.2.html) 和 [process_vm_writev](https://linux.die.net/man/2/process_vm_writev)。这两个函数的功能非常直观。
@@ -54,5 +55,4 @@ ssize_t process_vm_writev(pid_t pid,
 的话只需要一次系统调用就可以完成，提升了效率。
 
 ### 代码示例
-这里是一个可以运行的`process_vm_readv`的代码示例 [https://gist.github.com/usbuild/5af20dcd9bb954b7deda987ed79eda4a](https://gist.github.com/usbuild/5af20dcd9bb954b7deda987ed79eda4a)。其通过 `socket` 来传输事件，通过
-内存来分享数据。
+附件是一个可以运行的`process_vm_readv`的代码示例。其通过 `socket` 来传输事件，通过内存来分享数据。
