@@ -7,13 +7,22 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2018. All rights reserved.</copyright>
-    <lastBuildDate>Tue, 06 Nov 2018 09:54:10 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 07 Nov 2018 10:10:00 +0800</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>glibc中两个另类的函数</title>
+      <title>[造轮子] 一个 c&#43;&#43; coroutine 的实现</title>
+      <link>/post/2018/yet-another-c-coroutine/</link>
+      <pubDate>Wed, 07 Nov 2018 10:10:00 +0800</pubDate>
+      
+      <guid>/post/2018/yet-another-c-coroutine/</guid>
+      <description>Coroutine (又称协程)目前已经是一个比较热门和时髦的概念。现代的编程语言很多都已经从 语言层面对这一概念进行了支持，甚至有些语言将其作为主打的特性，比</description>
+    </item>
+    
+    <item>
+      <title>glibc 中两个另类的函数</title>
       <link>/post/2018/weird-function-strfry-memfrob/</link>
       <pubDate>Tue, 06 Nov 2018 09:54:10 +0800</pubDate>
       

@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>/post/2018/yet-another-c-coroutine/</loc>
+    <lastmod>2018-11-07T10:10:00+08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/post/2018/weird-function-strfry-memfrob/</loc>
     <lastmod>2018-11-06T09:54:10+08:00</lastmod>
   </url>
@@ -109,7 +114,19 @@
   
   <url>
     <loc>/tags/c&#43;&#43;/</loc>
-    <lastmod>2017-04-29T15:38:38+08:00</lastmod>
+    <lastmod>2018-11-07T10:10:00+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/tags/coroutine/</loc>
+    <lastmod>2018-11-07T10:10:00+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/topics/coroutine/</loc>
+    <lastmod>2018-11-07T10:10:00+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -120,7 +137,7 @@
   </url>
   
   <url>
-    <loc>/topics/desinn/</loc>
+    <loc>/topics/design/</loc>
     <lastmod>2018-11-06T09:54:10+08:00</lastmod>
     <priority>0</priority>
   </url>
@@ -229,7 +246,7 @@
   
   <url>
     <loc>/post/</loc>
-    <lastmod>2018-11-06T09:54:10+08:00</lastmod>
+    <lastmod>2018-11-07T10:10:00+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -247,7 +264,7 @@
   
   <url>
     <loc>/topics/</loc>
-    <lastmod>2018-11-06T09:54:10+08:00</lastmod>
+    <lastmod>2018-11-07T10:10:00+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -265,7 +282,13 @@
   
   <url>
     <loc>/</loc>
-    <lastmod>2018-11-06T09:54:10+08:00</lastmod>
+    <lastmod>2018-11-07T10:10:00+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/tags/%E9%80%A0%E8%BD%AE%E5%AD%90/</loc>
+    <lastmod>2018-11-07T10:10:00+08:00</lastmod>
     <priority>0</priority>
   </url>
   

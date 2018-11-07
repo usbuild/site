@@ -23,12 +23,25 @@
   <link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.4.0/styles/atelier-forest-light.min.css">
   <script src="//cdn.bootcss.com/highlight.js/9.4.0/highlight.min.js"></script>
   <script>
-  
   hljs.initHighlightingOnLoad();
-
   </script>
   
   
+  
+ 
+ <script>
+   (function(u, c) {
+     var d = document, t = 'script', o = d.createElement(t),
+         s = d.getElementsByTagName(t)[0];
+     o.src = u;
+     if (c) { o.addEventListener('load', function(e) { c(e); }); }
+     s.parentNode.insertBefore(o, s);
+   })('//cdn.bootcss.com/pangu/3.3.0/pangu.min.js', function() {
+     pangu.spacingPage();
+   });
+ </script>
+
+
   <script src="/js/main.js"></script>
 
   <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon" />
@@ -66,7 +79,7 @@
   
     <article>
   <header>
-    <h2><a href="/post/2018/weird-function-strfry-memfrob/">glibc中两个另类的函数</a></h2>
+    <h2><a href="/post/2018/weird-function-strfry-memfrob/">glibc 中两个另类的函数</a></h2>
 
     <div class="post-meta">
     发表于 <time>06 Nov 2018, 09:54</time>

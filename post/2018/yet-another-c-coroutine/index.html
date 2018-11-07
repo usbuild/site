@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="generator" content="Hugo 0.42.1" />
+
+  <title>[造轮子] 一个 c&#43;&#43; coroutine 的实现 &middot; 乐Coding</title>
+
+
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css" integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
+  <link rel="stylesheet" href="/css/lecoding.css">
+  
+  
+
+
+  
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.4.0/styles/atelier-forest-light.min.css">
+  <script src="//cdn.bootcss.com/highlight.js/9.4.0/highlight.min.js"></script>
+  <script>
+  hljs.initHighlightingOnLoad();
+  </script>
+  
+  
+  
+ 
+ <script>
+   (function(u, c) {
+     var d = document, t = 'script', o = d.createElement(t),
+         s = d.getElementsByTagName(t)[0];
+     o.src = u;
+     if (c) { o.addEventListener('load', function(e) { c(e); }); }
+     s.parentNode.insertBefore(o, s);
+   })('//cdn.bootcss.com/pangu/3.3.0/pangu.min.js', function() {
+     pangu.spacingPage();
+   });
+ </script>
+
+
+  <script src="/js/main.js"></script>
+
+  <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon" />
+
+</head>
+
+
+<body data-url="">
+<div id="layout">
+  <div id="main">
+  
+<div class="nav">
+
+  <div class="side-menu">
+      
+        <a class="side-menu-link" href="/">Home</a>
+      
+        <a class="side-menu-link" href="/archives/">Archives</a>
+      
+        <a class="side-menu-link" href="/tags/">Tags</a>
+      
+        <a class="side-menu-link" href="/about/">About</a>
+      
+  </div>
+
+</div>
+
+
+
+<div class="content">
+<div class="header">
+  <h1>[造轮子] 一个 c&#43;&#43; coroutine 的实现</h1>
+</div>
+
+
+<div class="single-content">
+  
+
+<p><a href="https://en.wikipedia.org/wiki/Coroutine">Coroutine</a> (又称协程)目前已经是一个比较热门和时髦的概念。现代的编程语言很多都已经从
+语言层面对这一概念进行了支持，甚至有些语言将其作为主打的特性，比如说 Golang 。本文就将简单介绍如何在 C++ 中实现一个协程。</p>
+
+<h2 id="协程的定义与分类">协程的定义与分类</h2>
+
+<p>根据维基百科，协程被定义如下</p>
+
+<blockquote>
+<p>Coroutines are computer-program components that generalize subroutines for non-preemptive multitasking, by allowing multiple entry points for suspending and resuming execution at certain locations. Coroutines are well-suited for implementing familiar program components such as cooperative tasks, exceptions, event loops, iterators, infinite lists and pipes.</p>
+</blockquote>
+
+<p>用中文说就是 协程是一个子程序，只不过这个子程序可以被暂停和继续执行。 传统意义上的同步和异步程序是这样的：要么必须等待函数执行完毕返回；要么提供一个回调，当函数执行完毕之后会调用这个回调。但是协程提供了另一个
+可能，可以在函数执行一半的时候返回，当需要的时候还能在返回处继续执行。</p>
+
+<p>从分类上来说，协程分为两种，对称与非对称。所谓非对称协程是指协程之间存在着调用者和被调用者的关系。比如说在 lua 中，一个 coroutine 的结束就意味着另一个 coroutine 中<code>coroutine.resume</code> 的返回。但是对于对称
+协程而言，协程之间是不存在从属的关系的，比如说 golang 中的<code>go</code>关键字，两个协程同时执行，其运行关系很类似于操作系统中的*线程*。</p>
+
+<p>本文不讨论对称协程的实现，单纯地在 C++ 中实现一个类似 Lua 中的协程接口。</p>
+
+<h2 id="前置知识">前置知识</h2>
+
+<p>考虑到协程要允许函数在执行的时候中断并重新开始，这很容易使我们想到两个标准C的接口， <a href="http://man7.org/linux/man-pages/man3/setjmp.3.html">setjmp, longjmp</a>。这两个函数一般用作异常的处理。像在 Lua 中，
+一个 <code>pcall</code> 其实相当于调用了 <code>setjmp</code>，而 <code>error</code> 调用的是 <code>longjmp</code>。 <code>setjmp</code>的作用是保存当前的运行环境，所谓运行环境就是局部变量，所谓局部变量在底层汇编也就是栈和寄存器的内容，所谓栈在 x86_64
+中也就是 <code>bp</code> 和 <code>sp</code> 指针，说到底还是寄存器。因此<code>setjmp</code> 要保存的其实就是寄存器的内容。同样<code>longjmp</code>所实现的跳转也就是将寄存器恢复出来。并没有什么魔法黑科技。</p>
+
+<p>下面来看看<code>setjmp</code>的实现(来自<a href="https://git.musl-libc.org/cgit/musl/tree/src/setjmp/x86_64/setjmp.s">musl libc</a>)</p>
+
+<pre><code>setjmp:
+    mov %rbx,(%rdi)         /* rdi is jmp_buf, move registers onto it */
+    mov %rbp,8(%rdi)
+    mov %r12,16(%rdi)
+    mov %r13,24(%rdi)
+    mov %r14,32(%rdi)
+    mov %r15,40(%rdi)
+    lea 8(%rsp),%rdx        /* this is our rsp WITHOUT current ret addr */
+    mov %rdx,48(%rdi)
+    mov (%rsp),%rdx         /* save return addr ptr for new rip */
+    mov %rdx,56(%rdi)
+    xor %rax,%rax           /* always return 0 */
+    ret
+</code></pre>
+
+<p>可以看出主要保存了以下的寄存器<code>rbx</code>, <code>rbp</code>, <code>r12</code>, <code>r13</code>, <code>r14</code>, <code>r15</code>，然后是<code>rsp</code>。最后是<code>rip</code>，当然这个<code>rip</code>是函数调用前的下一条，也就是栈顶上的那个元素。</p>
+
+<p>为什么会选择保存这些寄存器？因为这些寄存器（当然除了 <code>rip</code> 外）都是跨 <a href="http://www.logix.cz/michal/devel/amd64-regs/">function call</a> 保留的，也就是当使用<code>call</code>的时候，
+这些寄存器的值会被保留到调用的函数中。因此必须要保存这些变量，这其实就是所谓的 Context 。其他常用的寄存器会由编译器自动处理，因此保存下来是没有意义的。</p>
+
+<p>同样，<code>longjmp</code> 只是将这些 <code>mov</code> 操作反过来。但是由于没法直接修改 <code>rip</code>，<code>longjmp</code>的代码最后一行是<code>jmp</code> 。</p>
+
+<p>PS: 这里面实现的 <code>setjmp</code> 其实效率并不够高，<code>libunwind</code> 中有更快的实现方案，只需要保存<code>rsp</code>和<code>rip</code>就可以，其采用<code>dwarf</code>中定义的栈回溯方式来回复其他变量，因此<code>setjmp</code>
+的效率会比较高，而<code>longjmp</code>的效率则比较低</p>
+
+<h2 id="协程库接口设计">协程库接口设计</h2>
+
+<p>可以仿照<a href="https://www.lua.org/pil/9.1.html">Lua</a> 中的设计。其中最核心的接口就是 <code>resume</code>和<code>yield</code>。这两个接口其实就是类似于上面的<code>setjmp</code>和<code>longjmp</code>的结合体。都是
+先保存当前的运行环境，然后 jump 到目标。只不过一个是 jump 到协程里面，一个是从协程里面跳出到外面。互相跳的关系。</p>
+
+<h3 id="context环境">context环境</h3>
+
+<p>其实就一行</p>
+
+<pre><code>typedef void *co_jmp_buf[8]; /* rip, rsp, rbp, rbx, r12, r13, r14, r15 */
+</code></pre>
+
+<p>这个与 <code>setjmp</code> 保存的东西是完全一致的。</p>
+
+<h3 id="jump-的实现">jump 的实现</h3>
+
+<p>由于<code>resume</code>和<code>yield</code>的基础操作都是 jump， 也就是从一个 context 跳转到另一个 context，因此，下面就是<code>co_jump</code>的实现:</p>
+
+<pre><code>static inline void co_jump(co_jmp_buf from, co_jmp_buf to) {
+    __asm__ __volatile__(&quot;leaq 1f(%%rip), %%rax\n\t&quot;
+                         &quot;movq %%rax, (%0)\n\t&quot;
+                         &quot;movq %%rsp, 8(%0)\n\t&quot;
+                         &quot;movq %%rbp, 16(%0)\n\t&quot;
+                         &quot;movq %%rbx, 24(%0)\n\t&quot;
+                         &quot;movq %%r12, 32(%0)\n\t&quot;
+                         &quot;movq %%r13, 40(%0)\n\t&quot;
+                         &quot;movq %%r14, 48(%0)\n\t&quot;
+                         &quot;movq %%r15, 56(%0)\n\t&quot;
+                         &quot;movq 56(%1), %%r15\n\t&quot;
+                         &quot;movq 48(%1), %%r14\n\t&quot;
+                         &quot;movq 40(%1), %%r13\n\t&quot;
+                         &quot;movq 32(%1), %%r12\n\t&quot;
+                         &quot;movq 24(%1), %%rbx\n\t&quot;
+                         &quot;movq 16(%1), %%rbp\n\t&quot;
+                         &quot;movq 8(%1), %%rsp\n\t&quot;
+                         &quot;jmpq *(%1)\n&quot;
+                         &quot;1:\n&quot;
+                         : &quot;+S&quot;(from), &quot;+D&quot;(to)
+                         :
+                         : &quot;rax&quot;, &quot;rcx&quot;, &quot;rdx&quot;, &quot;r8&quot;, &quot;r9&quot;, &quot;r10&quot;, &quot;r11&quot;, &quot;memory&quot;, &quot;cc&quot;);
+}
+</code></pre>
+
+<p>其中, <code>from</code>会用来存储当前的 context 以便下次 jump 回来。而 <code>to</code> 则是需要跳转的目标 context。下面对这些代码进行解释</p>
+
+<ol>
+<li><code>leaq 1f(%%rip), %%rax</code> 这里是要保存当前的<code>ip</code>到 <code>rax</code>，但是由于下次跳转不能直接到当前的<code>ip</code>，否则就死循环了。因此加了一个<code>1f</code>，这玩意儿叫<code>fb label</code>，具体
+解释可以看<a href="https://docs.oracle.com/cd/E19120-01/open.solaris/817-5477/esqaq/index.html">这里</a>。这里相当于存储了<code>1:</code> label 的地址。</li>
+<li>接下来就是存储当前的各种寄存器，和上面的<code>setjmp</code> 类似，不表</li>
+<li>然后将目标环境的寄存器恢复，和<code>longjmp</code>类似</li>
+<li>最后直接 <code>jmp</code> 过去, 也就是目标<code>ip</code>所指的地址。</li>
+</ol>
+
+<h3 id="创建-coroutine">创建 coroutine</h3>
+
+<p>有了<code>co_jump</code>之后，还需要一个初始化的<code>routine</code>，毕竟当我们启动协程的时候，目标的 context 不能是空的，得有一定的内容，其中最核心的就是启动函数。</p>
+
+<p>coroutine 是一个独立的执行单元，需要一个独立的栈，因此我们需要分配一块内存，一般为<code>2M</code>，另外由于栈的地址是从高到低的，也就是说需要将分配内存
+的 <code>top</code> 作为 <code>rsp</code>的初始化。</p>
+
+<pre><code>stack_ = malloc(CO_STACK_SIZE);
+sp_ = (char *)(stack_) + CO_STACK_SIZE;
+regs[1] = sp_; // rsp = sp_
+</code></pre>
+
+<p>对于 <code>rip</code>的值，其应该指向一个入口函数，这个函数不能直接是传入的入口函数，毕竟我们希望更灵活一点，可以更加精确地控制传参等功能。所以这里做了一些调整</p>
+
+<pre><code>regs[0] = (void *)(co_wrap_main); // rip = co_wrap_main;
+regs[4] = reinterpret_cast&lt;void *&gt;(+[](Coroutine *self) { // r12 = 我们的入口函数
+        // do with self
+    });
+regs[5] = this; // r13 其实是 Coroutine 的 this 指针
+</code></pre>
+
+<p>为了将 <code>this</code> 指针传入到 <code>r12</code>的入口函数中，<code>co_wrap_main</code>需要这样编写</p>
+
+<pre><code>static void co_wrap_main(void) {
+    __asm__ __volatile__(&quot;\tmovq %r13, %rdi\n&quot; // %rdi is the first argument
+                         &quot;\tjmpq *%r12\n&quot;);
+}
+</code></pre>
+
+<p>其中 <code>rdi</code> 是 <code>amd64</code> 架构下，第一个形参的寄存器。注意第二句，由于栈之类的已经保存了，因此不能使用<code>call</code>指令，而直接使用<code>jmp</code>，从而避免修改了<code>rsp</code>。</p>
+
+<p>以上就是最核心的内容，有了初始化操作和<code>co_jump</code>，就可以很自然地去实现<code>yield</code>和<code>resume</code>了。这里就不再详细介绍。</p>
+
+<h3 id="异常处理">异常处理</h3>
+
+<p>上述的设计并没有考虑到异常。如果一个协程并没有完全执行完而是在协程函数<code>return</code>之前就已经终止了，按理说在这个函数中的局部变量应该被析构。但是由于我们直接修改了寄存器，
+并没有调用这些析构函数，因此是有问题的。</p>
+
+<p>好在我们可以借用 C++ 的异常。这里可以在 coroutine 销毁时，进入到目标的栈，然后强制抛出一个异常，再到最外层进行补货。接下来再销毁 coroutine 的栈即可。</p>
+
+<pre><code>Coroutine::~Coroutine() {
+    if (status_ == Status::SUSPEND) {
+        force_unwind_ = true; //先标记一下，说明要销毁栈了
+        resume(NULL); // 进入到目标的执行栈
+    }
+    free(stack_);
+}
+
+// 这是统一入口函数
+regs[4] = reinterpret_cast&lt;void *&gt;(+[](Coroutine *self) {
+        try {
+            self-&gt;yield_arg_ = self-&gt;start_routine_(self-&gt;resume_arg_);
+
+        } catch (const ForceUnwind &amp;) {
+            // 最外层包装了一个 try ，专门用来捕获 ForceUnwind 异常
+        }
+        self-&gt;status_ = Status::EXIT;
+    });
+
+void *Coroutine::yield(void *ret) {
+    yield_arg_ = ret;
+    co_jmp_buf target;
+    memcpy(target, saved_ctx_, sizeof(target));
+    co_jump(saved_ctx_, target);
+    if (force_unwind_) { // 从 yield 处恢复，这里其实是上面 resume 的下一句，立马抛出异常
+        throw ForceUnwind{};
+    }
+    return resume_arg_;
+}
+
+</code></pre>
+
+<p>上面的实现会有一个问题，即如果用户使用<code>try{}catch(...){}</code>之类的包住了<code>yield</code>，那么<code>ForceUnwind</code>异常就没法被最外层的程序捕获，会导致出现问题。目前并没有良好的解决方案。</p>
+
+<h2 id="其他选择">其他选择</h2>
+
+<p>当然，这里实现的协程库并不能作为生产环境使用，现在已经有很多相关的第三方库可供使用，很多基于<a href="http://pubs.opengroup.org/onlinepubs/7908799/xsh/ucontext.h.html">ucontext</a>。
+此外，像<a href="https://www.boost.org/doc/libs/1_68_0/libs/coroutine2/doc/html/index.html">Boost.Coroutine2</a> 也已经比较成熟，也提供了一些更为高层的解决方案。如果要在生产中使用，也
+应该优先选择这些库。</p>
+
+</div>
+
+  <div class="eof">--EOF--</div>
+  
+<div class="wxqrbox">
+    <span class="qrintro">欢迎关注我的微信公众号</span>
+    <img class="qrimg" src="https://open.weixin.qq.com/qr/code?username=gh_950f5a94ae02"></img>
+</div>
+
+
+  <div class="post-meta">
+    发表于 <time>07 Nov 2018, 10:10</time>
+  
+  
+  
+  
+  , 标签: 「
+    
+      <a class="post-taxonomy-tag" href="tags/c&#43;&#43;">c&#43;&#43;</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="tags/coroutine">coroutine</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="tags/%E9%80%A0%E8%BD%AE%E5%AD%90">造轮子</a>
+    
+」
+  
+  
+
+</div>
+
+
+  
+<div class="prev-next-post">
+  <div class="prev-link" style="text-align: left;">
+    
+    <nav class="prev">
+      <a href="/post/2018/weird-function-strfry-memfrob/">« glibc 中两个另类的函数</a>
+    </nav>
+    
+  </div>
+  <div class="next-link">
+    
+  </div>
+</div>
+
+
+
+  
+
+
+  
+
+</div>
+
+</div>
+</div>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-19710645-12', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+</script>
+</body>
+</html>
+

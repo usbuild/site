@@ -259,6 +259,8 @@ p code {
   padding: 1px 6px;
   vertical-align: baseline;
   margin: auto 3px;
+  color: #585858;
+  font-family: 'consolas', 'menlo', 'courier', 'monospace', 'Microsoft Yahei' !important;
 }
 
 .single-content h1 {
@@ -502,4 +504,10 @@ a.gist:hover {
 }
 .wxqrbox .qrimg {
   max-width: 140px;
+}
+
+div.psnote {
+  background-color: #f8f8f8;
+  border: 1px solid silver;
+  padding: 5px;
 }

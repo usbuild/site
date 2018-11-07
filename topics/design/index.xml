@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Desinn on 乐Coding</title>
-    <link>/topics/desinn/</link>
-    <description>Recent content in Desinn on 乐Coding</description>
+    <title>Design on 乐Coding</title>
+    <link>/topics/design/</link>
+    <description>Recent content in Design on 乐Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2018. All rights reserved.</copyright>
     <lastBuildDate>Tue, 06 Nov 2018 09:54:10 +0800</lastBuildDate>
     
-	<atom:link href="/topics/desinn/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/topics/design/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>glibc中两个另类的函数</title>
+      <title>glibc 中两个另类的函数</title>
       <link>/post/2018/weird-function-strfry-memfrob/</link>
       <pubDate>Tue, 06 Nov 2018 09:54:10 +0800</pubDate>
       
