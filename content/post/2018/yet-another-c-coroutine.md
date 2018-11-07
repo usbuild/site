@@ -3,7 +3,7 @@ draft = false
 tags = ["c++", "coroutine", "造轮子"]
 topics = ["coroutine"]
 description = ""
-title = "[造轮子] 一个 c++ coroutine 的实现"
+title = "[造轮子] 又一个 c++ coroutine 的实现"
 date = "2018-11-07T10:10:00+08:00"
 +++
 
@@ -168,6 +168,8 @@ void *Coroutine::yield(void *ret) {
 
 ```
 上面的实现会有一个问题，即如果用户使用`try{}catch(...){}`之类的包住了`yield`，那么`ForceUnwind`异常就没法被最外层的程序捕获，会导致出现问题。目前并没有良好的解决方案。
+
+以上代码可以查看 [https://gist.github.com/usbuild/ba21ff0079264260a222085e45615a71](https://gist.github.com/usbuild/ba21ff0079264260a222085e45615a71)
 
 ## 其他选择
 当然，这里实现的协程库并不能作为生产环境使用，现在已经有很多相关的第三方库可供使用，很多基于[ucontext](http://pubs.opengroup.org/onlinepubs/7908799/xsh/ucontext.h.html)。
