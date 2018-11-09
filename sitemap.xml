@@ -58,11 +58,6 @@
   </url>
   
   <url>
-    <loc>/post/2017/compatible-embed-luajit-ffi-load/</loc>
-    <lastmod>2017-05-09T22:05:47+08:00</lastmod>
-  </url>
-  
-  <url>
     <loc>/post/2017/a-solution-for-elf-integrate-scripts/</loc>
     <lastmod>2017-05-01T22:30:00+08:00</lastmod>
   </url>
@@ -145,12 +140,6 @@
   <url>
     <loc>/tags/elf/</loc>
     <lastmod>2017-05-01T22:30:00+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/ffi/</loc>
-    <lastmod>2017-05-09T22:05:47+08:00</lastmod>
     <priority>0</priority>
   </url>
   
