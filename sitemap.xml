@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>/post/2019/build-virtual-lan-from-scratch/</loc>
+    <lastmod>2019-10-16T20:10:00+08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/post/2018/yet-another-c-coroutine/</loc>
     <lastmod>2018-11-07T10:10:00+08:00</lastmod>
   </url>
@@ -114,25 +119,25 @@
   </url>
   
   <url>
-    <loc>/tags/coroutine/</loc>
-    <lastmod>2018-11-07T10:10:00+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
     <loc>/topics/coroutine/</loc>
     <lastmod>2018-11-07T10:10:00+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>/tags/design/</loc>
-    <lastmod>2018-11-06T09:54:10+08:00</lastmod>
+    <loc>/tags/coroutine/</loc>
+    <lastmod>2018-11-07T10:10:00+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>/topics/design/</loc>
+    <lastmod>2018-11-06T09:54:10+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/tags/design/</loc>
     <lastmod>2018-11-06T09:54:10+08:00</lastmod>
     <priority>0</priority>
   </url>
@@ -174,25 +179,25 @@
   </url>
   
   <url>
-    <loc>/tags/ipc/</loc>
-    <lastmod>2018-11-03T17:17:17+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
     <loc>/topics/ipc/</loc>
     <lastmod>2018-11-03T17:17:17+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>/tags/jit/</loc>
-    <lastmod>2018-11-01T20:10:38+08:00</lastmod>
+    <loc>/tags/ipc/</loc>
+    <lastmod>2018-11-03T17:17:17+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>/topics/jit/</loc>
+    <lastmod>2018-11-01T20:10:38+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/tags/jit/</loc>
     <lastmod>2018-11-01T20:10:38+08:00</lastmod>
     <priority>0</priority>
   </url>
@@ -228,6 +233,18 @@
   </url>
   
   <url>
+    <loc>/topics/network/</loc>
+    <lastmod>2019-10-16T20:10:00+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/tags/network/</loc>
+    <lastmod>2019-10-16T20:10:00+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>/tags/nodemcu/</loc>
     <lastmod>2017-08-21T20:14:01+08:00</lastmod>
     <priority>0</priority>
@@ -235,7 +252,7 @@
   
   <url>
     <loc>/post/</loc>
-    <lastmod>2018-11-07T10:10:00+08:00</lastmod>
+    <lastmod>2019-10-16T20:10:00+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -271,7 +288,7 @@
   
   <url>
     <loc>/</loc>
-    <lastmod>2018-11-07T10:10:00+08:00</lastmod>
+    <lastmod>2019-10-16T20:10:00+08:00</lastmod>
     <priority>0</priority>
   </url>
   

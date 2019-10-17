@@ -7,10 +7,19 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2019. All rights reserved.</copyright>
-    <lastBuildDate>Wed, 07 Nov 2018 10:10:00 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 16 Oct 2019 20:10:00 +0800</lastBuildDate>
     
 	<atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>从零开始构建虚拟局域网</title>
+      <link>/post/2019/build-virtual-lan-from-scratch/</link>
+      <pubDate>Wed, 16 Oct 2019 20:10:00 +0800</pubDate>
+      
+      <guid>/post/2019/build-virtual-lan-from-scratch/</guid>
+      <description>本文从一个Demo出发，介绍了如何构建一个虚拟的跨多机器的局域网，用于加深对Docker网络的理解。 目标 要在两台物理机 192.168.50.6 和 192.168.5</description>
+    </item>
     
     <item>
       <title>[造轮子] 又一个 c&#43;&#43; coroutine 的实现</title>

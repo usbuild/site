@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="generator" content="Hugo 0.42.1" />
+
+  <title>从零开始构建虚拟局域网 &middot; 乐Coding</title>
+
+
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css" integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
+  <link rel="stylesheet" href="/css/lecoding.css">
+  
+  
+
+
+  
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.4.0/styles/atelier-forest-light.min.css">
+  <script src="//cdn.bootcss.com/highlight.js/9.4.0/highlight.min.js"></script>
+  <script>
+  hljs.initHighlightingOnLoad();
+  </script>
+  
+  
+  
+ 
+ <script>
+   (function(u, c) {
+     var d = document, t = 'script', o = d.createElement(t),
+         s = d.getElementsByTagName(t)[0];
+     o.src = u;
+     if (c) { o.addEventListener('load', function(e) { c(e); }); }
+     s.parentNode.insertBefore(o, s);
+   })('//cdn.bootcss.com/pangu/3.3.0/pangu.min.js', function() {
+     pangu.spacingPage();
+   });
+ </script>
+
+
+  <script src="/js/main.js"></script>
+
+  <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon" />
+
+</head>
+
+
+<body data-url="">
+<div id="layout">
+  <div id="main">
+  
+<div class="nav">
+
+  <div class="side-menu">
+      
+        <a class="side-menu-link" href="/">Home</a>
+      
+        <a class="side-menu-link" href="/archives/">Archives</a>
+      
+        <a class="side-menu-link" href="/tags/">Tags</a>
+      
+        <a class="side-menu-link" href="/about/">About</a>
+      
+  </div>
+
+</div>
+
+
+
+<div class="content">
+<div class="header">
+  <h1>从零开始构建虚拟局域网</h1>
+</div>
+
+
+<div class="single-content">
+  
+
+<p>本文从一个Demo出发，介绍了如何构建一个虚拟的跨多机器的局域网，用于加深对Docker网络的理解。</p>
+
+<h2 id="目标">目标</h2>
+
+<p>要在两台物理机 <code>192.168.50.6</code> 和 <code>192.168.50.6</code>上构建几个虚拟网络接口，这些网络接口处于 <code>10.5.0.0/16</code>网段，并且支持互相访问，
+如下所示：</p>
+
+<pre><code>+--------------------+ +---------------------+
+|    192.168.50.6    | |    192.168.50.5     |
+| +----------------+ | | +-----------------+ |
+| |                | | | |                 | |
+| |    10.5.0.21   | | | |   10.5.0.31     | |
+| |                | | | |                 | |
+| +----------------+ | | +-----------------+ |
+|                    | |                     |
+| +----------------+ | +---------------------+
+| |                | | 
+| |    10.5.0.11   | |
+| |                | |
+| +----------------+ |
+|                    |
++--------------------+
+</code></pre>
+
+<h2 id="桥接">桥接</h2>
+
+<p>Linux 提供了桥接以实现将多个网络接口连接起来的方法，其功能类似于一个交换机，只不过这个交换机可以工作在三层网络，可以拥有自己的 IP 地址。
+创建网桥的命令如下</p>
+
+<pre><code>ip link add virbr0 type bridge
+</code></pre>
+
+<p>网桥也需要一个IP地址作为网关</p>
+
+<pre><code>ip addr add 10.5.0.1/16 dev virbr0
+</code></pre>
+
+<p>可以使用<code>ip addr</code>查看分配结果</p>
+
+<h2 id="veth">veth</h2>
+
+<p>现在有了网桥，我们还需要创建两个虚拟接口用于分配<code>10.5.0.0/16</code>网段的IP。 linux 提供了 <a href="http://man7.org/linux/man-pages/man4/veth.4.html">veth</a>类型
+的设备，它是两个互相连接的二层网络接口，可以理解为一根网线，从一个接口发送的数据会从另一个接口接收到。这里我们创建两条这样的“网线”。</p>
+
+<pre><code>ip link add veth10 type veth peer name veth11
+ip link add veth20 type veth peer name veth21
+</code></pre>
+
+<p>为了构建一个局域网，需要将这两条网线插到网桥上去，命令如下</p>
+
+<pre><code>ip link set veth10 master virbr0
+ip link set veth20 master virbr0
+</code></pre>
+
+<p>将这些虚拟网络接口拉起来</p>
+
+<pre><code>ip link set virbr0 up
+ip link set veth10 up
+ip link set veth20 up
+</code></pre>
+
+<p>现在我们的虚拟局域网的结构就已经完成了。</p>
+
+<h2 id="network-namespace">network namespace</h2>
+
+<p>为了支持网络虚拟化，Linux提供了网络命名空间的概念。如果两个进程在不同的网络空间里，那么这两个进程所看到的网络设备、路由表、iptables规则等都是不一样的。该
+机制提供了网络的隔离。为了方便管理，我们将上面构建的两个虚拟网口放到不同的网络空间里面去。
+首先创建两个命名空间：</p>
+
+<pre><code>ip netns add ns1
+ip netns add ns2
+</code></pre>
+
+<p>分别放入虚拟接口</p>
+
+<pre><code>ip link set veth11 netns ns1
+ip link set veth21 netns ns2
+</code></pre>
+
+<p>这样如果直接输入<code>ip link</code>结果是看不到<code>veth11</code>和<code>veth22</code>的。如果要查看的话需要执行</p>
+
+<pre><code>➜  ~ ip netns exec ns1 ip addr
+1: lo: &lt;LOOPBACK&gt; mtu 65536 qdisc noop state DOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+17: veth11@if18: &lt;BROADCAST,MULTICAST&gt; mtu 1500 qdisc noop state DOWN group default qlen 1000
+    link/ether fa:06:fe:c7:c6:e3 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+</code></pre>
+
+<p>完成设置后启动虚拟网口</p>
+
+<pre><code>ip netns exec ns1 ip link set veth11 up
+ip netns exec ns2 ip link set veth21 up
+</code></pre>
+
+<p>并设置IP</p>
+
+<pre><code>ip netns exec ns1 ip addr add 10.5.0.11/16 dev veth11
+ip netns exec ns2 ip addr add 10.5.0.21/16 dev veth21
+</code></pre>
+
+<p>这样就可以ping通网关(<code>10.5.0.11</code>)了</p>
+
+<pre><code>➜  ~ ip netns exec ns2 ping 10.5.0.1
+PING 10.5.0.1 (10.5.0.1) 56(84) bytes of data.
+64 bytes from 10.5.0.1: icmp_seq=1 ttl=64 time=0.121 ms
+64 bytes from 10.5.0.1: icmp_seq=2 ttl=64 time=0.084 ms
+64 bytes from 10.5.0.1: icmp_seq=3 ttl=64 time=0.083 ms
+</code></pre>
+
+<p>接下来加上默认路由表</p>
+
+<pre><code>ip netns exec ns1 ip route add default via 10.5.0.1 dev veth11
+ip netns exec ns2 ip route add default via 10.5.0.1 dev veth21
+</code></pre>
+
+<p>我们尝试</p>
+
+<pre><code>ip netns exec ns1 ping 192.168.50.5
+</code></pre>
+
+<p>会发现并不通， Why？原因在于我们的网络是<code>10.5.0.0/16</code>而对方的网络是<code>192.168.50.0/24</code>，linux默认不会转发
+跨网络的包。可以通过以下命令来让Linux转发跨网络的包，表现得更加像一个路由器：</p>
+
+<pre><code>echo 1 &gt; /proc/sys/net/ipv4/ip_forward
+</code></pre>
+
+<p>再次ping，发现还是不通。通过在物理网口(enp1s0)上抓包</p>
+
+<pre><code>➜  ~ tcpdump -i enp1s0 icmp
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode                 
+listening on enp1s0, link-type EN10MB (Ethernet), capture size 262144 bytes                
+22:37:08.725785 IP 10.5.0.11 &gt; 192.168.50.5: ICMP echo request, id 20576, seq 1, length 64 
+22:37:09.731337 IP 10.5.0.11 &gt; 192.168.50.5: ICMP echo request, id 20576, seq 2, length 64
+</code></pre>
+
+<p>发现ping没有回包，原因在于对方受到包后并不知道<code>10.5.0.11</code>这个ip地址在哪里，因为这是本机(192.168.50.6)上的私有网络。</p>
+
+<h2 id="s-nat">(S)NAT</h2>
+
+<p>网络包从一个私有网络到一个公有网络需要做网络地址转换(NAT)，在上面情况下，需要将<code>10.5.0.11</code>修改成<code>192.168.50.6</code>，然后
+Linux内部再维持这样的一个映射，从而能将外面的回包转换回来。这种将包源地址修改的操作，叫做SNAT，可用 iptables 来实现：</p>
+
+<pre><code>iptables -t nat -A POSTROUTING -s 10.5.0.0/16 ! -o virbr0 -j SNAT --to-source 192.168.50.6
+</code></pre>
+
+<p>我们这里不讲 iptables 相关的知识，更多内容可以自行查找。</p>
+
+<p>SNAT有一个变种，可以根据网络配置自动决定 <code>--to-source</code>的地址，即填写 enp1s0 上的地址。</p>
+
+<pre><code>iptables -t nat -A POSTROUTING -s 10.5.0.0/16 ! -o virbr0 -j MASQUERADE
+</code></pre>
+
+<p>By the way，如果想要暴露私有网络中的一个网络端口，则可以使用DNAT，</p>
+
+<pre><code>iptables -t nat -A PREROUTING -p tcp --dport 8765 -j DNAT --to-destination 10.5.0.11:8765
+</code></pre>
+
+<p>那么在其他机器上就可以通过<code>192.168.50.6:8765</code>来访问内部地址。这也是路由器中<a href="https://www.asus.com/support/FAQ/114093/">端口映射</a>的一般做法。</p>
+
+<h2 id="tun-tap">TUN/TAP</h2>
+
+<p>通过NAT、Bridge、Network Namespace我们已经构建了单机的网络，现在我们要实现跨物理机的虚拟网，也就是(V_P_N)。</p>
+
+<p>Linux提供了<code>TUN/TAP</code>子系统来实现自定义网络设备。使用<code>TUN/TAP</code>可以创建一个虚拟接口tun或者tap，其中tun是三层设备而tap是二层设备。内核向这些设备
+写入数据的时候会回调到用户态程序中，用户态程序可以自行决定如何处理这些网络数据包；同样程序也可以通过接口写入数据包，这样内核会感知到读事件。因此
+就可以使用软件的方式来模拟包的传输过程。</p>
+
+<p>由于我们需要连接两个局域网，需要处理如ARP之类的请求，因此需要创建一个二层设备(tap)。</p>
+
+<pre><code>ip tuntap add vtap0 mode tap
+</code></pre>
+
+<p>同样，将这个 <code>vtap0</code> 桥接到<code>virbr0</code>上。</p>
+
+<pre><code>ip link set virbr0 master virbr0
+</code></pre>
+
+<p>按照上面类似的做法，需要在<code>192.168.50.5</code>中创建虚拟网络(virbr0, veth30, veth31, vtap0)，并配置好相应的ip地址、路由表、SNAT。</p>
+
+<p>接下来就是要将这两个物理机上的vtap0互相连接起来，这需要编程了。好在网络上有<a href="https://gist.github.com/makcuk/381a218f5e395b543d08">示例</a>，可以直接拿来用：</p>
+
+<pre><code class="language-python">import fcntl
+import struct
+import os
+import socket
+import threading
+import sys
+
+TUNSETIFF = 0x400454ca
+TUNSETOWNER = TUNSETIFF + 2
+IFF_TUN = 0x0001
+IFF_TAP = 0x0002
+IFF_NO_PI = 0x1000
+
+
+def udp_send(dst, packet):
+    print &quot;udp_send&quot;
+    sock.sendto(packet, (dst, 40000))
+
+def recv():
+     ss = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) 
+     ss.bind((&quot;0.0.0.0&quot;, 40000))
+     while True:
+         data, addr = ss.recvfrom(1024)
+         print &quot;udp_recv&quot;
+         os.write(tun.fileno(), data)
+
+if __name__ == &quot;__main__&quot;:
+
+    if len(sys.argv) &lt; 3:
+        print &quot;Usage: tap-linux.py &lt;tap_interface&gt; &lt;dst_address_of_tunnel&gt;&quot;
+        sys.exit(1)
+    iface = sys.argv[1]
+    dst = sys.argv[2]
+    print &quot;Working on %s inteface, destination address %s:40000 udp&quot; % (iface, dst)
+    tun = open('/dev/net/tun', 'r+b')
+    ifr = struct.pack('16sH', iface, IFF_TAP | IFF_NO_PI)
+    fcntl.ioctl(tun, TUNSETIFF, ifr)
+    fcntl.ioctl(tun, TUNSETOWNER, 1000)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
+    t = threading.Thread(target=recv)
+    try:
+        t.start()
+        while True:
+            packet = os.read(tun.fileno(), 2048)
+            if True:
+                udp_send(dst, packet)
+
+    except KeyboardInterrupt:
+        print &quot;Terminating ...&quot;
+        os._exit(0)
+</code></pre>
+
+<p>接下来只需要在<code>192.168.50.5</code>上执行</p>
+
+<pre><code>python linux-tap.py vtap0 192.168.50.6
+</code></pre>
+
+<p>在<code>192.168.50.6</code>上执行</p>
+
+<pre><code>python linux-tap.py vtap0 192.168.50.5
+</code></pre>
+
+<p>就可以了。</p>
+
+<p>该程序的主要功能主要是：开启两个线程，一个用于接收40000端口的数据，然后写到tap中；一个用于从tap中读取数据，然后写入到远程进程的40000端口中去。中间的通信过程采用了
+UDP协议，这也是正常的，因为以太网数据包本身就是不可靠的。</p>
+
+<p>通过上面的一番操作，我们的网络就已经构建完成了，成功模拟了Docker中的<a href="https://docs.docker.com/network/bridge/">Bridge</a>和<a href="https://docs.docker.com/network/overlay/">Overlay</a> Network的功能。</p>
+
+<h2 id="接下来">接下来</h2>
+
+<p>在最新的Linux版本中，引入了如Macvlan/Macvtap/Ipvlan之类新的网络设备，其功能主要是将上述中的Bridge操作简化，接下来有时间可以慢慢解释这些网络设备的应用吧。</p>
+
+</div>
+
+  <div class="eof">--EOF--</div>
+  
+  
+<div class="wxqrbox">
+    <span class="qrintro">欢迎关注我的微信公众号</span>
+    <img class="qrimg" src="https://open.weixin.qq.com/qr/code?username=gh_950f5a94ae02"></img>
+</div>
+
+
+  <div class="post-meta">
+    发表于 <time>16 Oct 2019, 20:10</time>
+  
+  
+  
+  
+  , 标签: 「
+    
+      <a class="post-taxonomy-tag" href="tags/network">network</a>
+    
+」
+  
+  
+
+</div>
+
+
+  
+<div class="prev-next-post">
+  <div class="prev-link" style="text-align: left;">
+    
+    <nav class="prev">
+      <a href="/post/2018/yet-another-c-coroutine/">« [造轮子] 又一个 c&#43;&#43; coroutine 的实现</a>
+    </nav>
+    
+  </div>
+  <div class="next-link">
+    
+  </div>
+</div>
+
+
+
+  
+
+
+  
+
+</div>
+
+</div>
+</div>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-19710645-12', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+</script>
+</body>
+</html>
+
