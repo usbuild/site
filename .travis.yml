@@ -19,7 +19,7 @@ install:
   - rm -rf public || exit 0
 
 script:
-  - hugo
+  - hugo -F
 after_success:
   - cp .travis.yml public
   - bash deploy.sh
