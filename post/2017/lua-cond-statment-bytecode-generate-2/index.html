@@ -5,7 +5,7 @@
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="">
-  <meta name="generator" content="Hugo 0.42.2" />
+  <meta name="generator" content="Hugo 0.42.1" />
 
   <title>lua 5.1 分支语句 bytecode 的生成（二） &middot; 乐Coding</title>
 
@@ -107,76 +107,76 @@ end
 在代码中可以看到，在读到<code>or</code>之前是<code>luaK_infix</code>，读到<code>or</code>之后是<code>luaK_postfix</code>，我们看看两者的做法：</p>
 
 <pre><code>-- luaK_infix
-716     case OPR_OR: {
-717       luaK_goiffalse(fs, v);
-718       break;
-719     }
+716	    case OPR_OR: {
+717	      luaK_goiffalse(fs, v);
+718	      break;
+719	    }
 </code></pre>
 
 <pre><code>-- luaK_postfix
-746     case OPR_OR: {
-747       lua_assert(e1-&gt;f == NO_JUMP);  /* list must be closed */
-748       luaK_dischargevars(fs, e2);
-749       luaK_concat(fs, &amp;e2-&gt;t, e1-&gt;t);
-750       *e1 = *e2;
-751       break;
-752     }
+746	    case OPR_OR: {
+747	      lua_assert(e1-&gt;f == NO_JUMP);  /* list must be closed */
+748	      luaK_dischargevars(fs, e2);
+749	      luaK_concat(fs, &amp;e2-&gt;t, e1-&gt;t);
+750	      *e1 = *e2;
+751	      break;
+752	    }
 </code></pre>
 
 <p>关键还是上文说到的<code>luaK_goiffalse</code>，</p>
 
-<pre><code>580   luaK_concat(fs, &amp;e-&gt;t, pc);  /* insert last jump in `t' list */
-581   luaK_patchtohere(fs, e-&gt;f);
+<pre><code>580	  luaK_concat(fs, &amp;e-&gt;t, pc);  /* insert last jump in `t' list */
+581	  luaK_patchtohere(fs, e-&gt;f);
 </code></pre>
 
 <p>如果返回 true 的话，那么跳转到某个“未知”的地方，false 的话直接执行下一句。那么这个“未知”的地方是怎么确定的呢？
 答案在<code>exp2reg</code>里面。</p>
 
-<pre><code>394   if (hasjumps(e)) {
-395     int final;  /* position after whole expression */
-396     int p_f = NO_JUMP;  /* position of an eventual LOAD false */
-397     int p_t = NO_JUMP;  /* position of an eventual LOAD true */
-398     if (need_value(fs, e-&gt;t) || need_value(fs, e-&gt;f)) {
-399       int fj = (e-&gt;k == VJMP) ? NO_JUMP : luaK_jump(fs);
-400       p_f = code_label(fs, reg, 0, 1);
-401       p_t = code_label(fs, reg, 1, 0);
-402       luaK_patchtohere(fs, fj);
-403     }
-404     final = luaK_getlabel(fs);
-405     patchlistaux(fs, e-&gt;f, final, reg, p_f);
-406     patchlistaux(fs, e-&gt;t, final, reg, p_t);
-407   }
+<pre><code>394	  if (hasjumps(e)) {
+395	    int final;  /* position after whole expression */
+396	    int p_f = NO_JUMP;  /* position of an eventual LOAD false */
+397	    int p_t = NO_JUMP;  /* position of an eventual LOAD true */
+398	    if (need_value(fs, e-&gt;t) || need_value(fs, e-&gt;f)) {
+399	      int fj = (e-&gt;k == VJMP) ? NO_JUMP : luaK_jump(fs);
+400	      p_f = code_label(fs, reg, 0, 1);
+401	      p_t = code_label(fs, reg, 1, 0);
+402	      luaK_patchtohere(fs, fj);
+403	    }
+404	    final = luaK_getlabel(fs);
+405	    patchlistaux(fs, e-&gt;f, final, reg, p_f);
+406	    patchlistaux(fs, e-&gt;t, final, reg, p_t);
+407	  }
 </code></pre>
 
 <p>由于我们设置了<code>e-&gt;t</code>或<code>e-&gt;f</code>，所以<code>hasjumps</code>判断成立。由于<code>TESTSET</code>已经提供了赋值的寄存器，因此是不需要额外记录判断结果的。而对于其他的入<code>LT</code>、<code>JMP</code>等，其本身是不记录任何判断结果的，为了记录只能在 JMP 完成之后，设置到寄存器中，
 这也就是此处<code>code_label</code>存在的原因。接下来是<code>patchlistaux</code>，其定义如下：</p>
 
-<pre><code>150 static void patchlistaux (FuncState *fs, int list, int vtarget, int reg,
-151                           int dtarget) {
-152   while (list != NO_JUMP) {
-153     int next = getjump(fs, list);
-154     if (patchtestreg(fs, list, reg))
-155       fixjump(fs, list, vtarget);
-156     else
-157       fixjump(fs, list, dtarget);  /* jump to default target */
-158     list = next;
-159   }
-160 }
+<pre><code>150	static void patchlistaux (FuncState *fs, int list, int vtarget, int reg,
+151	                          int dtarget) {
+152	  while (list != NO_JUMP) {
+153	    int next = getjump(fs, list);
+154	    if (patchtestreg(fs, list, reg))
+155	      fixjump(fs, list, vtarget);
+156	    else
+157	      fixjump(fs, list, dtarget);  /* jump to default target */
+158	    list = next;
+159	  }
+160	}
 </code></pre>
 
 <p>其中 <code>patchtestreg</code>定义如下：</p>
 
-<pre><code>131 static int patchtestreg (FuncState *fs, int node, int reg) {
-132   Instruction *i = getjumpcontrol(fs, node);
-133   if (GET_OPCODE(*i) != OP_TESTSET)
-134     return 0;  /* cannot patch other instructions */
-135   if (reg != NO_REG &amp;&amp; reg != GETARG_B(*i))
-136     SETARG_A(*i, reg);
-137   else  /* no register to put value or register already has the value */
-138     *i = CREATE_ABC(OP_TEST, GETARG_B(*i), 0, GETARG_C(*i));
-139 
-140   return 1;
-141 }
+<pre><code>131	static int patchtestreg (FuncState *fs, int node, int reg) {
+132	  Instruction *i = getjumpcontrol(fs, node);
+133	  if (GET_OPCODE(*i) != OP_TESTSET)
+134	    return 0;  /* cannot patch other instructions */
+135	  if (reg != NO_REG &amp;&amp; reg != GETARG_B(*i))
+136	    SETARG_A(*i, reg);
+137	  else  /* no register to put value or register already has the value */
+138	    *i = CREATE_ABC(OP_TEST, GETARG_B(*i), 0, GETARG_C(*i));
+139	
+140	  return 1;
+141	}
 </code></pre>
 
 <p>其中<code>vtarget</code>是我们当前的位置<code>final</code>，而<code>dtarget</code>是<code>p_f</code>或<code>p_t</code>。这两条语句的作用其实是将最终<code>TESTSET</code>指令的结果传送到<code>reg</code>，

@@ -5,7 +5,7 @@
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="">
-  <meta name="generator" content="Hugo 0.42.2" />
+  <meta name="generator" content="Hugo 0.42.1" />
 
   <title>使用C&#43;&#43; map实现注册回调的功能 &middot; 乐Coding</title>
 
@@ -111,20 +111,20 @@ void func(int i) {}
 
 class Functor {
 public:
-    void operator()(const std::string &amp;s, int i) {}
+	void operator()(const std::string &amp;s, int i) {}
 };
 
 int main() {
-    int c1 = addCallback(&amp;func);
-    int i;
-    int c2 = addCallback([i](double j) {});
-    int c3 = addCallback(Functor());
+	int c1 = addCallback(&amp;func);
+	int i;
+	int c2 = addCallback([i](double j) {});
+	int c3 = addCallback(Functor());
 
-    call(c1, 1);
-    call(c2, 1.0);
-    call(c3, std::string(&quot;string&quot;), 1);
+	call(c1, 1);
+	call(c2, 1.0);
+	call(c3, std::string(&quot;string&quot;), 1);
 
-    return 0;
+	return 0;
 }
 </code></pre>
 
@@ -138,11 +138,11 @@ int main() {
 
 <pre><code>template&lt;typename ... ARGS&gt;
 void call(int idx, ARGS &amp;&amp; ... args) {
-    auto it = callbacks.find(idx);
-    if (it != callbacks.end() {
-        auto tuple = std::tuple&lt;ARGS...&gt;(args...);
-        it-&gt;second(&amp;tuple);
-    }
+	auto it = callbacks.find(idx);
+	if (it != callbacks.end() {
+		auto tuple = std::tuple&lt;ARGS...&gt;(args...);
+		it-&gt;second(&amp;tuple);
+	}
 }
 </code></pre>
 

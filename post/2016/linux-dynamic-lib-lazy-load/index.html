@@ -5,7 +5,7 @@
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="">
-  <meta name="generator" content="Hugo 0.42.2" />
+  <meta name="generator" content="Hugo 0.42.1" />
 
   <title>理解Linux下动态链接库延迟绑定 &middot; 乐Coding</title>
 
@@ -125,20 +125,20 @@ int main(int argc, const char *argv[])
 我们使用<code>gdb</code>来跟踪一下执行过程：<code>gdb dl_test</code></p>
 
 <pre><code>(gdb) l
-1   #include &lt;stdio.h&gt;
-2   int main(int argc, const char *argv[])
-3   {
-4       puts(&quot;1234&quot;);
-5       puts(&quot;1234&quot;);
-6       return 0;
-7   }
+1	#include &lt;stdio.h&gt;
+2	int main(int argc, const char *argv[])
+3	{
+4	    puts(&quot;1234&quot;);
+5	    puts(&quot;1234&quot;);
+6	    return 0;
+7	}
 (gdb) b 4
 Breakpoint 1 at 0x400515: file dl_test.c, line 4.
 (gdb) r
 Starting program: /home/zqc/workspace/cpptest/dl_test
 
 Breakpoint 1, main (argc=1, argv=0x7fffffffeb98) at dl_test.c:4
-4       puts(&quot;1234&quot;);
+4	    puts(&quot;1234&quot;);
 (gdb)
 </code></pre>
 

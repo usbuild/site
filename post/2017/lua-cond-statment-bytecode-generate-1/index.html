@@ -5,7 +5,7 @@
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="">
-  <meta name="generator" content="Hugo 0.42.2" />
+  <meta name="generator" content="Hugo 0.42.1" />
 
   <title>lua 5.1 分支语句 bytecode 的生成（一） &middot; 乐Coding</title>
 
@@ -270,17 +270,17 @@ of 1 (true).</p>
 
 <p>除此之外，<code>patchlistaux</code>还进行的一项操作就是<code>patchtestreg</code>，它的作用就是处理<code>TESTSET</code>，</p>
 
-<pre><code>131 static int patchtestreg (FuncState *fs, int node, int reg) {
-132   Instruction *i = getjumpcontrol(fs, node);
-133   if (GET_OPCODE(*i) != OP_TESTSET)
-134     return 0;  /* cannot patch other instructions */
-135   if (reg != NO_REG &amp;&amp; reg != GETARG_B(*i)) // 前者表示不需要寄存，后者两者相同的话也是不需要修改的
-136     SETARG_A(*i, reg);
-137   else  /* no register to put value or register already has the value */
-138     *i = CREATE_ABC(OP_TEST, GETARG_B(*i), 0, GETARG_C(*i)); // 对于不需要返回值的情况，直接修改为 TEST
-139 
-140   return 1;
-141 }
+<pre><code>131	static int patchtestreg (FuncState *fs, int node, int reg) {
+132	  Instruction *i = getjumpcontrol(fs, node);
+133	  if (GET_OPCODE(*i) != OP_TESTSET)
+134	    return 0;  /* cannot patch other instructions */
+135	  if (reg != NO_REG &amp;&amp; reg != GETARG_B(*i)) // 前者表示不需要寄存，后者两者相同的话也是不需要修改的
+136	    SETARG_A(*i, reg);
+137	  else  /* no register to put value or register already has the value */
+138	    *i = CREATE_ABC(OP_TEST, GETARG_B(*i), 0, GETARG_C(*i)); // 对于不需要返回值的情况，直接修改为 TEST
+139	
+140	  return 1;
+141	}
 </code></pre>
 
 <p>上面的介绍只是 条件语句的一部分，后面的文章会对短路求值，compare 运算符等做解释。</p>
