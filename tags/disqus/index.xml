@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Disqus on 乐Coding</title>
+    <link>/tags/disqus/</link>
+    <description>Recent content in Disqus on 乐Coding</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <copyright>&amp;copy; 2019. All rights reserved.</copyright>
+    <lastBuildDate>Sun, 07 May 2017 18:11:51 +0800</lastBuildDate>
+    
+	<atom:link href="/tags/disqus/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>让disqus支持大陆访问</title>
+      <link>/post/2017/use-disqus-in-china/</link>
+      <pubDate>Sun, 07 May 2017 18:11:51 +0800</pubDate>
+      
+      <guid>/post/2017/use-disqus-in-china/</guid>
+      <description>由于众所周知的原因，disqus 在大陆难以访问，随着多说的关闭，无法正常地使用评论功能已经成为 「静态博客生成器类博客」的一个问题。 好在 disqus 提供</description>
+    </item>
+    
+  </channel>
+</rss>

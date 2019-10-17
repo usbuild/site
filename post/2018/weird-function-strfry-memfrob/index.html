@@ -5,7 +5,7 @@
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="">
-  <meta name="generator" content="Hugo 0.42.1" />
+  <meta name="generator" content="Hugo 0.42.2" />
 
   <title>glibc 中两个另类的函数 &middot; 乐Coding</title>
 
@@ -123,7 +123,7 @@ cba: 165666
       static char state[32];
       rdata.state = NULL;
       __initstate_r (time ((time_t *) NULL) ^ getpid (),
-		     state, sizeof (state), &amp;rdata);
+             state, sizeof (state), &amp;rdata);
       init = 1;
     }
 
@@ -131,13 +131,13 @@ cba: 165666
   if (len &gt; 0)
     for (size_t i = 0; i &lt; len - 1; ++i)
       {
-	int32_t j;
-	__random_r (&amp;rdata, &amp;j);
-	j = j % (len - i) + i;
+    int32_t j;
+    __random_r (&amp;rdata, &amp;j);
+    j = j % (len - i) + i;
 
-	char c = string[i];
-	string[i] = string[j];
-	string[j] = c;
+    char c = string[i];
+    string[i] = string[j];
+    string[j] = c;
       }
 
   return string;

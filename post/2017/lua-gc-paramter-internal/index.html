@@ -5,7 +5,7 @@
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="">
-  <meta name="generator" content="Hugo 0.42.1" />
+  <meta name="generator" content="Hugo 0.42.2" />
 
   <title>解析lua gc 中的参数控制 &middot; 乐Coding</title>
 
@@ -166,10 +166,10 @@ typedef struct global_State {
 
 <p>下面这段代码是代码中随处可见，如<code>lua_createtable</code>等，在执行操作之前都会检查是否需要触发<code>gc</code>，以保证内存利用率。</p>
 
-<pre><code class="language-c">80	#define luaC_checkGC(L) { \
-81	  condhardstacktests(luaD_reallocstack(L, L-&gt;stacksize - EXTRA_STACK - 1)); \
-82	  if (G(L)-&gt;totalbytes &gt;= G(L)-&gt;GCthreshold) \
-83		luaC_step(L); }
+<pre><code class="language-c">80  #define luaC_checkGC(L) { \
+81    condhardstacktests(luaD_reallocstack(L, L-&gt;stacksize - EXTRA_STACK - 1)); \
+82    if (G(L)-&gt;totalbytes &gt;= G(L)-&gt;GCthreshold) \
+83      luaC_step(L); }
 </code></pre>
 
 <p>当 <code>totalbytes &gt;= GCthreshold</code>时触发step。因此<code>LUA_GCRESTART</code>之后，下一次<code>checkGC</code>的时候会立即出发<code>luaC_step</code>。可以看到
@@ -185,29 +185,29 @@ typedef struct global_State {
 
 <p>接下来看<code>luaC_step</code>的代码</p>
 
-<pre><code class="language-c">610	void luaC_step (lua_State *L) {
-611	  global_State *g = G(L);
-612	  l_mem lim = (GCSTEPSIZE/100) * g-&gt;gcstepmul;
-613	  if (lim == 0)
-614	    lim = (MAX_LUMEM-1)/2;  /* no limit */
-615	  g-&gt;gcdept += g-&gt;totalbytes - g-&gt;GCthreshold;
-616	  do {
-617	    lim -= singlestep(L);
-618	    if (g-&gt;gcstate == GCSpause)
-619	      break;
-620	  } while (lim &gt; 0);
-621	  if (g-&gt;gcstate != GCSpause) {
-622	    if (g-&gt;gcdept &lt; GCSTEPSIZE)
-623	      g-&gt;GCthreshold = g-&gt;totalbytes + GCSTEPSIZE;  /* - lim/g-&gt;gcstepmul;*/
-624	    else {
-625	      g-&gt;gcdept -= GCSTEPSIZE;
-626	      g-&gt;GCthreshold = g-&gt;totalbytes;
-627	    }
-628	  }
-629	  else {
-630	    setthreshold(g);
-631	  }
-632	}
+<pre><code class="language-c">610 void luaC_step (lua_State *L) {
+611   global_State *g = G(L);
+612   l_mem lim = (GCSTEPSIZE/100) * g-&gt;gcstepmul;
+613   if (lim == 0)
+614     lim = (MAX_LUMEM-1)/2;  /* no limit */
+615   g-&gt;gcdept += g-&gt;totalbytes - g-&gt;GCthreshold;
+616   do {
+617     lim -= singlestep(L);
+618     if (g-&gt;gcstate == GCSpause)
+619       break;
+620   } while (lim &gt; 0);
+621   if (g-&gt;gcstate != GCSpause) {
+622     if (g-&gt;gcdept &lt; GCSTEPSIZE)
+623       g-&gt;GCthreshold = g-&gt;totalbytes + GCSTEPSIZE;  /* - lim/g-&gt;gcstepmul;*/
+624     else {
+625       g-&gt;gcdept -= GCSTEPSIZE;
+626       g-&gt;GCthreshold = g-&gt;totalbytes;
+627     }
+628   }
+629   else {
+630     setthreshold(g);
+631   }
+632 }
 </code></pre>
 
 <p>这里<code>stepmul</code>控制的就是<code>step</code>的长度，越大则每步所进行的操作也就越多，拥有更多的「费」。其中<code>GCSTEPSIZE</code>的值为<code>1024</code>。也就是说默认<code>stepmul</code>为200的情况下，大约可已进行<code>2048</code>「费」，那么「费」是怎么定义的呢？从代码可以看到清除一条<code>string</code>表和任意一个<code>gc</code>对象为<code>10</code>「费」，调用<code>__gc</code>元方法为<code>100</code>「费」，除非是<code>sweep</code>阶段否则内存不会减少，因此不能使用内存差值来表示工作进度，所以引入了「费」。如果你把<code>stepmul</code>设置为<code>0</code>的话，那么<code>lim</code>就是<code>(MAX_LUMEM-1)/2</code>
@@ -219,19 +219,19 @@ typedef struct global_State {
 
 <p>另外，<code>gcdept</code>在每个周期末尾会清零。</p>
 
-<pre><code>592	    case GCSfinalize: {
-593	      if (g-&gt;tmudata) {
-594	        GCTM(L);
-595	        if (g-&gt;estimate &gt; GCFINALIZECOST)
-596	          g-&gt;estimate -= GCFINALIZECOST;
-597	        return GCFINALIZECOST;
-598	      }
-599	      else {
-600	        g-&gt;gcstate = GCSpause;  /* end collection */
-601	        g-&gt;gcdept = 0;
-602	        return 0;
-603	      }
-604	    }
+<pre><code>592     case GCSfinalize: {
+593       if (g-&gt;tmudata) {
+594         GCTM(L);
+595         if (g-&gt;estimate &gt; GCFINALIZECOST)
+596           g-&gt;estimate -= GCFINALIZECOST;
+597         return GCFINALIZECOST;
+598       }
+599       else {
+600         g-&gt;gcstate = GCSpause;  /* end collection */
+601         g-&gt;gcdept = 0;
+602         return 0;
+603       }
+604     }
 </code></pre>
 
 </div>
