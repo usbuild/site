@@ -5,7 +5,7 @@ theme = "lecoding"
 hasCJKLanguage = true
 
 author = "Usbuild"
-copyright = "&copy; 2018. All rights reserved."
+copyright = "&copy; 2019. All rights reserved."
 canonifyurls = true
 paginate = 10
 
