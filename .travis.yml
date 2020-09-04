@@ -12,7 +12,7 @@ branches:
     - master
 
 before_install:
-  - wgethttps://github.com/gohugoio/hugo/releases/download/v0.74.3/hugo_0.74.3_Linux-64bit.deb
+  - wget https://github.com/gohugoio/hugo/releases/download/v0.74.3/hugo_0.74.3_Linux-64bit.deb
   - sudo dpkg -i hugo_0.74.3_Linux-64bit.deb
 
 install:
