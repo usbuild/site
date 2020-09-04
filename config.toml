@@ -48,3 +48,6 @@ paginate = 10
 [social]
   github = "usbuild"
   linkedin = "usbuild"
+
+[markup.goldmark.renderer]
+unsafe= true
