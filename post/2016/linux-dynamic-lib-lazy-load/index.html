@@ -5,7 +5,7 @@
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="">
-  <meta name="generator" content="Hugo 0.42.1" />
+  <meta name="generator" content="Hugo 0.74.3" />
 
   <title>理解Linux下动态链接库延迟绑定 &middot; 乐Coding</title>
 
@@ -77,53 +77,44 @@
 
 <div class="single-content">
   <script src="//cdn.bootcss.com/highlight.js/9.6.0/languages/x86asm.min.js"></script>
-
 <p>在编译动态链接库时，为了保证能被正常使用，一般我们会加上-fPIC参数。在使用的动态链接库中的函数时，Linux使用了一种
 叫延迟绑定的技术实现运行时的symbol relocation。其中的关键就是GOT(Global Offset Table)和PLT(Procedure linkage Table)。下面就
 这一技术的实现简单解释一下。</p>
-
 <p>首先写一个很简单的需要动态链接的程序，如下</p>
-
-<pre><code class="language-c">//dl_test.c
-#include &lt;stdio.h&gt;
-int main(int argc, const char *argv[])
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">//dl_test.c
+</span><span style="color:#75715e"></span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>argv[])
 {
-    puts(&quot;1234&quot;);
-    puts(&quot;1234&quot;);
-    return 0;
+    puts(<span style="color:#e6db74">&#34;1234&#34;</span>);
+    puts(<span style="color:#e6db74">&#34;1234&#34;</span>);
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
 }
-</code></pre>
-
-<p>然后使用<code>gcc</code>编译并链接: <code>gcc -g dl_test.c -o dl_test.c</code>。先别急着运行这个程序，我们使用<code>objdump</code>反编译一下看看：</p>
-
-<pre><code class="language-bash">$ objdump -S dl_test
+</code></pre></div><p>然后使用<code>gcc</code>编译并链接: <code>gcc -g dl_test.c -o dl_test.c</code>。先别急着运行这个程序，我们使用<code>objdump</code>反编译一下看看：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ objdump -S dl_test
 ......
-0000000000400506 &lt;main&gt;:
-#include &lt;stdio.h&gt;
-int main(int argc, const char *argv[])
-{
-  400506:       55                      push   %rbp
-  400507:       48 89 e5                mov    %rsp,%rbp
-  40050a:       48 83 ec 10             sub    $0x10,%rsp
-  40050e:       89 7d fc                mov    %edi,-0x4(%rbp)
-  400511:       48 89 75 f0             mov    %rsi,-0x10(%rbp)
-    puts(&quot;1234&quot;);
-  400515:       bf b4 05 40 00          mov    $0x4005b4,%edi
+<span style="color:#ae81ff">0000000000400506</span> &lt;main&gt;:
+<span style="color:#75715e">#include &lt;stdio.h&gt;</span>
+int main<span style="color:#f92672">(</span>int argc, const char *argv<span style="color:#f92672">[])</span>
+<span style="color:#f92672">{</span>
+  400506:       <span style="color:#ae81ff">55</span>                      push   %rbp
+  400507:       <span style="color:#ae81ff">48</span> <span style="color:#ae81ff">89</span> e5                mov    %rsp,%rbp
+  40050a:       <span style="color:#ae81ff">48</span> <span style="color:#ae81ff">83</span> ec <span style="color:#ae81ff">10</span>             sub    $0x10,%rsp
+  40050e:       <span style="color:#ae81ff">89</span> 7d fc                mov    %edi,-0x4<span style="color:#f92672">(</span>%rbp<span style="color:#f92672">)</span>
+  400511:       <span style="color:#ae81ff">48</span> <span style="color:#ae81ff">89</span> <span style="color:#ae81ff">75</span> f0             mov    %rsi,-0x10<span style="color:#f92672">(</span>%rbp<span style="color:#f92672">)</span>
+    puts<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;1234&#34;</span><span style="color:#f92672">)</span>;
+  400515:       bf b4 <span style="color:#ae81ff">05</span> <span style="color:#ae81ff">40</span> <span style="color:#ae81ff">00</span>          mov    $0x4005b4,%edi
   40051a:       e8 c1 fe ff ff          callq  4003e0 &lt;puts@plt&gt;
-    puts(&quot;1234&quot;);
-  40051f:       bf b4 05 40 00          mov    $0x4005b4,%edi
+    puts<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;1234&#34;</span><span style="color:#f92672">)</span>;
+  40051f:       bf b4 <span style="color:#ae81ff">05</span> <span style="color:#ae81ff">40</span> <span style="color:#ae81ff">00</span>          mov    $0x4005b4,%edi
   400524:       e8 b7 fe ff ff          callq  4003e0 &lt;puts@plt&gt;
-    return 0;
-  400529:       b8 00 00 00 00          mov    $0x0,%eax
-}
+    <span style="color:#66d9ef">return</span> 0;
+  400529:       b8 <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span>          mov    $0x0,%eax
+<span style="color:#f92672">}</span>
   40052e:       c9                      leaveq
   40052f:       c3                      retq
 ......
-</code></pre>
-
-<p>可以看到，在<code>40051a</code>和<code>400524</code>两处都调用了我们的<code>puts</code>函数。但是看后面的注解，<code>&lt;puts@plt&gt;</code>表示这并不是<code>puts</code>的地址，而是另有目的。
+</code></pre></div><p>可以看到，在<code>40051a</code>和<code>400524</code>两处都调用了我们的<code>puts</code>函数。但是看后面的注解，<code>&lt;puts@plt&gt;</code>表示这并不是<code>puts</code>的地址，而是另有目的。
 我们使用<code>gdb</code>来跟踪一下执行过程：<code>gdb dl_test</code></p>
-
 <pre><code>(gdb) l
 1	#include &lt;stdio.h&gt;
 2	int main(int argc, const char *argv[])
@@ -140,11 +131,8 @@ Starting program: /home/zqc/workspace/cpptest/dl_test
 Breakpoint 1, main (argc=1, argv=0x7fffffffeb98) at dl_test.c:4
 4	    puts(&quot;1234&quot;);
 (gdb)
-</code></pre>
-
-<p>这里设置了一下断点到第一个<code>puts</code>的调用出，使用<code>layout asm</code>切换成汇编模式:</p>
-
-<pre><code class="language-x86asm">(gdb) layout asm
+</code></pre><p>这里设置了一下断点到第一个<code>puts</code>的调用出，使用<code>layout asm</code>切换成汇编模式:</p>
+<pre><code class="language-x86asm" data-lang="x86asm">(gdb) layout asm
    ┌────────────────────────────────────────────────────────────────────────────────────────────┐
 B+&gt;│0x400515 &lt;main+15&gt;              mov    $0x4005b4,%edi                                       │
    │0x40051a &lt;main+20&gt;              callq  0x4003e0 &lt;puts@plt&gt;                                  │
@@ -167,11 +155,8 @@ B+&gt;│0x400515 &lt;main+15&gt;              mov    $0x4005b4,%edi            
    │0x400551 &lt;__libc_csu_init+33&gt;   sub    %r12,%rbp                                            │
    └────────────────────────────────────────────────────────────────────────────────────────────┘
 child process 8855 In: main                                              Line: 4    PC: 0x400515
-</code></pre>
-
-<p>使用<code>stepi</code>或者简写为<code>si</code>执行下一条汇编指令。我们一直跟踪到<code>call</code>指令中去：</p>
-
-<pre><code class="language-x86asm">   ┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+</code></pre><p>使用<code>stepi</code>或者简写为<code>si</code>执行下一条汇编指令。我们一直跟踪到<code>call</code>指令中去：</p>
+<pre><code class="language-x86asm" data-lang="x86asm">   ┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐
   &gt;│0x4003e0 &lt;puts@plt&gt;                     jmpq   *0x20050a(%rip)   # 0x6008f0 &lt;puts@got.plt&gt;              │
    │0x4003e6 &lt;puts@plt+6&gt;                   pushq  $0x0                                                     │
    │0x4003eb &lt;puts@plt+11&gt;                  jmpq   0x4003d0                                                 │
@@ -195,71 +180,49 @@ child process 8855 In: main                                              Line: 4
 child process 9211 In: puts@plt                                                      Line: ??   PC: 0x4003e0
 0x00000000004003e0 in puts@plt ()
 (gdb)
-</code></pre>
-
-<p><code>0x4003e0</code>是刚刚跳转的地址，也就是<code>&lt;puts@plt&gt;</code>，从这个名字中我们可以看出，这个地址是属于<code>plt</code>的。先说一下<code>plt</code>的作用，<code>plt</code>的全称是
+</code></pre><p><code>0x4003e0</code>是刚刚跳转的地址，也就是<code>&lt;puts@plt&gt;</code>，从这个名字中我们可以看出，这个地址是属于<code>plt</code>的。先说一下<code>plt</code>的作用，<code>plt</code>的全称是
 过程链接表，意思就是当调用一个动态链接库中的函数时，其访问的是其实是<code>plt</code>中的一个过程，这个过程会完成真正的调用。我们分别看下属于<code>puts</code>中
 <code>plt</code>的项目</p>
-
-<pre><code class="language-x86asm">  &gt;│0x4003e0 &lt;puts@plt&gt;                     jmpq   *0x20050a(%rip)        # 0x6008f0 &lt;puts@got.plt&gt;     │
+<pre><code class="language-x86asm" data-lang="x86asm">  &gt;│0x4003e0 &lt;puts@plt&gt;                     jmpq   *0x20050a(%rip)        # 0x6008f0 &lt;puts@got.plt&gt;     │
    │0x4003e6 &lt;puts@plt+6&gt;                   pushq  $0x0                                                 │
    │0x4003eb &lt;puts@plt+11&gt;                  jmpq   0x4003d0                                             │
-</code></pre>
-
-<p>其中 <code>0x20050a(%rip)</code> 即 <code>got</code>中的地址，在初始情况下，该选项为<code>plt</code>项中的下一条指令，所以执行<code>jmpq   *0x20050a(%rip)</code> 直接会进入到
+</code></pre><p>其中 <code>0x20050a(%rip)</code> 即 <code>got</code>中的地址，在初始情况下，该选项为<code>plt</code>项中的下一条指令，所以执行<code>jmpq   *0x20050a(%rip)</code> 直接会进入到
 下一条指令<code>pushq</code>， <code>pushq $0x0</code>的目的是把当前在符号(<code>puts</code>)在<code>.rela.plt</code>中的index。我们可以使用<code>readelf</code>指令看下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ readelf -r dl_test
 
-<pre><code class="language-bash">$ readelf -r dl_test
-
-Relocation section '.rela.dyn' at offset 0x348 contains 1 entries:
+Relocation section <span style="color:#e6db74">&#39;.rela.dyn&#39;</span> at offset 0x348 contains <span style="color:#ae81ff">1</span> entries:
   Offset          Info           Type           Sym. Value    Sym. Name + Addend
-0000006008d0  000300000006 R_X86_64_GLOB_DAT 0000000000000000 __gmon_start__ + 0
+0000006008d0  <span style="color:#ae81ff">000300000006</span> R_X86_64_GLOB_DAT <span style="color:#ae81ff">0000000000000000</span> __gmon_start__ + <span style="color:#ae81ff">0</span>
 
-Relocation section '.rela.plt' at offset 0x360 contains 3 entries:
+Relocation section <span style="color:#e6db74">&#39;.rela.plt&#39;</span> at offset 0x360 contains <span style="color:#ae81ff">3</span> entries:
   Offset          Info           Type           Sym. Value    Sym. Name + Addend
-0000006008f0  000100000007 R_X86_64_JUMP_SLO 0000000000000000 puts + 0
-0000006008f8  000200000007 R_X86_64_JUMP_SLO 0000000000000000 __libc_start_main + 0
-000000600900  000300000007 R_X86_64_JUMP_SLO 0000000000000000 __gmon_start__ + 0
-</code></pre>
-
-<p>可以看到，<code>puts</code>的index为0，第一项，所以这里push的是<code>$0x0</code>。同理，下面的<code>__libc_start_main</code>就是<code>$0x1</code>。 下一行语句是<code>jmpq   0x4003d0</code>，这个地址是
+0000006008f0  <span style="color:#ae81ff">000100000007</span> R_X86_64_JUMP_SLO <span style="color:#ae81ff">0000000000000000</span> puts + <span style="color:#ae81ff">0</span>
+0000006008f8  <span style="color:#ae81ff">000200000007</span> R_X86_64_JUMP_SLO <span style="color:#ae81ff">0000000000000000</span> __libc_start_main + <span style="color:#ae81ff">0</span>
+<span style="color:#ae81ff">000000600900</span>  <span style="color:#ae81ff">000300000007</span> R_X86_64_JUMP_SLO <span style="color:#ae81ff">0000000000000000</span> __gmon_start__ + <span style="color:#ae81ff">0</span>
+</code></pre></div><p>可以看到，<code>puts</code>的index为0，第一项，所以这里push的是<code>$0x0</code>。同理，下面的<code>__libc_start_main</code>就是<code>$0x1</code>。 下一行语句是<code>jmpq   0x4003d0</code>，这个地址是
 固定的，所有的<code>plt</code>入口最后一句语句都是这个，这是个通用的过程。
 继续<code>stepi</code>到jump的位置</p>
-
-<pre><code class="language-x86asm">  &gt;│0x4003d0                                pushq  0x20050a(%rip)        # 0x6008e0                     │
+<pre><code class="language-x86asm" data-lang="x86asm">  &gt;│0x4003d0                                pushq  0x20050a(%rip)        # 0x6008e0                     │
    │0x4003d6                                jmpq   *0x20050c(%rip)        # 0x6008e8                    │
    │0x4003dc                                nopl   0x0(%rax)                                            │
    │0x4003e0 &lt;puts@plt&gt;                     jmpq   *0x20050a(%rip)        # 0x6008f0 &lt;puts@got.plt&gt;     │
-</code></pre>
-
-<p>发现这个地址就是在<code>puts@plt</code>的上面，并且也是为了保证和普通<code>plt</code>入口项目大小(<code>0x10</code>)，其末尾还用0补齐了(<code>nopl   0x0(%rax)</code>)。我们重点看一下前面两句。</p>
-
+</code></pre><p>发现这个地址就是在<code>puts@plt</code>的上面，并且也是为了保证和普通<code>plt</code>入口项目大小(<code>0x10</code>)，其末尾还用0补齐了(<code>nopl   0x0(%rax)</code>)。我们重点看一下前面两句。</p>
 <p><code>pushq  0x20050a(%rip)        # 0x6008e0</code>，这里push了一个地址，这个地址是干嘛的？我们使用<code>gdb</code>看一下：</p>
-
 <pre><code>(gdb) x /16x 0x6008e0
 0x6008e0:       0xf7ffe1a8      0x00007fff      0xf7df02b0      0x00007fff
 0x6008f0 &lt;puts@got.plt&gt;:        0x004003e6      0x00000000      0xf7a52a50      0x00007fff
 0x600900 &lt;__gmon_start__@got.plt&gt;:      0x00400406      0x00000000      0x00000000      0x00000000
 0x600910:       0x00000000      0x00000000      0x00000000      0x00000000
-</code></pre>
-
-<p>这个地址其实就是<code>got</code>中的一项，并且在所有普通符号<code>got</code>的前面。那么目前栈上的元素是：</p>
-
+</code></pre><p>这个地址其实就是<code>got</code>中的一项，并且在所有普通符号<code>got</code>的前面。那么目前栈上的元素是：</p>
 <pre><code>| 0x00007ffff7ffe1a8 |
 | 0x0                |
-</code></pre>
-
-<p>接下来到是<code>jmpq   *0x20050c(%rip)</code> 这个地址也是在plt上，紧挨着上面push的地址，值为<code>0x00007ffff7df02b0</code>，我们可以继续<code>stepi</code>进去，也可以
+</code></pre><p>接下来到是<code>jmpq   *0x20050c(%rip)</code> 这个地址也是在plt上，紧挨着上面push的地址，值为<code>0x00007ffff7df02b0</code>，我们可以继续<code>stepi</code>进去，也可以
 通过<code>disassemble 0x00007ffff7df02b0</code>查看。或者，使用<code>info symbol 0x00007ffff7df02b0</code>直接查看。</p>
-
 <pre><code>(gdb) info symbol 0x00007ffff7df02b0
 _dl_runtime_resolve in section .text of /lib64/ld-linux-x86-64.so.2
-</code></pre>
-
-<p>从这里可以看出，这是属于<code>ld-linux-x86-64.so.2</code>里面的一个方法。这个so属于<code>glibc</code>的一部分，我们可以下载<a href="ftp://ftp.gnu.org/gnu/glibc">glibc</a>来查看。最终我们找到了这个符号定义文件，
+</code></pre><p>从这里可以看出，这是属于<code>ld-linux-x86-64.so.2</code>里面的一个方法。这个so属于<code>glibc</code>的一部分，我们可以下载<a href="ftp://ftp.gnu.org/gnu/glibc">glibc</a>来查看。最终我们找到了这个符号定义文件，
 其位置在<code>sysdeps/x86_64/dl-trampoline.S</code>，内容如下</p>
-
-<pre><code class="language-x86asm"> 28     .globl _dl_runtime_resolve
+<pre><code class="language-x86asm" data-lang="x86asm"> 28     .globl _dl_runtime_resolve
  29     .type _dl_runtime_resolve, @function
  30     .align 16
  31     cfi_startproc
@@ -290,64 +253,46 @@ _dl_runtime_resolve in section .text of /lib64/ld-linux-x86-64.so.2
  56     jmp *%r11       # Jump to function address.
  57     cfi_endproc
  58     .size _dl_runtime_resolve, .-_dl_runtime_resolve
-</code></pre>
-
-<p>从43行开始是我们的逻辑。43行取出了我们刚刚push的第一个参数，就是<code>$0x0</code>，放到<code>%rsi</code>中，然后是我们push的第二个参数，<code>0x00007ffff7ffe1a8</code>到<code>%rsi</code>中。
+</code></pre><p>从43行开始是我们的逻辑。43行取出了我们刚刚push的第一个参数，就是<code>$0x0</code>，放到<code>%rsi</code>中，然后是我们push的第二个参数，<code>0x00007ffff7ffe1a8</code>到<code>%rsi</code>中。
 为什么是这两个寄存器呢？我们<code>man syscall</code>一下：</p>
-
 <pre><code>       arch/ABI   arg1   arg2   arg3   arg4   arg5   arg6   arg7
        ──────────────────────────────────────────────────────────
        x86_64     rdi    rsi    rdx    r10    r8     r9     -
-</code></pre>
-
-<p>可以看出linux下的函数传参方式， 那么<code>%rdi</code>就是参数1，而<code>%rsi</code>就是参数2了。接下来是<code>call _dl_fixup</code>，这个函数返回值就是指向<code>puts</code>存储地址位置的指针了，后面可以看到
+</code></pre><p>可以看出linux下的函数传参方式， 那么<code>%rdi</code>就是参数1，而<code>%rsi</code>就是参数2了。接下来是<code>call _dl_fixup</code>，这个函数返回值就是指向<code>puts</code>存储地址位置的指针了，后面可以看到
 代码中将这个指针保存到了<code>%r11</code>，然后<code>jmp *%r11</code>。完成了一次函数调用，下面我们来看看<code>_dl_fixup</code>做了些什么。同样，这个函数也是<code>gblic</code>中定义的，位置在<code>elf/dl-runtime.c</code>中：</p>
-
-<pre><code class="language-c">59 DL_FIXUP_VALUE_TYPE
-60 __attribute ((noinline)) ARCH_FIXUP_ATTRIBUTE
-61 _dl_fixup (
-62 # ifdef ELF_MACHINE_RUNTIME_FIXUP_ARGS
-63        ELF_MACHINE_RUNTIME_FIXUP_ARGS,
-64 # endif
-65        struct link_map *l, ElfW(Word) reloc_arg)
-66 {
-</code></pre>
-
-<p>从函数原型我们可以看出，之前<code>push</code>的两个参数分别是<code>link_map</code>和<code>reloc_arg</code>，</p>
-
-<pre><code class="language-c"> 67   const ElfW(Sym) *const symtab
- 68     = (const void *) D_PTR (l, l_info[DT_SYMTAB]);
- 69   const char *strtab = (const void *) D_PTR (l, l_info[DT_STRTAB]);
- 70 
- 71   const PLTREL *const reloc
- 72     = (const void *) (D_PTR (l, l_info[DT_JMPREL]) + reloc_offset);
- 73   const ElfW(Sym) *sym = &amp;symtab[ELFW(R_SYM) (reloc-&gt;r_info)];
- 74   void *const rel_addr = (void *)(l-&gt;l_addr + reloc-&gt;r_offset);
-</code></pre>
-
-<p>这里做了一下转型，那么<code>symtab</code>和<code>strtab</code>分别是对于<code>section</code>的地址，而<code>reloc_addr</code>就是我们<code>got</code>中的<code>puts@got.plt</code>的地址。接下来就是符号解析过程了，
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#ae81ff">59</span> DL_FIXUP_VALUE_TYPE
+<span style="color:#ae81ff">60</span> <span style="color:#a6e22e">__attribute</span> ((noinline)) ARCH_FIXUP_ATTRIBUTE
+<span style="color:#ae81ff">61</span> _dl_fixup (
+<span style="color:#ae81ff">62</span> <span style="color:#960050;background-color:#1e0010">#</span> ifdef ELF_MACHINE_RUNTIME_FIXUP_ARGS
+<span style="color:#ae81ff">63</span>        ELF_MACHINE_RUNTIME_FIXUP_ARGS,
+<span style="color:#ae81ff">64</span> <span style="color:#960050;background-color:#1e0010">#</span> endif
+<span style="color:#ae81ff">65</span>        <span style="color:#66d9ef">struct</span> link_map <span style="color:#f92672">*</span>l, ElfW(Word) reloc_arg)
+<span style="color:#ae81ff">66</span> {
+</code></pre></div><p>从函数原型我们可以看出，之前<code>push</code>的两个参数分别是<code>link_map</code>和<code>reloc_arg</code>，</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"> <span style="color:#ae81ff">67</span>   <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">ElfW</span>(Sym) <span style="color:#f92672">*</span><span style="color:#66d9ef">const</span> symtab
+ <span style="color:#ae81ff">68</span>     <span style="color:#f92672">=</span> (<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>) D_PTR (l, l_info[DT_SYMTAB]);
+ <span style="color:#ae81ff">69</span>   <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>strtab <span style="color:#f92672">=</span> (<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>) D_PTR (l, l_info[DT_STRTAB]);
+ <span style="color:#ae81ff">70</span> 
+ <span style="color:#ae81ff">71</span>   <span style="color:#66d9ef">const</span> PLTREL <span style="color:#f92672">*</span><span style="color:#66d9ef">const</span> reloc
+ <span style="color:#ae81ff">72</span>     <span style="color:#f92672">=</span> (<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>) (D_PTR (l, l_info[DT_JMPREL]) <span style="color:#f92672">+</span> reloc_offset);
+ <span style="color:#ae81ff">73</span>   <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">ElfW</span>(Sym) <span style="color:#f92672">*</span>sym <span style="color:#f92672">=</span> <span style="color:#f92672">&amp;</span>symtab[ELFW(R_SYM) (reloc<span style="color:#f92672">-&gt;</span>r_info)];
+ <span style="color:#ae81ff">74</span>   <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span><span style="color:#66d9ef">const</span> rel_addr <span style="color:#f92672">=</span> (<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>)(l<span style="color:#f92672">-&gt;</span>l_addr <span style="color:#f92672">+</span> reloc<span style="color:#f92672">-&gt;</span>r_offset);
+</code></pre></div><p>这里做了一下转型，那么<code>symtab</code>和<code>strtab</code>分别是对于<code>section</code>的地址，而<code>reloc_addr</code>就是我们<code>got</code>中的<code>puts@got.plt</code>的地址。接下来就是符号解析过程了，
 后面可能会有文章来解释这个过程。当找到目标地址后</p>
-
-<pre><code class="language-c">//elf/dl-runtime.c
-148   return elf_machine_fixup_plt (l, result, reloc, rel_addr, value);
-//sysdeps/x86_64/dl-machine.h
-205 static inline ElfW(Addr)
-206 elf_machine_fixup_plt (struct link_map *map, lookup_t t,
-207                const ElfW(Rela) *reloc,
-208                ElfW(Addr) *reloc_addr, ElfW(Addr) value)
-209 {
-210   return *reloc_addr = value;
-211 }
-</code></pre>
-
-<p>这里的<code>value</code>就是目标函数地址，也就是<code>puts</code>的真正地址，代码中设置其到了<code>puts@got.plt</code>的位置并返回。</p>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">//elf/dl-runtime.c
+</span><span style="color:#75715e"></span><span style="color:#ae81ff">148</span>   <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">elf_machine_fixup_plt</span> (l, result, reloc, rel_addr, value);
+<span style="color:#75715e">//sysdeps/x86_64/dl-machine.h
+</span><span style="color:#75715e"></span><span style="color:#ae81ff">205</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">inline</span> <span style="color:#a6e22e">ElfW</span>(Addr)
+<span style="color:#ae81ff">206</span> elf_machine_fixup_plt (<span style="color:#66d9ef">struct</span> link_map <span style="color:#f92672">*</span>map, lookup_t t,
+<span style="color:#ae81ff">207</span>                <span style="color:#66d9ef">const</span> ElfW(Rela) <span style="color:#f92672">*</span>reloc,
+<span style="color:#ae81ff">208</span>                ElfW(Addr) <span style="color:#f92672">*</span>reloc_addr, ElfW(Addr) value)
+<span style="color:#ae81ff">209</span> {
+<span style="color:#ae81ff">210</span>   <span style="color:#66d9ef">return</span> <span style="color:#f92672">*</span>reloc_addr <span style="color:#f92672">=</span> value;
+<span style="color:#ae81ff">211</span> }
+</code></pre></div><p>这里的<code>value</code>就是目标函数地址，也就是<code>puts</code>的真正地址，代码中设置其到了<code>puts@got.plt</code>的位置并返回。</p>
 <p>以上就是第一次调用<code>puts</code>的过程了，当第二次调用<code>puts</code>时，由于<code>puts@got.plt</code>已经有了正确的地址，所以</p>
-
-<pre><code class="language-x86asm">  &gt;│0x4003e0 &lt;puts@plt&gt;                     jmpq   *0x20050a(%rip)        # 0x6008f0 &lt;puts@got.plt&gt;    │
-</code></pre>
-
-<p>就直接跳转到正确的<code>puts</code>位置，完成了函数调用。所以，<code>linux</code>下的这种懒绑定方式实现了在不使用符号的时候不解析，而需要使用的时候
+<pre><code class="language-x86asm" data-lang="x86asm">  &gt;│0x4003e0 &lt;puts@plt&gt;                     jmpq   *0x20050a(%rip)        # 0x6008f0 &lt;puts@got.plt&gt;    │
+</code></pre><p>就直接跳转到正确的<code>puts</code>位置，完成了函数调用。所以，<code>linux</code>下的这种懒绑定方式实现了在不使用符号的时候不解析，而需要使用的时候
 只在第一步开销比较大，后面的调用开销无非多了一次跳转和一次寻址操作而已。</p>
 
 </div>

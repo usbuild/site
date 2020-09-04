@@ -5,7 +5,7 @@
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="">
-  <meta name="generator" content="Hugo 0.42.1" />
+  <meta name="generator" content="Hugo 0.74.3" />
 
   <title>乐Coding</title>
 
@@ -68,6 +68,43 @@
 <div class="header main-title">
   <h1>乐Coding</h1>
 </div>
+
+  
+    <article>
+  <header>
+    <h2><a href="/post/2017/lua-cond-statment-bytecode-generate-1/">lua 5.1 分支语句 bytecode 的生成（一）</a></h2>
+
+    <div class="post-meta">
+    发表于 <time>20 May 2017, 15:57</time>
+  
+  
+  
+  
+  , 标签: 「
+    
+      <a class="post-taxonomy-tag" href="tags/lua">lua</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="tags/bytecode">bytecode</a>
+    
+」
+  
+  
+
+</div>
+
+
+  </header>
+
+  <p>
+  本文只对 IF cond THEN block {ELSEIF cond THEN block} [ELSE block] END 语法的字节码生成过程进行描述。 生成的结果 首先我们看下面的示例，仅为演示： local cond1 = true local cond2 = true if cond1 then cond1 = false elseif cond2 then cond2 =
+  </p>
+
+  
+  <footer>
+    <a href="/post/2017/lua-cond-statment-bytecode-generate-1/">继续阅读 »</a>
+  </footer>
+  
+</article>
 
   
     <article>
@@ -199,7 +236,7 @@
   </header>
 
   <p>
-  在C++/lua混合编程中，往往存在需要回调的情况。比如在游戏中，逻辑进程中的脚本需要一个数据库访问操作，如下: dbmgr.query({name=&quot;hello&quot;}, function(ret) -- do something end) 由于dbmgr.
+  在C++/lua混合编程中，往往存在需要回调的情况。比如在游戏中，逻辑进程中的脚本需要一个数据库访问操作，如下: dbmgr.query({name=&#34;hello&#34;}, function(ret) -- do something end) 由于dbmgr.
   </p>
 
   

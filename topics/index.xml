@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Topics on 乐Coding</title>
@@ -7,13 +7,31 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2020. All rights reserved.</copyright>
-    <lastBuildDate>Wed, 07 Nov 2018 10:10:00 +0800</lastBuildDate>
+    <lastBuildDate>Fri, 04 Sep 2020 20:00:00 +0800</lastBuildDate>
     
 	<atom:link href="/topics/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>Coroutine</title>
+      <title>daily</title>
+      <link>/topics/daily/</link>
+      <pubDate>Fri, 04 Sep 2020 20:00:00 +0800</pubDate>
+      
+      <guid>/topics/daily/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>network</title>
+      <link>/topics/network/</link>
+      <pubDate>Wed, 16 Oct 2019 20:10:00 +0800</pubDate>
+      
+      <guid>/topics/network/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>coroutine</title>
       <link>/topics/coroutine/</link>
       <pubDate>Wed, 07 Nov 2018 10:10:00 +0800</pubDate>
       
@@ -22,7 +40,7 @@
     </item>
     
     <item>
-      <title>Design</title>
+      <title>design</title>
       <link>/topics/design/</link>
       <pubDate>Tue, 06 Nov 2018 09:54:10 +0800</pubDate>
       
@@ -31,7 +49,7 @@
     </item>
     
     <item>
-      <title>Ipc</title>
+      <title>IPC</title>
       <link>/topics/ipc/</link>
       <pubDate>Sat, 03 Nov 2018 17:17:17 +0800</pubDate>
       
@@ -40,20 +58,11 @@
     </item>
     
     <item>
-      <title>Jit</title>
+      <title>jit</title>
       <link>/topics/jit/</link>
       <pubDate>Thu, 01 Nov 2018 20:10:38 +0800</pubDate>
       
       <guid>/topics/jit/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Network</title>
-      <link>/topics/network/</link>
-      <pubDate>Wed, 16 Oct 2019 20:10:00 +0800</pubDate>
-      
-      <guid>/topics/network/</guid>
       <description></description>
     </item>
     

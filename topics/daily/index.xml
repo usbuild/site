@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>daily on 乐Coding</title>
+    <link>/topics/daily/</link>
+    <description>Recent content in daily on 乐Coding</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <copyright>&amp;copy; 2020. All rights reserved.</copyright>
+    <lastBuildDate>Fri, 04 Sep 2020 20:00:00 +0800</lastBuildDate>
+    
+	<atom:link href="/topics/daily/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>成本2元！大金线控变遥控</title>
+      <link>/post/2020/daikin-remote-controller-hack/</link>
+      <pubDate>Fri, 04 Sep 2020 20:00:00 +0800</pubDate>
+      
+      <guid>/post/2020/daikin-remote-controller-hack/</guid>
+      <description>背景 去年入住新小区，开发商交付时自带大金1拖4中央空调，但是配备的是墙上线控，无法使用红外遥控。没有遥控也就没法实现远程控制 半夜关空调、调温</description>
+    </item>
+    
+  </channel>
+</rss>

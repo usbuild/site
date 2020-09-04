@@ -1,6 +1,61 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <url>
+    <loc>/tags/chip/</loc>
+    <lastmod>2020-09-04T20:00:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/topics/daily/</loc>
+    <lastmod>2020-09-04T20:00:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/daily/</loc>
+    <lastmod>2020-09-04T20:00:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/diy/</loc>
+    <lastmod>2020-09-04T20:00:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/post/</loc>
+    <lastmod>2020-09-04T20:00:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/</loc>
+    <lastmod>2020-09-04T20:00:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/topics/</loc>
+    <lastmod>2020-09-04T20:00:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/</loc>
+    <lastmod>2020-09-04T20:00:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/post/2020/daikin-remote-controller-hack/</loc>
+    <lastmod>2020-09-04T20:00:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/topics/network/</loc>
+    <lastmod>2019-10-16T20:10:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/network/</loc>
+    <lastmod>2019-10-16T20:10:00+08:00</lastmod>
+  </url>
   
   <url>
     <loc>/post/2019/build-virtual-lan-from-scratch/</loc>
@@ -13,8 +68,58 @@
   </url>
   
   <url>
+    <loc>/tags/c&#43;&#43;/</loc>
+    <lastmod>2018-11-07T10:10:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/topics/coroutine/</loc>
+    <lastmod>2018-11-07T10:10:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/coroutine/</loc>
+    <lastmod>2018-11-07T10:10:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/%E9%80%A0%E8%BD%AE%E5%AD%90/</loc>
+    <lastmod>2018-11-07T10:10:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/topics/design/</loc>
+    <lastmod>2018-11-06T09:54:10+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/design/</loc>
+    <lastmod>2018-11-06T09:54:10+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/glibc/</loc>
+    <lastmod>2018-11-06T09:54:10+08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/post/2018/weird-function-strfry-memfrob/</loc>
     <lastmod>2018-11-06T09:54:10+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/topics/ipc/</loc>
+    <lastmod>2018-11-03T17:17:17+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/ipc/</loc>
+    <lastmod>2018-11-03T17:17:17+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/linux/</loc>
+    <lastmod>2018-11-03T17:17:17+08:00</lastmod>
   </url>
   
   <url>
@@ -23,8 +128,28 @@
   </url>
   
   <url>
+    <loc>/topics/jit/</loc>
+    <lastmod>2018-11-01T20:10:38+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/jit/</loc>
+    <lastmod>2018-11-01T20:10:38+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/luajit/</loc>
+    <lastmod>2018-11-01T20:10:38+08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/post/2018/implement-naive-jit-calc/</loc>
     <lastmod>2018-11-01T20:10:38+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/nodemcu/</loc>
+    <lastmod>2017-08-21T20:14:01+08:00</lastmod>
   </url>
   
   <url>
@@ -38,8 +163,28 @@
   </url>
   
   <url>
+    <loc>/tags/semantic-ui/</loc>
+    <lastmod>2017-05-30T17:03:21+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/vue/</loc>
+    <lastmod>2017-05-30T17:03:21+08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/post/2017/use-semantic-ui-with-vue/</loc>
     <lastmod>2017-05-30T17:03:21+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/bytecode/</loc>
+    <lastmod>2017-05-25T14:26:47+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/lua/</loc>
+    <lastmod>2017-05-25T14:26:47+08:00</lastmod>
   </url>
   
   <url>
@@ -53,6 +198,11 @@
   </url>
   
   <url>
+    <loc>/tags/gc/</loc>
+    <lastmod>2017-05-10T20:05:41+08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/post/2017/lua-gc-paramter-internal/</loc>
     <lastmod>2017-05-10T20:05:41+08:00</lastmod>
   </url>
@@ -63,13 +213,28 @@
   </url>
   
   <url>
+    <loc>/tags/elf/</loc>
+    <lastmod>2017-05-01T22:30:00+08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/post/2017/a-solution-for-elf-integrate-scripts/</loc>
     <lastmod>2017-05-01T22:30:00+08:00</lastmod>
   </url>
   
   <url>
+    <loc>/tags/meta-programming/</loc>
+    <lastmod>2017-04-29T15:38:38+08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/post/2017/cpp-function-container/</loc>
     <lastmod>2017-04-29T15:38:38+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/game/</loc>
+    <lastmod>2017-04-21T17:37:30+08:00</lastmod>
   </url>
   
   <url>
@@ -93,8 +258,28 @@
   </url>
   
   <url>
+    <loc>/tags/hugo/</loc>
+    <lastmod>2016-09-02T09:41:17+08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/post/2016/integrate-mathjax-viz-with-hugo/</loc>
     <lastmod>2016-09-02T09:41:17+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/mathjax/</loc>
+    <lastmod>2016-09-02T09:41:17+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/viz/</loc>
+    <lastmod>2016-09-02T09:41:17+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/implementation/</loc>
+    <lastmod>2016-09-01T17:40:08+08:00</lastmod>
   </url>
   
   <url>
@@ -104,198 +289,6 @@
   
   <url>
     <loc>/archives/</loc>
-  </url>
-  
-  <url>
-    <loc>/tags/bytecode/</loc>
-    <lastmod>2017-05-25T14:26:47+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/c&#43;&#43;/</loc>
-    <lastmod>2018-11-07T10:10:00+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/topics/coroutine/</loc>
-    <lastmod>2018-11-07T10:10:00+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/coroutine/</loc>
-    <lastmod>2018-11-07T10:10:00+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/topics/design/</loc>
-    <lastmod>2018-11-06T09:54:10+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/design/</loc>
-    <lastmod>2018-11-06T09:54:10+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/elf/</loc>
-    <lastmod>2017-05-01T22:30:00+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/game/</loc>
-    <lastmod>2017-04-21T17:37:30+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/gc/</loc>
-    <lastmod>2017-05-10T20:05:41+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/glibc/</loc>
-    <lastmod>2018-11-06T09:54:10+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/hugo/</loc>
-    <lastmod>2016-09-02T09:41:17+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/implementation/</loc>
-    <lastmod>2016-09-01T17:40:08+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/topics/ipc/</loc>
-    <lastmod>2018-11-03T17:17:17+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/ipc/</loc>
-    <lastmod>2018-11-03T17:17:17+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/topics/jit/</loc>
-    <lastmod>2018-11-01T20:10:38+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/jit/</loc>
-    <lastmod>2018-11-01T20:10:38+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/linux/</loc>
-    <lastmod>2018-11-03T17:17:17+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/lua/</loc>
-    <lastmod>2017-05-25T14:26:47+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/luajit/</loc>
-    <lastmod>2018-11-01T20:10:38+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/mathjax/</loc>
-    <lastmod>2016-09-02T09:41:17+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/meta-programming/</loc>
-    <lastmod>2017-04-29T15:38:38+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/topics/network/</loc>
-    <lastmod>2019-10-16T20:10:00+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/network/</loc>
-    <lastmod>2019-10-16T20:10:00+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/nodemcu/</loc>
-    <lastmod>2017-08-21T20:14:01+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/post/</loc>
-    <lastmod>2019-10-16T20:10:00+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/semantic-ui/</loc>
-    <lastmod>2017-05-30T17:03:21+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/</loc>
-    <lastmod>2017-05-25T14:26:47+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/topics/</loc>
-    <lastmod>2018-11-07T10:10:00+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/viz/</loc>
-    <lastmod>2016-09-02T09:41:17+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/vue/</loc>
-    <lastmod>2017-05-30T17:03:21+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/</loc>
-    <lastmod>2019-10-16T20:10:00+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/%E9%80%A0%E8%BD%AE%E5%AD%90/</loc>
-    <lastmod>2018-11-07T10:10:00+08:00</lastmod>
-    <priority>0</priority>
   </url>
   
 </urlset>

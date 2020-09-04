@@ -519,3 +519,8 @@ div.gists {
   color: #777;
   margin: 20px 0px;
 }
+
+div.imgtip {
+  font-size: 0.8em;
+  color: #777;
+}

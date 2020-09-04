@@ -5,7 +5,7 @@
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="">
-  <meta name="generator" content="Hugo 0.42.1" />
+  <meta name="generator" content="Hugo 0.74.3" />
 
   <title>解析lua gc 中的参数控制 &middot; 乐Coding</title>
 
@@ -77,67 +77,54 @@
 
 <div class="single-content">
   <p>lua gc 调优主要涉及到两个两个参数<code>setpause</code>和<code>setstepmul</code>，使用方法如下：</p>
-
 <pre><code>collectgarbage(&quot;setpause&quot;, 200)
 collectgarbage(&quot;setstepmul&quot;, 200)
-</code></pre>
-
-<p>这两个值的默认值都是<code>200</code>，那么这代表着什么意思呢？通过查看代码</p>
-
+</code></pre><p>这两个值的默认值都是<code>200</code>，那么这代表着什么意思呢？通过查看代码</p>
 <pre><code>static const char *const opts[] = {&quot;stop&quot;, &quot;restart&quot;, &quot;collect&quot;,
   &quot;count&quot;, &quot;step&quot;, &quot;setpause&quot;, &quot;setstepmul&quot;, NULL};
 static const int optsnum[] = {LUA_GCSTOP, LUA_GCRESTART, LUA_GCCOLLECT,
   LUA_GCCOUNT, LUA_GCSTEP, LUA_GCSETPAUSE, LUA_GCSETSTEPMUL};
-</code></pre>
-
-<p>其实<code>collectgarbage</code>对应的就是<code>lua_gc</code>方法，下面是其中的部分逻辑的：</p>
-
-<pre><code class="language-c">LUA_API int lua_gc (lua_State *L, int what, int data) {
-  switch (what) {
-    case LUA_GCSTOP: g-&gt;GCthreshold = MAX_LUMEM;
-    case LUA_GCRESTART: g-&gt;GCthreshold = g-&gt;totalbytes;
-    case LUA_GCCOLLECT: luaC_fullgc(L);
-    case LUA_GCCOUNT: res = cast_int(g-&gt;totalbytes &gt;&gt; 10);
-    case LUA_GCCOUNTB:  res = cast_int(g-&gt;totalbytes &amp; 0x3ff);
-    case LUA_GCSTEP: {
-      lu_mem a = (cast(lu_mem, data) &lt;&lt; 10);
-      if (a &lt;= g-&gt;totalbytes)
-        g-&gt;GCthreshold = g-&gt;totalbytes - a;
-      else
-        g-&gt;GCthreshold = 0;
-      while (g-&gt;GCthreshold &lt;= g-&gt;totalbytes) {
+</code></pre><p>其实<code>collectgarbage</code>对应的就是<code>lua_gc</code>方法，下面是其中的部分逻辑的：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">LUA_API <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">lua_gc</span> (lua_State <span style="color:#f92672">*</span>L, <span style="color:#66d9ef">int</span> what, <span style="color:#66d9ef">int</span> data) {
+  <span style="color:#66d9ef">switch</span> (what) {
+    <span style="color:#66d9ef">case</span> LUA_GCSTOP: g<span style="color:#f92672">-&gt;</span>GCthreshold <span style="color:#f92672">=</span> MAX_LUMEM;
+    <span style="color:#66d9ef">case</span> LUA_GCRESTART: g<span style="color:#f92672">-&gt;</span>GCthreshold <span style="color:#f92672">=</span> g<span style="color:#f92672">-&gt;</span>totalbytes;
+    <span style="color:#66d9ef">case</span> LUA_GCCOLLECT: luaC_fullgc(L);
+    <span style="color:#66d9ef">case</span> LUA_GCCOUNT: res <span style="color:#f92672">=</span> cast_int(g<span style="color:#f92672">-&gt;</span>totalbytes <span style="color:#f92672">&gt;&gt;</span> <span style="color:#ae81ff">10</span>);
+    <span style="color:#66d9ef">case</span> LUA_GCCOUNTB:  res <span style="color:#f92672">=</span> cast_int(g<span style="color:#f92672">-&gt;</span>totalbytes <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0x3ff</span>);
+    <span style="color:#66d9ef">case</span> LUA_GCSTEP: {
+      lu_mem a <span style="color:#f92672">=</span> (cast(lu_mem, data) <span style="color:#f92672">&lt;&lt;</span> <span style="color:#ae81ff">10</span>);
+      <span style="color:#66d9ef">if</span> (a <span style="color:#f92672">&lt;=</span> g<span style="color:#f92672">-&gt;</span>totalbytes)
+        g<span style="color:#f92672">-&gt;</span>GCthreshold <span style="color:#f92672">=</span> g<span style="color:#f92672">-&gt;</span>totalbytes <span style="color:#f92672">-</span> a;
+      <span style="color:#66d9ef">else</span>
+        g<span style="color:#f92672">-&gt;</span>GCthreshold <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+      <span style="color:#66d9ef">while</span> (g<span style="color:#f92672">-&gt;</span>GCthreshold <span style="color:#f92672">&lt;=</span> g<span style="color:#f92672">-&gt;</span>totalbytes) {
         luaC_step(L);
-        if (g-&gt;gcstate == GCSpause) {  /* end of cycle? */
-          res = 1;  /* signal it */
-          break;
+        <span style="color:#66d9ef">if</span> (g<span style="color:#f92672">-&gt;</span>gcstate <span style="color:#f92672">==</span> GCSpause) {  <span style="color:#75715e">/* end of cycle? */</span>
+          res <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;  <span style="color:#75715e">/* signal it */</span>
+          <span style="color:#66d9ef">break</span>;
         }
       }
-      break;
+      <span style="color:#66d9ef">break</span>;
     }
-    case LUA_GCSETPAUSE: res = g-&gt;gcpause; g-&gt;gcpause = data;
-    case LUA_GCSETSTEPMUL: res = g-&gt;gcstepmul; g-&gt;gcstepmul = data;
+    <span style="color:#66d9ef">case</span> LUA_GCSETPAUSE: res <span style="color:#f92672">=</span> g<span style="color:#f92672">-&gt;</span>gcpause; g<span style="color:#f92672">-&gt;</span>gcpause <span style="color:#f92672">=</span> data;
+    <span style="color:#66d9ef">case</span> LUA_GCSETSTEPMUL: res <span style="color:#f92672">=</span> g<span style="color:#f92672">-&gt;</span>gcstepmul; g<span style="color:#f92672">-&gt;</span>gcstepmul <span style="color:#f92672">=</span> data;
 }
-</code></pre>
-
-<p>其中我们看到一些有意思的参数，在<code>g(global_State)</code>中有如下定义：</p>
-
-<pre><code class="language-c">/*
-** `global state', shared by all threads of this state
-*/
-typedef struct global_State {
-//.....
-  lu_mem GCthreshold;
-  lu_mem totalbytes;  /* number of bytes currently allocated */
-  lu_mem estimate;  /* an estimate of number of bytes actually in use */
-  lu_mem gcdept;  /* how much GC is `behind schedule' */
-  int gcpause;  /* size of pause between successive GCs */
-  int gcstepmul;  /* GC `granularity' */
-//......
-} global_State;
-</code></pre>
-
-<p>可以看到，对于<code>LUA_GCSTOP</code>是将<code>GCthreshold</code>设置成一个很大的值<code>MAX_LUMEM</code>(<code>~(size_t)0)-2</code>)，而<code>LUA_GCRESTART</code>则将<code>GCthreshold</code>设置成<code>totalbytes</code>。对于<code>LUA_GCSETPAUSE</code>和<code>LUA_GCSETSTEPMUL</code>则是分别设置了<code>gcpause</code>和<code>gcstepmul</code>的值。从注释中我们可以看到各自值的解释。</p>
-
+</code></pre></div><p>其中我们看到一些有意思的参数，在<code>g(global_State)</code>中有如下定义：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">/*
+</span><span style="color:#75715e">** `global state&#39;, shared by all threads of this state
+</span><span style="color:#75715e">*/</span>
+<span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> global_State {
+<span style="color:#75715e">//.....
+</span><span style="color:#75715e"></span>  lu_mem GCthreshold;
+  lu_mem totalbytes;  <span style="color:#75715e">/* number of bytes currently allocated */</span>
+  lu_mem estimate;  <span style="color:#75715e">/* an estimate of number of bytes actually in use */</span>
+  lu_mem gcdept;  <span style="color:#75715e">/* how much GC is `behind schedule&#39; */</span>
+  <span style="color:#66d9ef">int</span> gcpause;  <span style="color:#75715e">/* size of pause between successive GCs */</span>
+  <span style="color:#66d9ef">int</span> gcstepmul;  <span style="color:#75715e">/* GC `granularity&#39; */</span>
+<span style="color:#75715e">//......
+</span><span style="color:#75715e"></span>} global_State;
+</code></pre></div><p>可以看到，对于<code>LUA_GCSTOP</code>是将<code>GCthreshold</code>设置成一个很大的值<code>MAX_LUMEM</code>(<code>~(size_t)0)-2</code>)，而<code>LUA_GCRESTART</code>则将<code>GCthreshold</code>设置成<code>totalbytes</code>。对于<code>LUA_GCSETPAUSE</code>和<code>LUA_GCSETSTEPMUL</code>则是分别设置了<code>gcpause</code>和<code>gcstepmul</code>的值。从注释中我们可以看到各自值的解释。</p>
 <table>
 <thead>
 <tr>
@@ -145,80 +132,62 @@ typedef struct global_State {
 <th>意义</th>
 </tr>
 </thead>
-
 <tbody>
 <tr>
 <td>GCthreshold</td>
 <td>GC的门槛，当totalbytes大于这个值时触发gc step</td>
 </tr>
-
 <tr>
 <td>totalbytes</td>
 <td>由内存分配器分配的<strong>实际</strong>内存</td>
 </tr>
-
 <tr>
 <td>estimate</td>
 <td><strong>估计</strong>的，正在使用的内存大小，小于 <code>totalbytes</code></td>
 </tr>
 </tbody>
 </table>
-
 <p>下面这段代码是代码中随处可见，如<code>lua_createtable</code>等，在执行操作之前都会检查是否需要触发<code>gc</code>，以保证内存利用率。</p>
-
-<pre><code class="language-c">80	#define luaC_checkGC(L) { \
-81	  condhardstacktests(luaD_reallocstack(L, L-&gt;stacksize - EXTRA_STACK - 1)); \
-82	  if (G(L)-&gt;totalbytes &gt;= G(L)-&gt;GCthreshold) \
-83		luaC_step(L); }
-</code></pre>
-
-<p>当 <code>totalbytes &gt;= GCthreshold</code>时触发step。因此<code>LUA_GCRESTART</code>之后，下一次<code>checkGC</code>的时候会立即出发<code>luaC_step</code>。可以看到
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#ae81ff">80</span>	<span style="color:#960050;background-color:#1e0010">#</span>define luaC_checkGC(L) { \
+<span style="color:#ae81ff">81</span>	  condhardstacktests(luaD_reallocstack(L, L<span style="color:#f92672">-&gt;</span>stacksize <span style="color:#f92672">-</span> EXTRA_STACK <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>)); \
+<span style="color:#ae81ff">82</span>	  <span style="color:#a6e22e">if</span> (G(L)<span style="color:#f92672">-&gt;</span>totalbytes <span style="color:#f92672">&gt;=</span> G(L)<span style="color:#f92672">-&gt;</span>GCthreshold) \
+<span style="color:#ae81ff">83</span>		luaC_step(L); }
+</code></pre></div><p>当 <code>totalbytes &gt;= GCthreshold</code>时触发step。因此<code>LUA_GCRESTART</code>之后，下一次<code>checkGC</code>的时候会立即出发<code>luaC_step</code>。可以看到
 <code>totalbytes</code>和<code>GCthreshold</code>是控制<code>GC</code>的关键参数。</p>
-
 <p>每个回收周期结束重置<code>GCthreshold</code> ，这里用到了的estimate。因为带有 __gc 元方法的 <code>userdata</code> 需要两个gc周期
 才能回收，在第一个gc周期中其 <code>__gc</code>元方法会被调用，而在第二个回收周期内内存会被真正回收。因此，<code>estimate</code>是不包含那些<code>__gc</code>元方法被调用的<code>userdata</code>的，而<code>totalbytes</code>会包含（因为其反映的是真实内存占用情况）。</p>
-
 <pre><code>#define setthreshold(g)  (g-&gt;GCthreshold = (g-&gt;estimate/100) * g-&gt;gcpause)
-</code></pre>
-
-<p>由这段代码可以看出，我们设置的<code>gcpause</code>值影响的是下一周期开始的事件，默认<code>200</code>的意思时，当当前<strong>真实</strong>内存占用超过当前<strong>估计</strong>内存占用的两倍时，才开启下一回收周期。所以如果你含<code>__gc</code>方法的<code>userdata</code>过大的话，很可能在第一次周期结束后立马开启了第二周期。如果设置的<code>gcpause</code>值小于<code>100</code>的话，那么同样两次<code>gc</code>周期中间是没有间隔的。</p>
-
+</code></pre><p>由这段代码可以看出，我们设置的<code>gcpause</code>值影响的是下一周期开始的事件，默认<code>200</code>的意思时，当当前<strong>真实</strong>内存占用超过当前<strong>估计</strong>内存占用的两倍时，才开启下一回收周期。所以如果你含<code>__gc</code>方法的<code>userdata</code>过大的话，很可能在第一次周期结束后立马开启了第二周期。如果设置的<code>gcpause</code>值小于<code>100</code>的话，那么同样两次<code>gc</code>周期中间是没有间隔的。</p>
 <p>接下来看<code>luaC_step</code>的代码</p>
-
-<pre><code class="language-c">610	void luaC_step (lua_State *L) {
-611	  global_State *g = G(L);
-612	  l_mem lim = (GCSTEPSIZE/100) * g-&gt;gcstepmul;
-613	  if (lim == 0)
-614	    lim = (MAX_LUMEM-1)/2;  /* no limit */
-615	  g-&gt;gcdept += g-&gt;totalbytes - g-&gt;GCthreshold;
-616	  do {
-617	    lim -= singlestep(L);
-618	    if (g-&gt;gcstate == GCSpause)
-619	      break;
-620	  } while (lim &gt; 0);
-621	  if (g-&gt;gcstate != GCSpause) {
-622	    if (g-&gt;gcdept &lt; GCSTEPSIZE)
-623	      g-&gt;GCthreshold = g-&gt;totalbytes + GCSTEPSIZE;  /* - lim/g-&gt;gcstepmul;*/
-624	    else {
-625	      g-&gt;gcdept -= GCSTEPSIZE;
-626	      g-&gt;GCthreshold = g-&gt;totalbytes;
-627	    }
-628	  }
-629	  else {
-630	    setthreshold(g);
-631	  }
-632	}
-</code></pre>
-
-<p>这里<code>stepmul</code>控制的就是<code>step</code>的长度，越大则每步所进行的操作也就越多，拥有更多的「费」。其中<code>GCSTEPSIZE</code>的值为<code>1024</code>。也就是说默认<code>stepmul</code>为200的情况下，大约可已进行<code>2048</code>「费」，那么「费」是怎么定义的呢？从代码可以看到清除一条<code>string</code>表和任意一个<code>gc</code>对象为<code>10</code>「费」，调用<code>__gc</code>元方法为<code>100</code>「费」，除非是<code>sweep</code>阶段否则内存不会减少，因此不能使用内存差值来表示工作进度，所以引入了「费」。如果你把<code>stepmul</code>设置为<code>0</code>的话，那么<code>lim</code>就是<code>(MAX_LUMEM-1)/2</code>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#ae81ff">610</span>	<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">luaC_step</span> (lua_State <span style="color:#f92672">*</span>L) {
+<span style="color:#ae81ff">611</span>	  global_State <span style="color:#f92672">*</span>g <span style="color:#f92672">=</span> G(L);
+<span style="color:#ae81ff">612</span>	  l_mem lim <span style="color:#f92672">=</span> (GCSTEPSIZE<span style="color:#f92672">/</span><span style="color:#ae81ff">100</span>) <span style="color:#f92672">*</span> g<span style="color:#f92672">-&gt;</span>gcstepmul;
+<span style="color:#ae81ff">613</span>	  <span style="color:#66d9ef">if</span> (lim <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>)
+<span style="color:#ae81ff">614</span>	    lim <span style="color:#f92672">=</span> (MAX_LUMEM<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">/</span><span style="color:#ae81ff">2</span>;  <span style="color:#75715e">/* no limit */</span>
+<span style="color:#ae81ff">615</span>	  g<span style="color:#f92672">-&gt;</span>gcdept <span style="color:#f92672">+=</span> g<span style="color:#f92672">-&gt;</span>totalbytes <span style="color:#f92672">-</span> g<span style="color:#f92672">-&gt;</span>GCthreshold;
+<span style="color:#ae81ff">616</span>	  <span style="color:#66d9ef">do</span> {
+<span style="color:#ae81ff">617</span>	    lim <span style="color:#f92672">-=</span> singlestep(L);
+<span style="color:#ae81ff">618</span>	    <span style="color:#66d9ef">if</span> (g<span style="color:#f92672">-&gt;</span>gcstate <span style="color:#f92672">==</span> GCSpause)
+<span style="color:#ae81ff">619</span>	      <span style="color:#66d9ef">break</span>;
+<span style="color:#ae81ff">620</span>	  } <span style="color:#66d9ef">while</span> (lim <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>);
+<span style="color:#ae81ff">621</span>	  <span style="color:#66d9ef">if</span> (g<span style="color:#f92672">-&gt;</span>gcstate <span style="color:#f92672">!=</span> GCSpause) {
+<span style="color:#ae81ff">622</span>	    <span style="color:#66d9ef">if</span> (g<span style="color:#f92672">-&gt;</span>gcdept <span style="color:#f92672">&lt;</span> GCSTEPSIZE)
+<span style="color:#ae81ff">623</span>	      g<span style="color:#f92672">-&gt;</span>GCthreshold <span style="color:#f92672">=</span> g<span style="color:#f92672">-&gt;</span>totalbytes <span style="color:#f92672">+</span> GCSTEPSIZE;  <span style="color:#75715e">/* - lim/g-&gt;gcstepmul;*/</span>
+<span style="color:#ae81ff">624</span>	    <span style="color:#66d9ef">else</span> {
+<span style="color:#ae81ff">625</span>	      g<span style="color:#f92672">-&gt;</span>gcdept <span style="color:#f92672">-=</span> GCSTEPSIZE;
+<span style="color:#ae81ff">626</span>	      g<span style="color:#f92672">-&gt;</span>GCthreshold <span style="color:#f92672">=</span> g<span style="color:#f92672">-&gt;</span>totalbytes;
+<span style="color:#ae81ff">627</span>	    }
+<span style="color:#ae81ff">628</span>	  }
+<span style="color:#ae81ff">629</span>	  <span style="color:#66d9ef">else</span> {
+<span style="color:#ae81ff">630</span>	    setthreshold(g);
+<span style="color:#ae81ff">631</span>	  }
+<span style="color:#ae81ff">632</span>	}
+</code></pre></div><p>这里<code>stepmul</code>控制的就是<code>step</code>的长度，越大则每步所进行的操作也就越多，拥有更多的「费」。其中<code>GCSTEPSIZE</code>的值为<code>1024</code>。也就是说默认<code>stepmul</code>为200的情况下，大约可已进行<code>2048</code>「费」，那么「费」是怎么定义的呢？从代码可以看到清除一条<code>string</code>表和任意一个<code>gc</code>对象为<code>10</code>「费」，调用<code>__gc</code>元方法为<code>100</code>「费」，除非是<code>sweep</code>阶段否则内存不会减少，因此不能使用内存差值来表示工作进度，所以引入了「费」。如果你把<code>stepmul</code>设置为<code>0</code>的话，那么<code>lim</code>就是<code>(MAX_LUMEM-1)/2</code>
 为什么是这么奇怪的数值？因为<code>MAX_LUAEME</code>是<code>~(size_t)0)-2</code>，无符号整型，而<code>l_mem</code>是有符号的，直接赋值会溢出的。</p>
-
 <p><code>luaC_step</code>的设计思路是： 每当新增分配的内存数超过<code>GCSTEPSIZE</code>就触发一次。由于lua只会在gc过程中释放对象，所以
 <code>totalbytes</code>在gc过程外时只增不减的，因此<code>luaC_step</code>总是会得以触发。为了准确记录新增内存使用量，lua 使用了<code>gcdept</code>变量。
 这种设计是为了防止<code>luaC_step</code>被频繁触发，控制一个较合理的粒度。</p>
-
 <p>另外，<code>gcdept</code>在每个周期末尾会清零。</p>
-
 <pre><code>592	    case GCSfinalize: {
 593	      if (g-&gt;tmudata) {
 594	        GCTM(L);
@@ -233,7 +202,6 @@ typedef struct global_State {
 603	      }
 604	    }
 </code></pre>
-
 </div>
 
   <div class="eof">--EOF--</div>

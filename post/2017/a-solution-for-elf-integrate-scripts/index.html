@@ -5,7 +5,7 @@
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="">
-  <meta name="generator" content="Hugo 0.42.1" />
+  <meta name="generator" content="Hugo 0.74.3" />
 
   <title>一种在elf中集成脚本文件的方案 &middot; 乐Coding</title>
 
@@ -76,36 +76,23 @@
 
 
 <div class="single-content">
-  
-
-<p>进行游戏服务器开发时，我们将<code>C++</code>的部分称之为引擎层，而<code>lua</code>称之为脚本层。但是往往有些核心逻辑是各个游戏公用的，
+  <p>进行游戏服务器开发时，我们将<code>C++</code>的部分称之为引擎层，而<code>lua</code>称之为脚本层。但是往往有些核心逻辑是各个游戏公用的，
 或者说有些引擎层的代码用<code>C++</code>写起来十分麻烦，我们还是会使用<code>lua</code>来编写。这就带来了一些问题，我们的游戏目录结构如下:</p>
-
 <pre><code>├─bin               // 可执行文件
 └─scripts           // 脚本目录，lua文件
     ├─framework     // 核心lua文件，各个项目公用的
     └─server        // 游戏逻辑lua文件
-</code></pre>
-
-<p>其中<code>scripts/framework</code>是各个项目公用的，并且和<code>bin</code>目录中的可执行文件同时发布和更新。所以有一个想法，就是将<code>framework</code>中
+</code></pre><p>其中<code>scripts/framework</code>是各个项目公用的，并且和<code>bin</code>目录中的可执行文件同时发布和更新。所以有一个想法，就是将<code>framework</code>中
 的lua文件集成到可执行文件中，减少维护的成本。</p>
-
 <h1 id="文件存储">文件存储</h1>
-
 <p>下面是elf文件的示意图</p>
-
-<p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Elf-layout--en.svg/260px-Elf-layout--en.svg.png" alt="elf" /></p>
-
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Elf-layout--en.svg/260px-Elf-layout--en.svg.png" alt="elf"></p>
 <p>elf文件有多个section，除了一些预定义的section如<code>.rodata</code>、<code>.text</code>、<code>.init</code>等，我们也可以定义一些自己的section。所以我们可以将所需要的lua文件
 放进这个section中，在执行的时候动态读出来，实现目的。我们可以使用<a href="https://linux.die.net/man/1/objcopy">objcopy</a>命令来实现创建自定义section的功能。</p>
-
 <pre><code>objcopy infile.out --add-section .lua-data=section_file outfile.out
-</code></pre>
-
-<p>然而<code>framework</code>里面有多个文件，而且包含嵌套的文件夹，我们需要一个将文件夹变成单个文件的功能，类似于<a href="https://linux.die.net/man/1/tar">tar</a>。虽然创建
+</code></pre><p>然而<code>framework</code>里面有多个文件，而且包含嵌套的文件夹，我们需要一个将文件夹变成单个文件的功能，类似于<a href="https://linux.die.net/man/1/tar">tar</a>。虽然创建
 section时使用<code>tar</code>命令是简单的，但是在读取的时候需要一些第三方的库来支持，这是比较麻烦的。而由于我们的目录中只包含<code>lua</code>文件，所以可以简化设计。
 首先空文件夹对于我们是无意义的，只需要<code>lua</code>文件就可以。所以最终我们得到如下的表:</p>
-
 <pre><code>┌────────────────────┐
 │ libs/json.lua      │
 ├────────────────────┤
@@ -115,10 +102,7 @@ section时使用<code>tar</code>命令是简单的，但是在读取的时候需
 ├────────────────────┤
 │ libs/bson.lua      │
 └────────────────────┘
-</code></pre>
-
-<p>我们可以按照如下的格式转换成单个文件</p>
-
+</code></pre><p>我们可以按照如下的格式转换成单个文件</p>
 <pre><code>┌────────┬───────────┐
 │name_len│content_len│
 ├────────┴───────────┤
@@ -130,78 +114,71 @@ section时使用<code>tar</code>命令是简单的，但是在读取的时候需
 ├────────────────────┤
 │ .................  │
 └────────────────────┘
-</code></pre>
-
-<p>其中<code>name_len</code>为文件名的长度，这里直接转换成了lua中<code>require</code>的格式，使用点符号。<code>content_len</code>是文件内容的长度，即文件的具体内容长度。最后我们可以使用<code>zip</code>指令
+</code></pre><p>其中<code>name_len</code>为文件名的长度，这里直接转换成了lua中<code>require</code>的格式，使用点符号。<code>content_len</code>是文件内容的长度，即文件的具体内容长度。最后我们可以使用<code>zip</code>指令
 将这部分内容压缩存储在<code>elf</code>文件中。完整的代码如下:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e">#!/usr/bin/env python</span>
+<span style="color:#75715e">#coding: utf-8</span>
 
-<pre><code class="language-python">#!/usr/bin/env python
-#coding: utf-8
+<span style="color:#f92672">import</span> os<span style="color:#f92672">,</span> struct<span style="color:#f92672">,</span> StringIO<span style="color:#f92672">,</span> zlib<span style="color:#f92672">,</span> subprocess<span style="color:#f92672">,</span> sys<span style="color:#f92672">,</span> tempfile<span style="color:#f92672">,</span> argparse
 
-import os, struct, StringIO, zlib, subprocess, sys, tempfile, argparse
+argParser <span style="color:#f92672">=</span> argparse<span style="color:#f92672">.</span>ArgumentParser()
 
-argParser = argparse.ArgumentParser()
+argParser<span style="color:#f92672">.</span>add_argument(<span style="color:#e6db74">&#34;luafolder&#34;</span>, type<span style="color:#f92672">=</span>str)
+argParser<span style="color:#f92672">.</span>add_argument(<span style="color:#e6db74">&#34;exe&#34;</span>, type<span style="color:#f92672">=</span>str)
+argParser<span style="color:#f92672">.</span>add_argument(<span style="color:#e6db74">&#34;out&#34;</span>, type<span style="color:#f92672">=</span>str)
 
-argParser.add_argument(&quot;luafolder&quot;, type=str)
-argParser.add_argument(&quot;exe&quot;, type=str)
-argParser.add_argument(&quot;out&quot;, type=str)
+args <span style="color:#f92672">=</span> argParser<span style="color:#f92672">.</span>parse_args()
 
-args = argParser.parse_args()
+files <span style="color:#f92672">=</span> []
 
-files = []
+path <span style="color:#f92672">=</span> args<span style="color:#f92672">.</span>luafolder
 
-path = args.luafolder
+<span style="color:#66d9ef">for</span> (dirpath, dirname, filenames) <span style="color:#f92672">in</span> os<span style="color:#f92672">.</span>walk(path):
+    dirp <span style="color:#f92672">=</span> dirpath[len(path):]
+    <span style="color:#66d9ef">if</span> dirp:
+        <span style="color:#66d9ef">if</span> dirp[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">!=</span> <span style="color:#e6db74">&#34;/&#34;</span>:
+            dirp <span style="color:#f92672">+=</span> <span style="color:#e6db74">&#34;/&#34;</span>
 
-for (dirpath, dirname, filenames) in os.walk(path):
-    dirp = dirpath[len(path):]
-    if dirp:
-        if dirp[-1] != &quot;/&quot;:
-            dirp += &quot;/&quot;
+        <span style="color:#66d9ef">while</span> dirp[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;/&#34;</span>:
+            dirp <span style="color:#f92672">=</span> dirp[<span style="color:#ae81ff">1</span>:]
 
-        while dirp[0] == &quot;/&quot;:
-            dirp = dirp[1:]
+    files<span style="color:#f92672">.</span>extend([dirp <span style="color:#f92672">+</span> x <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> filenames])
 
-    files.extend([dirp + x for x in filenames])
+output <span style="color:#f92672">=</span> StringIO<span style="color:#f92672">.</span>StringIO()
 
-output = StringIO.StringIO()
+<span style="color:#66d9ef">for</span> fpath <span style="color:#f92672">in</span> files:
+    realp <span style="color:#f92672">=</span> path <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;/&#34;</span> <span style="color:#f92672">+</span> fpath
+    filesize <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>getsize(realp)
 
-for fpath in files:
-    realp = path + &quot;/&quot; + fpath
-    filesize = os.path.getsize(realp)
+    <span style="color:#66d9ef">if</span> fpath<span style="color:#f92672">.</span>endswith(<span style="color:#e6db74">&#34;.lua&#34;</span>):
+        fpath <span style="color:#f92672">=</span> fpath[:<span style="color:#f92672">-</span><span style="color:#ae81ff">4</span>]
+    <span style="color:#66d9ef">elif</span> fpath<span style="color:#f92672">.</span>endswith(<span style="color:#e6db74">&#34;.luac&#34;</span>):
+        fpath <span style="color:#f92672">=</span> fpath[:<span style="color:#f92672">-</span><span style="color:#ae81ff">5</span>]
+    <span style="color:#66d9ef">else</span>:
+        <span style="color:#66d9ef">continue</span>
 
-    if fpath.endswith(&quot;.lua&quot;):
-        fpath = fpath[:-4]
-    elif fpath.endswith(&quot;.luac&quot;):
-        fpath = fpath[:-5]
-    else:
-        continue
+    package_pattern <span style="color:#f92672">=</span> fpath<span style="color:#f92672">.</span>replace(<span style="color:#e6db74">&#34;/&#34;</span>, <span style="color:#e6db74">&#34;.&#34;</span>)
+    package_pattern <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;pg.&#34;</span> <span style="color:#f92672">+</span> package_pattern
+    <span style="color:#66d9ef">with</span> open(realp, <span style="color:#e6db74">&#34;rb&#34;</span>) <span style="color:#66d9ef">as</span> rf:
+        content <span style="color:#f92672">=</span> rf<span style="color:#f92672">.</span>read()
+        output<span style="color:#f92672">.</span>write(struct<span style="color:#f92672">.</span>pack(<span style="color:#e6db74">&#34;=hL&#34;</span>, len(package_pattern), len(content)))
+        output<span style="color:#f92672">.</span>write(package_pattern)
+        output<span style="color:#f92672">.</span>write(content)
 
-    package_pattern = fpath.replace(&quot;/&quot;, &quot;.&quot;)
-    package_pattern = &quot;pg.&quot; + package_pattern
-    with open(realp, &quot;rb&quot;) as rf:
-        content = rf.read()
-        output.write(struct.pack(&quot;=hL&quot;, len(package_pattern), len(content)))
-        output.write(package_pattern)
-        output.write(content)
+f <span style="color:#f92672">=</span> tempfile<span style="color:#f92672">.</span>NamedTemporaryFile()
 
-f = tempfile.NamedTemporaryFile()
+outdata <span style="color:#f92672">=</span> output<span style="color:#f92672">.</span>getvalue()
+f<span style="color:#f92672">.</span>write(struct<span style="color:#f92672">.</span>pack(<span style="color:#e6db74">&#34;=L&#34;</span>, len(outdata)))
+f<span style="color:#f92672">.</span>write(zlib<span style="color:#f92672">.</span>compress(output<span style="color:#f92672">.</span>getvalue()))
+f<span style="color:#f92672">.</span>flush()
 
-outdata = output.getvalue()
-f.write(struct.pack(&quot;=L&quot;, len(outdata)))
-f.write(zlib.compress(output.getvalue()))
-f.flush()
+subprocess<span style="color:#f92672">.</span>call(<span style="color:#e6db74">&#34;objcopy </span><span style="color:#e6db74">%s</span><span style="color:#e6db74"> --remove-section .lua-data&#34;</span><span style="color:#f92672">%</span>(args<span style="color:#f92672">.</span>exe, ), shell<span style="color:#f92672">=</span>True)
+subprocess<span style="color:#f92672">.</span>call(<span style="color:#e6db74">&#34;objcopy </span><span style="color:#e6db74">%s</span><span style="color:#e6db74"> --add-section .lua-data=</span><span style="color:#e6db74">%s</span><span style="color:#e6db74"> </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">%</span>(args<span style="color:#f92672">.</span>exe, f<span style="color:#f92672">.</span>name, args<span style="color:#f92672">.</span>out), shell<span style="color:#f92672">=</span>True)
 
-subprocess.call(&quot;objcopy %s --remove-section .lua-data&quot;%(args.exe, ), shell=True)
-subprocess.call(&quot;objcopy %s --add-section .lua-data=%s %s&quot;%(args.exe, f.name, args.out), shell=True)
-
-</code></pre>
-
-<h1 id="文件内容的读取">文件内容的读取</h1>
-
+</code></pre></div><h1 id="文件内容的读取">文件内容的读取</h1>
 <p>我们需要使用<code>elf.h</code>文件来读取文件内容。根据上述的格式示意图，<code>elf</code>文件开头的是Header，其格式为<code>ElfXX_Ehdr</code>，
 我们可以直接读取文件内容到内存。然后读取<code>e_shoff</code>字段获得section header的位置，定位到位置并依次读取内容到<code>ElfXX_Shdr</code>
 结构体中，然后通过各个entry的<code>sh_name</code>得到最终section，然后读取文件达到目的。完整代码如下：</p>
-
 <pre><code>static std::map&lt;std::string, std::string&gt; readElfLuaData(const std::string &amp;filepath) {
     std::map&lt;std::string, std::string&gt; files;
 #if __x86_64__
@@ -276,9 +253,7 @@ subprocess.call(&quot;objcopy %s --add-section .lua-data=%s %s&quot;%(args.exe, 
     }
     return files;
 }
-</code></pre>
-
-<p>接下来便可以通过添加到<code>package.preload</code>实现在lua中调用这些文件的目的。</p>
+</code></pre><p>接下来便可以通过添加到<code>package.preload</code>实现在lua中调用这些文件的目的。</p>
 
 </div>
 

@@ -5,7 +5,7 @@
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="">
-  <meta name="generator" content="Hugo 0.42.1" />
+  <meta name="generator" content="Hugo 0.74.3" />
 
   <title>在 vue 中使用 semantic-ui &middot; 乐Coding</title>
 
@@ -79,26 +79,17 @@
   <p><a href="https://cn.vuejs.org/">Vue</a> 是一个很好呀的 MVVM 框架，我最近在一个内部使用的管理后台初次使用。而 <a href="https://semantic-ui.com/">semantic-ui</a> 则是
 一个比较美观全面的 css 框架，也是我比较偏好使用的。所以，在这次重构管理后台时，这两者就被我选择使用。PS： 服务器端用的是 <a href="https://www.djangoproject.com/">Django</a>，
 也是第一次使用。</p>
-
 <p>semantic-ui 大部分情况下使用其 css 部分是没问题的，如 <a href="https://semantic-ui.com/elements/button.html">button</a>, <a href="https://semantic-ui.com/collections/table.html">table</a>
 等，直接套用对应的 css 样式即可。但是对于某些需要 js 初始化的控件，如 <a href="https://semantic-ui.com/modules/dropdown.html">dropdown</a>, <a href="https://semantic-ui.com/modules/popup.html">popup</a>
 等，都需要调用对应的函数，如</p>
-
 <pre><code>$('.ui.dropdown')
   .dropdown()
 ;
-</code></pre>
-
-<p>那么对于 Vue 中动态生成的控件要怎么处理呢？ 我们希望在控件加入到 dom 后能够调用对应的 semnatic-ui 初始化函数，但是由于 Vue 的插入是自动完成的，我们不好判断时机，好在 Vue 提供了
+</code></pre><p>那么对于 Vue 中动态生成的控件要怎么处理呢？ 我们希望在控件加入到 dom 后能够调用对应的 semnatic-ui 初始化函数，但是由于 Vue 的插入是自动完成的，我们不好判断时机，好在 Vue 提供了
 <a href="https://cn.vuejs.org/v2/guide/custom-directive.html">自定义指令</a>，我们可以按照下面的方法来做：</p>
-
 <p>首先假设我们的 html 是：</p>
-
-<pre><code class="language-html">&lt;div id=&quot;main&quot;&gt;&lt;/div&gt;
-</code></pre>
-
-<p>然后 Vue 实例为：</p>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">id</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;main&#34;</span>&gt;&lt;/<span style="color:#f92672">div</span>&gt;
+</code></pre></div><p>然后 Vue 实例为：</p>
 <pre><code>let data = {
     data: [&quot;Male&quot;, &quot;Female&quot;]
 }
@@ -112,18 +103,13 @@ new Vue({
     &lt;/select&gt;
     `
 })
-</code></pre>
-
-<p>这里我们以 dropdown 控件为例，按照以往的做法，我们此时可以调用<code>$(&quot;.ui.dropdown&quot;).dropdown()</code>来处理，但是对于 Vue 则可以使用自定义指令。假设我们定义一个指令名为<code>v-sudropdown</code>，
+</code></pre><p>这里我们以 dropdown 控件为例，按照以往的做法，我们此时可以调用<code>$(&quot;.ui.dropdown&quot;).dropdown()</code>来处理，但是对于 Vue 则可以使用自定义指令。假设我们定义一个指令名为<code>v-sudropdown</code>，
 然后将其加到 <code>select</code> 中，于是变为<code>&lt;select class=&quot;ui dropdown&quot; v-sudropdown&gt;</code>，那这个 directive 该怎么写呢：</p>
-
-<pre><code class="language-js">Vue.directive (&quot;sudropdown&quot;, {
-        inserted: el =&gt; $(el).dropdown({})
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">Vue</span>.<span style="color:#a6e22e">directive</span> (<span style="color:#e6db74">&#34;sudropdown&#34;</span>, {
+        <span style="color:#a6e22e">inserted</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">el</span> =&gt; <span style="color:#a6e22e">$</span>(<span style="color:#a6e22e">el</span>).<span style="color:#a6e22e">dropdown</span>({})
     })
 
-</code></pre>
-
-<p>其中，<code>inserted</code> 是一个钩子函数，一旦带有这个 <code>directive</code> 的元素被插入到 dom 时，这个钩子函数会被调用，从而完成我们的初始化操作。这样 vue 和 semantic-ui 就能完美共存了。</p>
+</code></pre></div><p>其中，<code>inserted</code> 是一个钩子函数，一旦带有这个 <code>directive</code> 的元素被插入到 dom 时，这个钩子函数会被调用，从而完成我们的初始化操作。这样 vue 和 semantic-ui 就能完美共存了。</p>
 
 </div>
 
